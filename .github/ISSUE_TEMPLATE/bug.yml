@@ -1,0 +1,73 @@
+name: Bug report
+description: Something works wrongly, crashes or looks broken
+type: Bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the report. One problem per issue, please. Do not attach screenshots or logs that show private code, paths or names.
+  - type: dropdown
+    id: product
+    attributes:
+      label: Product
+      description: Where you saw it. Choose "Every IDE" when it is not about one product.
+      options:
+        - Every IDE (the platform)
+        - GoGarden
+        - RustRonin
+        - WebWave
+        - DevopsDaruma
+        - JvmJizo
+        - SqlScroll
+        - Zen Toolbox
+        - Zen CLI
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: From the About window of the IDE (the application menu → About), or from Zen Toolbox.
+      placeholder: "26.11.9"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS (Apple silicon)
+        - macOS (Intel)
+        - Linux
+        - Windows
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: What you see, in a sentence or two.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps
+      description: The shortest way to see it again, starting from a just opened IDE if you can.
+      placeholder: |
+        1. Open …
+        2. Press …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+      description: What should have happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: more
+    attributes:
+      label: Screenshots, logs, anything else
+      description: Help → Show Log in Finder (in Explorer, in Files) opens the folder with the log. An internal error report can be pasted here as it is.

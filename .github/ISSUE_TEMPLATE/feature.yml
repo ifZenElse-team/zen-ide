@@ -1,0 +1,44 @@
+name: Feature request
+description: Something the IDE cannot do yet, or could do better
+type: Feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Describe the work you are trying to do, not only the button you miss: it helps to find the right shape for the feature. Describe what our product should do, without pointing at another product as the model.
+  - type: dropdown
+    id: product
+    attributes:
+      label: Product
+      options:
+        - Every IDE (the platform)
+        - GoGarden
+        - RustRonin
+        - WebWave
+        - DevopsDaruma
+        - JvmJizo
+        - SqlScroll
+        - Zen Toolbox
+        - Zen CLI
+        - A new plug-in
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do
+      description: The task, and what stands in the way today.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What should the IDE do
+      description: The behaviour you would like, as a person using it would see it.
+    validations:
+      required: true
+  - type: textarea
+    id: more
+    attributes:
+      label: Anything else
+      description: Workarounds you use now, links to public specifications, examples of files.
