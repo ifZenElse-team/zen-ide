@@ -13,6 +13,49 @@ Changes not released yet are not written here: each pull request adds its notes 
 [changelog/unreleased/](changelog/unreleased/README.md) (ADR-0188), and `cargo xtask changelog
 gather <YY.M.N>` moves them into the release's section below and into the products' changelogs.
 
+## [26.11.10] - 2026-11-27
+
+### Added
+
+- `cargo xtask changelog preview` prints the notes waiting in `changelog/unreleased/`, by product and
+  section, and a workflow writes them into the draft "Next release" on GitHub after every merge into
+  `main`, so what the next release brings can be read at any time.
+- `cargo xtask release-build <ide|toolbox> <version> --trial [--platform ...]` builds one product's
+  release artefact without the release checks (the source check, the quality gate, the version
+  check and the release notes); its `build.json` says the gate was skipped, so `release-publish`
+  refuses it. The workflow `.github/workflows/release-build.yml`, started by hand, runs it on
+  GitHub-hosted runners for macOS (Apple silicon), Linux and Windows with no secret and keeps the
+  results as workflow artefacts for three days (docs/releasing.md).
+- The workflow `.github/workflows/release.yml` builds the release of a tag `v<YY.M.N>` on
+  GitHub-hosted runners and publishes nothing yet (ADR-0300, step 3): a plan, the full gate once on
+  macOS, the application bundles in three macOS jobs, one Linux job for every other product and
+  platform, and a join that keeps the whole release as one workflow artefact. New steps of
+  `cargo xtask release-ci`: `matrix`, `gate`, `part <ide|toolbox|plugins> <platform>` and `join`.
+  A part records the gate as `deferred` in `build.json`; `join` takes it only when its files match,
+  its commit, tree and compiler are those of the gate's pass and the parts are exactly the release,
+  and only then records `passed` (docs/releasing.md, "Releasing from a tag on GitHub").
+- The workflow `release.yml` can stage, verify and release a tag from GitHub (ADR-0300, steps 4
+  to 6), once the repository variable `ZEN_RELEASE_FROM_GITHUB` is `true` and the environment
+  `release` holds the secrets: `stage` and `live` in that environment, the secrets given only to
+  the step that signs or sends; `verify`; a draft GitHub release with the notes, the files and the
+  checks, published after the release is live. Without the variable a tag's run still ends with
+  the built release.
+- `cargo xtask release-ci credentials` and the hand-started workflow `release-credentials.yml`
+  check the signing key and the upload token against the release server, sending nothing.
+- `cargo xtask release-ci notes` writes the text of the GitHub release from a stage.
+- `cargo xtask release-publish --run <run id>` publishes a release built by the workflow from a
+  maintainer's machine, fetched with `gh run download`; `--pipeline` and `--job` keep fetching
+  from GitLab (docs/releasing.md, "Releasing from a tag on GitHub").
+
+### Changed
+
+- The release tooling reads what it needs from CI in one place, `xtask/src/ci_host.rs`, for GitLab
+  CI and GitHub Actions: the tag, the run's number for the stage's name, whether the ref is
+  protected. The two rules that held only in GitLab now hold on GitHub too: the release secrets are
+  refused on a ref that is not protected and in every pull request's run, and `release-ci` releases
+  only its run's own tag. A CI that is neither host is refused the secrets and the release.
+  Nothing changes in GitLab CI or on a maintainer's machine (ADR-0300).
+
 ## [26.11.9] - 2026-11-17
 
 ### Added
