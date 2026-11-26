@@ -129,6 +129,61 @@ that wrote it and the default branch, and no workflow here saves a cache from a 
 
 The version's month is the month in UTC on GitHub (`TZ: UTC`).
 
+**After `join`: stage, verify, release.** These jobs run only when the repository variable
+`ZEN_RELEASE_FROM_GITHUB` is `true`; without it a tag's run ends with the artefact `release`.
+
+| Job | Runner | Secrets | Token | What it does |
+|---|---|---|---|---|
+| `stage` | Linux | the environment `release` | read | Compiles `xtask` and `zen-releases` first, without the secrets; then one step with them runs `cargo xtask release-ci stage`, as in GitLab: uploads every file (stored, listed nowhere), signs and stages the manifest, the catalog, the changelogs and the website under `v<version>-p<run id>`. Its record is the artefact `stage` |
+| `verify` | macOS | none | read | `cargo xtask release-ci verify`: every staged file downloaded from its public address and compared with the build, `codesign --verify` for each macOS application, the staged documents and website. Its checks are the artefact `verify` |
+| `draft` | Linux | none | `contents: write` | `cargo xtask release-ci notes` writes the release's text (each product's notes, a link to every file with its SHA-256, what was checked); `gh release create --draft` makes the draft release of the tag, or rewrites the draft a run made before |
+| `live` | Linux | the environment `release` | read | After the environment's reviewers approve: `cargo xtask release-ci live`, one request that makes the stage live |
+| `publish` | Linux | none | `contents: write` | Publishes the draft |
+
+So the button is the approval of `live`: Actions → the tag's run → **Review deployments** → `release`
+→ Approve. Before approving, read the draft release (Releases → the draft named `Zen IDE <version>`),
+open the staged website (the `stage` job prints its address) and look at the `verify` job. The
+same environment guards `stage`, so the run asks for an approval twice: once before the secrets are
+used at all, once before the release is live. No job holds both a release secret and a token that
+can write to the repository.
+
+`cargo xtask` checks again what the environment already enforces (`xtask/src/ci_host.rs`): the
+secrets are refused unless the run's ref is protected, and `stage` and `live` release only the tag
+the run was started by.
+
+**The secrets** are the same three values as in GitLab, kept in the environment `release`
+(Settings → Environments → `release`): the secrets `ZEN_PUBLISHER_KEY` and `ZEN_RELEASES_TOKEN`, and
+the variable `ZEN_RELEASES_SERVER`. The environment allows the tags `v*` and the branch `main` (for
+the credentials check below) and has required reviewers.
+
+**Check the secrets without releasing:** Actions → **Release credentials** → Run workflow on `main`
+(`.github/workflows/release-credentials.yml`). After the approval it runs
+`cargo xtask release-ci credentials`: `zen-releases check-credentials` signs an empty manifest with
+the key and has the server check it with the token (`PUT /api/v1/check/manifest`, which stores
+nothing), and prints only `ok`, or which of the two the server refused. Run it once after the
+secrets are set, before the first tag.
+
+**One host stages a tag, not both.** Both pipelines upload a version's files to the same addresses,
+and their builds differ byte for byte. A file that is only staged is replaced by the later upload,
+and releasing the earlier stage is then refused; a file that is already live cannot be replaced, so
+the later stage fails. For a given tag, let either the GitLab pipeline or the GitHub workflow reach
+its stage job. If the workflow on GitHub fails before `live`, nothing is live, and the GitLab
+pipeline of the same tag can still release it (its stage replaces the staged files).
+
+**GitHub builds, a maintainer's machine publishes** (the fallback, and the way to release while
+`ZEN_RELEASE_FROM_GITHUB` is not set):
+
+```sh
+cargo xtask release-publish --run <run id> [--dry-run] [--stage <name>]
+```
+
+It downloads the run's artefact `release` with `gh run download` (the GitHub CLI, signed in; into
+`<target>/release-fetch/run-<id>/`), and publishes each group of `release-plan.json` as
+`release-publish --from` does: every file checked against `build.json`, the commit on `origin/main`
+with the recorded tree, the gate passed, every IDE for every platform or none. `--from <dir>` takes
+such a folder too. The website is not part of this path; it goes live with a staged release or
+with a deployment of the release server.
+
 ## On a maintainer's machine (the fallback)
 
 ```sh
@@ -226,7 +281,7 @@ secret, and keeps the folders as workflow artefacts for three days.
 **Publish** (only on a maintainer's machine):
 
 ```sh
-cargo xtask release-publish --pipeline <pipeline id> [--dry-run]   # or --job <job id>, or --from <dir>
+cargo xtask release-publish --pipeline <pipeline id> [--dry-run]   # or --job <job id>, --from <dir>, or --run <GitHub run id>
 ```
 
 It downloads the `release-build` job's artifacts with `glab` (into `<target>/release-fetch/`),

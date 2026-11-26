@@ -14,6 +14,8 @@ const STAGE_FILE: &str = "release-stage.json";
 
 const VERIFY_FILE: &str = "release-verify.json";
 
+const NOTES_FILE: &str = "release-notes.md";
+
 pub(crate) const SCHEMA: u32 = 1;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -68,9 +70,13 @@ pub(crate) struct Plan {
 
 pub(crate) fn command(args: &[String]) -> Result<(), String> {
     let ci = crate::ci_host::Ci::from_environment();
+    if args.len() == 1 && args[0] == "credentials" {
+        return credentials();
+    }
     let usage = format!(
-        "usage: cargo xtask release-ci (plan | build | stage | verify | live | matrix | gate | join | part \
-         <ide|toolbox|plugins> <macos|linux|windows|all>) [v<YY.M.N>] (the tag is {} in CI)",
+        "usage: cargo xtask release-ci (plan | build | stage | verify | live | matrix | gate | join | notes | part \
+         <ide|toolbox|plugins> <macos|linux|windows|all>) [v<YY.M.N>] (the tag is {} in CI); release-ci credentials \
+         checks the signing key and the upload token against the server and sends nothing",
         ci.tag_variable()
     );
     let own = || ci.tag().map(str::to_owned).ok_or_else(|| usage.clone());
@@ -97,7 +103,8 @@ pub(crate) fn command(args: &[String]) -> Result<(), String> {
         "build" => build(&tag, &version),
         "stage" => stage(&tag, &version, &ci),
         "verify" => verify(&tag, &version),
-        "live" => live(&tag, &version),
+        "live" => live(&tag, &version, &ci),
+        "notes" => notes(&tag, &version),
         "matrix" => crate::release_parts::matrix(&tag, &version),
         "gate" => crate::release_parts::gate(&tag, &version),
         "join" => crate::release_parts::join(&tag, &version),
@@ -607,15 +614,62 @@ pub(crate) fn summary_problem(summary: &serde_json::Value, products: &[StagedPro
     None
 }
 
-fn live(tag: &str, version: &str) -> Result<(), String> {
+fn credentials() -> Result<(), String> {
+    let secrets = crate::release::secrets()?;
+    let mut check = Command::new(crate::release_flow::zen_releases()?);
+    check.args(["check-credentials", "--server", &secrets.server]).env("ZEN_RELEASES_TOKEN", &secrets.token);
+    if let Some(key) = &secrets.key {
+        check.arg("--key").arg(key);
+    }
+    run(&mut check, "zen-releases check-credentials")
+}
+
+fn checks() -> Result<Vec<String>, String> {
+    match std::fs::read(VERIFY_FILE) {
+        Ok(bytes) => serde_json::from_slice(&bytes).map_err(|error| format!("{VERIFY_FILE}: {error}")),
+        Err(_) => Err(format!("{VERIFY_FILE} is missing: the verify job checks the stage before it is released")),
+    }
+}
+
+fn notes(tag: &str, version: &str) -> Result<(), String> {
+    let record = staged(tag, version)?;
+    let body = github_release_body(&record, &checks()?);
+    std::fs::write(NOTES_FILE, &body).map_err(|error| format!("{NOTES_FILE}: {error}"))?;
+    println!("==> The notes of the release of {tag} are in {NOTES_FILE} ({} bytes)", body.len());
+    Ok(())
+}
+
+pub(crate) fn github_release_body(record: &StageRecord, checks: &[String]) -> String {
+    let names: Vec<&str> = crate::release::IDES.iter().map(|ide| ide.1).collect();
+    let server = record.server.trim_end_matches('/');
+    let mut text = format!(
+        "Every Zen IDE at {} ({}), for macOS, Linux and Windows. Install or update them with [Zen Toolbox]({server}/).\n",
+        record.version,
+        names.join(", ")
+    );
+    for product in &record.products {
+        let what = if product.kind == "plugin" { " plug-in" } else { "" };
+        text.push_str(&format!("\n## {}{what} {}\n\n{}\n", product.name, product.version, product.notes.trim()));
+    }
+    text.push_str("\n## Files\n\n");
+    text.push_str(&format!(
+        "Installed copies update themselves from the signed manifest at {server}/releases/manifest.json; these are \
+         the same files.\n\n"
+    ));
+    for file in &record.files {
+        text.push_str(&format!("- [{}]({}) ({}, SHA-256 `{}`)\n", file.name, file.url, file.platform, file.sha256));
+    }
+    text.push_str("\n## Checked before release\n\n");
+    for check in checks {
+        text.push_str(&format!("- {check}\n"));
+    }
+    text
+}
+
+fn live(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String> {
     let secrets = crate::release::secrets()?;
     let record = staged(tag, version)?;
-    let checks: Vec<String> = match std::fs::read(VERIFY_FILE) {
-        Ok(bytes) => serde_json::from_slice(&bytes).map_err(|error| format!("{VERIFY_FILE}: {error}"))?,
-        Err(_) => {
-            return Err(format!("{VERIFY_FILE} is missing: the verify job checks the stage before it is released"));
-        }
-    };
+    let checks = checks()?;
     if secrets.server.trim_end_matches('/') != record.server {
         return Err(format!("the stage is on {}, the release variables name {}", record.server, secrets.server));
     }
@@ -629,6 +683,10 @@ fn live(tag: &str, version: &str) -> Result<(), String> {
     println!("==> {tag} is live: {}/releases/manifest.json, {}/", record.server, record.server);
     match gitlab_context() {
         Some(gitlab) => gitlab_release(&gitlab, &record, &checks),
+        None if ci.host == crate::ci_host::Host::Github => {
+            println!("The workflow's next job publishes the draft GitHub release of {tag}.");
+            Ok(())
+        }
         None => {
             println!("Not in GitLab CI: create the GitLab release of {tag} by hand if wanted.");
             Ok(())
@@ -908,6 +966,15 @@ mod tests {
             site: String::new(),
         };
         assert_eq!(stage.products.len(), 2, "an IDE's platforms are one product");
+        let body = github_release_body(&stage, &["1 staged files downloaded".to_owned()]);
+        assert!(body.starts_with("Every Zen IDE at 26.10.4 (GoGarden, RustRonin, WebWave, JvmJizo, SqlScroll, "));
+        assert!(body.contains("## gogarden 26.10.4\n\n- gogarden notes."), "{body}");
+        assert!(body.contains("## json plug-in 0.2.0"));
+        assert!(body.contains("## Files\n"), "{body}");
+        assert!(body.contains(&format!("- [gogarden.tar.gz]({}) (", stage.files[0].url)), "{body}");
+        assert!(body.contains(&format!("SHA-256 `{}`", stage.files[0].sha256)));
+        assert!(body.contains("https://ide.ifzenelse.space/releases/manifest.json"));
+        assert!(body.ends_with("## Checked before release\n\n- 1 staged files downloaded\n"));
         let json = release_json(&stage, &["1 staged files downloaded".to_owned()]);
         assert_eq!(json["tag_name"], "v26.10.4");
         assert_eq!(json["name"], "Zen IDE 26.10.4");
