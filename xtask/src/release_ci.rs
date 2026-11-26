@@ -6,15 +6,15 @@ use serde::{Deserialize, Serialize};
 use crate::release::run;
 use crate::release_flow::BuildRecord;
 
-const BUILD_DIR: &str = "release-build";
+pub(crate) const BUILD_DIR: &str = "release-build";
 
-const PLAN_FILE: &str = "release-build/release-plan.json";
+pub(crate) const PLAN_FILE: &str = "release-build/release-plan.json";
 
 const STAGE_FILE: &str = "release-stage.json";
 
 const VERIFY_FILE: &str = "release-verify.json";
 
-const SCHEMA: u32 = 1;
+pub(crate) const SCHEMA: u32 = 1;
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub(crate) struct StagedProduct {
@@ -69,12 +69,16 @@ pub(crate) struct Plan {
 pub(crate) fn command(args: &[String]) -> Result<(), String> {
     let ci = crate::ci_host::Ci::from_environment();
     let usage = format!(
-        "usage: cargo xtask release-ci (plan | build | stage | verify | live) [v<YY.M.N>] (the tag is {} in CI)",
+        "usage: cargo xtask release-ci (plan | build | stage | verify | live | matrix | gate | join | part \
+         <ide|toolbox|plugins> <macos|linux|windows|all>) [v<YY.M.N>] (the tag is {} in CI)",
         ci.tag_variable()
     );
-    let (step, tag) = match args {
-        [step] => (step.as_str(), ci.tag().map(str::to_owned).ok_or_else(|| usage.clone())?),
-        [step, tag] => (step.as_str(), tag.clone()),
+    let own = || ci.tag().map(str::to_owned).ok_or_else(|| usage.clone());
+    let (step, part, tag) = match args {
+        [step, what, platform] if step == "part" => (step.as_str(), Some((what, platform)), own()?),
+        [step, what, platform, tag] if step == "part" => (step.as_str(), Some((what, platform)), tag.clone()),
+        [step] if step != "part" => (step.as_str(), None, own()?),
+        [step, tag] if step != "part" => (step.as_str(), None, tag.clone()),
         _ => return Err(usage),
     };
     if let Some(problem) = ci.tag_problem(&tag) {
@@ -94,6 +98,13 @@ pub(crate) fn command(args: &[String]) -> Result<(), String> {
         "stage" => stage(&tag, &version, &ci),
         "verify" => verify(&tag, &version),
         "live" => live(&tag, &version),
+        "matrix" => crate::release_parts::matrix(&tag, &version),
+        "gate" => crate::release_parts::gate(&tag, &version),
+        "join" => crate::release_parts::join(&tag, &version),
+        "part" => match part {
+            Some((what, platform)) => crate::release_parts::part(&version, what, platform),
+            None => Err(usage),
+        },
         _ => Err(usage),
     }
 }
@@ -137,7 +148,7 @@ pub(crate) fn plan(version: &str) -> Result<Plan, String> {
     Ok(Plan { version: version.to_owned(), toolbox, plugins })
 }
 
-fn describe(plan: &Plan) -> String {
+pub(crate) fn describe(plan: &Plan) -> String {
     let names: Vec<&str> = crate::release::IDES.iter().map(|ide| ide.1).collect();
     let mut lines = vec![format!("every IDE {} ({}) for macOS, Linux and Windows", plan.version, names.join(", "))];
     if let Some(version) = &plan.toolbox {
@@ -332,7 +343,7 @@ fn verify(tag: &str, version: &str) -> Result<(), String> {
     Ok(())
 }
 
-fn website(out: &Path) -> Result<(), String> {
+pub(crate) fn website(out: &Path) -> Result<(), String> {
     crate::release_flow::clean_out(out)?;
     copy_tree(Path::new("deploy/releases/site"), out)?;
     crate::site::run(&[out.join("docs").display().to_string()])
@@ -374,7 +385,7 @@ fn records(groups: &[PathBuf]) -> Result<Vec<BuildRecord>, String> {
     Ok(records)
 }
 
-fn build_folders(dir: &Path) -> Result<Vec<PathBuf>, String> {
+pub(crate) fn build_folders(dir: &Path) -> Result<Vec<PathBuf>, String> {
     if dir.join("build.json").is_file() {
         return Ok(vec![dir.to_owned()]);
     }

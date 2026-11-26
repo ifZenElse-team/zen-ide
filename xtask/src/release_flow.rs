@@ -113,8 +113,7 @@ pub(crate) fn finish(out: &Path, mut record: BuildRecord, files: &[(PathBuf, &st
         let size = std::fs::metadata(&path).map_err(|error| format!("{}: {error}", path.display()))?.len();
         record.files.push(BuiltFile { name, role: role.to_owned(), size, sha256: sha256(&path)? });
     }
-    let json = serde_json::to_vec_pretty(&record).map_err(|error| error.to_string())?;
-    std::fs::write(out.join("build.json"), json).map_err(|error| error.to_string())?;
+    save_record(out, &record)?;
     println!("\n==> Built {} {} into {}", record.name, record.version, out.display());
     for file in &record.files {
         println!("  {:<44} {:>12} bytes  {}", file.name, file.size, &file.sha256[..16]);
@@ -123,6 +122,32 @@ pub(crate) fn finish(out: &Path, mut record: BuildRecord, files: &[(PathBuf, &st
 }
 
 pub(crate) fn verified(dir: &Path) -> Result<BuildRecord, String> {
+    let record = checked_files(dir)?;
+    if record.gate != "passed" {
+        return Err(format!("the build says the gate {}; it must have passed", record.gate));
+    }
+    Ok(record)
+}
+
+pub(crate) fn verified_part(dir: &Path) -> Result<BuildRecord, String> {
+    let record = checked_files(dir)?;
+    let deferred = crate::release::Gate::Deferred.recorded();
+    if record.gate != deferred {
+        return Err(format!(
+            "{}: the build says the gate {}; a part of a release built in CI records it as {deferred}",
+            dir.display(),
+            record.gate
+        ));
+    }
+    Ok(record)
+}
+
+pub(crate) fn save_record(dir: &Path, record: &BuildRecord) -> Result<(), String> {
+    let json = serde_json::to_vec_pretty(record).map_err(|error| error.to_string())?;
+    std::fs::write(dir.join("build.json"), json).map_err(|error| format!("{}: {error}", dir.display()))
+}
+
+fn checked_files(dir: &Path) -> Result<BuildRecord, String> {
     let path = dir.join("build.json");
     let bytes = std::fs::read(&path).map_err(|error| format!("{}: {error}", path.display()))?;
     let record: BuildRecord = serde_json::from_slice(&bytes).map_err(|error| format!("{}: {error}", path.display()))?;
@@ -142,9 +167,6 @@ pub(crate) fn verified(dir: &Path) -> Result<BuildRecord, String> {
         if let Some(problem) = file_problem(file, size, &digest) {
             return Err(problem);
         }
-    }
-    if record.gate != "passed" {
-        return Err(format!("the build says the gate {}; it must have passed", record.gate));
     }
     Ok(record)
 }
@@ -423,7 +445,7 @@ pub(crate) fn build_command(args: &[String]) -> Result<(), String> {
         None => default_out(&product, &version)?,
     };
     match words.as_slice() {
-        [_, id, version] => crate::release::build_plugin(id, version, &platforms, &out),
+        [_, id, version] => crate::release::build_plugin(id, version, &platforms, &out, crate::release::Gate::Here),
         [product, version] if product == "toolbox" => {
             let parent = out.parent().ok_or("no folder for the build")?.to_owned();
             if let Some(problem) =
@@ -435,8 +457,10 @@ pub(crate) fn build_command(args: &[String]) -> Result<(), String> {
             for platform in platforms {
                 let folder = crate::native::folder(&parent, "toolbox", version, platform);
                 match platform {
-                    crate::native::Platform::Macos => crate::release::build_toolbox(version, None, &folder, false)?,
-                    other => crate::native::build(&toolbox, version, other, &folder, false)?,
+                    crate::native::Platform::Macos => {
+                        crate::release::build_toolbox(version, None, &folder, crate::release::Gate::Here)?
+                    }
+                    other => crate::native::build(&toolbox, version, other, &folder, crate::release::Gate::Here)?,
                 }
             }
             Ok(())
@@ -466,17 +490,19 @@ fn trial_build(words: &[String], platforms: &[crate::native::Platform], out: Opt
          check against the published releases and the release notes. build.json records the gate as `{}`, so \
          release-publish refuses it.",
         product.name,
-        crate::release::TRIAL_GATE
+        crate::release::Gate::Trial.recorded()
     );
     for &platform in platforms {
         let folder = crate::native::folder(&parent, product.id, &version, platform);
         let notes = Some(crate::release::TRIAL_NOTES);
         match platform {
             crate::native::Platform::Macos if product.id == "toolbox" => {
-                crate::release::build_toolbox(&version, notes, &folder, true)?;
+                crate::release::build_toolbox(&version, notes, &folder, crate::release::Gate::Trial)?;
             }
-            crate::native::Platform::Macos => crate::release::build_ide(product.id, &version, notes, &folder, true)?,
-            other => crate::native::build(&product, &version, other, &folder, true)?,
+            crate::native::Platform::Macos => {
+                crate::release::build_ide(product.id, &version, notes, &folder, crate::release::Gate::Trial)?
+            }
+            other => crate::native::build(&product, &version, other, &folder, crate::release::Gate::Trial)?,
         }
     }
     Ok(())
@@ -562,7 +588,7 @@ fn macos_first(folders: Vec<PathBuf>, records: Vec<BuildRecord>) -> (Vec<PathBuf
     order.into_iter().unzip()
 }
 
-fn set_problem(records: &[BuildRecord]) -> Option<String> {
+pub(crate) fn set_problem(records: &[BuildRecord]) -> Option<String> {
     let first = records.first()?;
     if records.iter().any(|record| record.kind != first.kind) {
         return Some(format!(
@@ -765,7 +791,7 @@ mod tests {
         }
         let dir = tempfile::tempdir().unwrap();
         let mut record = record();
-        record.gate = crate::release::TRIAL_GATE.to_owned();
+        record.gate = crate::release::Gate::Trial.recorded().to_owned();
         record.files = vec![write(dir.path(), "a.wasm", b"module")];
         save(dir.path(), &record);
         assert!(verified(dir.path()).unwrap_err().contains("it must have passed"));

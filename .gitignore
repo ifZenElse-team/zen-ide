@@ -40,3 +40,5 @@
 /release-stage.json
 /release-verify/
 /release-verify.json
+/release-gate.json
+/release-matrix.json

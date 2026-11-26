@@ -24,6 +24,7 @@ mod notices;
 mod release;
 mod release_ci;
 mod release_flow;
+mod release_parts;
 mod site;
 mod spelling;
 mod unreleased;
