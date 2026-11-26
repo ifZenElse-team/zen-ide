@@ -72,7 +72,13 @@ Set their **environment scope** to `release`: GitLab then gives them only to the
 that environment (stage and release, and the credentials check), never to the build and verify jobs,
 and never to a pull request's or a branch's pipeline. `zen-releases` reads the key from
 `ZEN_PUBLISHER_KEY` (no file is written) and never prints it; `cargo xtask` refuses the release
-secrets in any GitLab job whose ref is not protected. The jobs run on the release runner as the same macOS user
+secrets in any GitLab job whose ref is not protected. The same two rules hold on GitHub
+(`xtask/src/ci_host.rs`, ADR-0300): a workflow run reads the secrets only when its ref is protected
+(`GITHUB_REF_PROTECTED`) and never in a pull request's run, and `release-ci` releases only the tag
+its run was started by (`GITHUB_REF`, `GITHUB_REF_TYPE` and `GITHUB_REF_NAME` must agree). A CI that
+is neither (a `CI` variable without exactly one of `GITLAB_CI` and `GITHUB_ACTIONS`) is refused the
+secrets and the release altogether; a maintainer's machine, where no CI variable is set, works as
+before. The jobs run on the release runner as the same macOS user
 as every pull request's job: a job running at the same moment could read the release jobs'
 environment. The owner accepted that risk (ADR-0171); the release jobs share
 `resource_group: release`.
