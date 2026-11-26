@@ -26,6 +26,7 @@ Zen IDE builds with the latest stable Rust only ([ADR-0013](adr/0013-msrv-latest
 | `cargo xtask release-version` | The IDEs' next calendar version, e.g. `26.10.1` |
 | `cargo xtask release-ci plan v<YY.M.N>` | What a release tag would build; `release-ci build`, `stage`, `verify` and `live` are the jobs of a tag's pipeline ([ADR-0171](adr/0171-releases-from-a-protected-tag-through-gitlab.md), [releasing.md](releasing.md)) |
 | `cargo xtask changelog [--json <file>]` | Check the changelogs and that every decision record has its own number; write them as JSON for the website ([changelog/README.md](../changelog/README.md)) |
+| `cargo xtask changelog preview [--out <file>]` | Print the notes waiting in `changelog/unreleased/` for the next release, by product and section; the workflow "Next release" writes them into a draft release after every merge into `main` |
 | `cargo xtask icon-import <export.svg> <product>` | Import a product icon exported from Figma |
 | `cargo xtask bundle-plugins <product> <folder>` | Lay out an IDE's bundled plug-ins; `ZEN_BUNDLED_PLUGINS=<folder> cargo run -p go-garden` then starts with them, and `ZEN_DEV_AREAS=rust,markdown` makes some of them the product's areas, offered on the first start ([plugins.md](plugins.md#in-the-ide)) |
 | `cargo xtask mascot` | Write the website's pictures of Kozō (`deploy/releases/site/img/kozo/`) from the sprites in `zen-mascot` ([ADR-0125](adr/0125-kozo-the-family-mascot.md)); a test fails while they are out of date |

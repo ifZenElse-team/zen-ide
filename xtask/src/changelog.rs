@@ -204,6 +204,7 @@ pub(crate) fn json() -> Result<Vec<u8>, String> {
 pub(crate) fn run(args: &[String]) -> Result<(), String> {
     match args {
         [command, rest @ ..] if command == "gather" => crate::unreleased::gather(rest),
+        [command, rest @ ..] if command == "preview" => crate::unreleased::preview(rest),
         [] => {
             check()?;
             println!("The changelogs are in order.");
@@ -215,7 +216,7 @@ pub(crate) fn run(args: &[String]) -> Result<(), String> {
             println!("Wrote {file}.");
             Ok(())
         }
-        _ => Err("usage: cargo xtask changelog [--json <file> | gather <YY.M.N> [--date <YYYY-MM-DD>] [--toolbox <version>]]"
+        _ => Err("usage: cargo xtask changelog [--json <file> | preview [--out <file>] | gather <YY.M.N> [--date <YYYY-MM-DD>] [--toolbox <version>]]"
             .to_owned()),
     }
 }

@@ -566,6 +566,54 @@ pub(crate) fn gather(args: &[String]) -> Result<(), String> {
     crate::changelog::check()
 }
 
+pub(crate) fn preview_in(root: &Path) -> Result<String, String> {
+    let fragments = read_all(root)?;
+    let notes: Vec<&Note> = fragments.iter().flat_map(|fragment| &fragment.notes).collect();
+    if notes.is_empty() {
+        return Ok("Nothing is waiting for the next release yet.\n".to_owned());
+    }
+    let mut groups: Vec<(String, Target)> = vec![("Every IDE".to_owned(), Target::Ides)];
+    for (id, name, _) in crate::release::IDES {
+        groups.push(((*name).to_owned(), Target::Product((*id).to_owned())));
+    }
+    groups.push(("Zen Toolbox".to_owned(), Target::Product("toolbox".to_owned())));
+    groups.push(("Repository".to_owned(), Target::Repository));
+    let mut text = format!(
+        "{} from {} waiting for the next release.\n",
+        counted(notes.len(), "note", "notes"),
+        counted(fragments.len(), "pull request", "pull requests")
+    );
+    for (title, target) in groups {
+        let own: Vec<&Note> = notes.iter().copied().filter(|note| note.target == target).collect();
+        if own.is_empty() {
+            continue;
+        }
+        let sections = body(&own).replace("### ", "#### ");
+        text.push_str(&format!("\n### {title}\n\n{sections}\n"));
+    }
+    Ok(text)
+}
+
+fn counted(count: usize, one: &str, many: &str) -> String {
+    format!("{count} {}", if count == 1 { one } else { many })
+}
+
+pub(crate) fn preview(args: &[String]) -> Result<(), String> {
+    let text = preview_in(Path::new("."))?;
+    match args {
+        [] => {
+            print!("{text}");
+            Ok(())
+        }
+        [flag, file] if flag == "--out" => {
+            std::fs::write(file, &text).map_err(|error| format!("cannot write {file}: {error}"))?;
+            println!("Wrote {file}.");
+            Ok(())
+        }
+        _ => Err("usage: cargo xtask changelog preview [--out <file>]".to_owned()),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -814,5 +862,35 @@ mod tests {
             .collect();
         assert!(!section.is_empty(), "CHANGELOG.md has no section `## [26.10.4] and earlier - 2026-10-27`");
         assert!(section.join("\n").trim() == tagged.trim(), "the section of 26.10.4 differs from the tag v26.10.4");
+    }
+
+    #[test]
+    fn the_preview_lists_what_waits_by_product_and_section() {
+        let folder = tempfile::tempdir().unwrap();
+        let root = folder.path();
+        assert_eq!(preview_in(root).unwrap(), "Nothing is waiting for the next release yet.\n");
+        std::fs::create_dir_all(root.join(FOLDER)).unwrap();
+        std::fs::write(root.join(FOLDER).join("README.md"), "# Notes\n").unwrap();
+        std::fs::write(root.join(FOLDER).join("one.md"), NOTES).unwrap();
+        std::fs::write(
+            root.join(FOLDER).join("two.md"),
+            "## gogarden\n\n### Fixed\n\n- Go only.\n\n## toolbox\n\n### Added\n\n- A setting.\n",
+        )
+        .unwrap();
+        let text = preview_in(root).unwrap();
+        assert!(text.starts_with("5 notes from 2 pull requests waiting for the next release.\n"), "{text}");
+        let every = text.find("### Every IDE").unwrap();
+        let go = text.find("### GoGarden").unwrap();
+        let toolbox = text.find("### Zen Toolbox").unwrap();
+        let repository = text.find("### Repository").unwrap();
+        assert!(every < go && go < toolbox && toolbox < repository, "{text}");
+        assert!(
+            text[every..go].contains("#### Added\n\n- A thing.\n\n#### Fixed\n\n- **F4** opens the file."),
+            "{text}"
+        );
+        assert!(text[go..toolbox].contains("#### Fixed\n\n- Go only."), "{text}");
+        assert!(!text.contains("### RustRonin"), "a product with no notes has no heading: {text}");
+        std::fs::write(root.join(FOLDER).join("bad.md"), "- No heading.\n").unwrap();
+        assert!(preview_in(root).unwrap_err().contains("bad.md"));
     }
 }

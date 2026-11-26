@@ -1,0 +1,56 @@
+name: Next release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: next-release
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  CARGO_PROFILE_DEV_DEBUG: "0"
+
+jobs:
+  draft:
+    name: Draft of the next release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: xtask
+          save-if: ${{ github.ref == 'refs/heads/main' }}
+      - name: Notes waiting for the next release
+        run: |
+          cargo xtask changelog preview --out waiting.md
+          {
+            echo "> This draft is written again after every merge into \`main\` from \`changelog/unreleased/\`."
+            echo "> It shows what the next release will bring; it is never published itself."
+            echo
+            echo "As of \`${GITHUB_SHA::7}\`:"
+            echo
+            cat waiting.md
+          } > notes.md
+          cat notes.md
+      - name: Write the draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          state=$(gh release view next --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft 2>/dev/null || echo none)
+          case "$state" in
+            true) gh release edit next --repo "$GITHUB_REPOSITORY" --draft --title "Next release" --notes-file notes.md ;;
+            none) gh release create next --repo "$GITHUB_REPOSITORY" --draft --target main --title "Next release" --notes-file notes.md ;;
+            *) echo "A published release is named 'next'; rename or delete it, the draft was not written."; exit 1 ;;
+          esac

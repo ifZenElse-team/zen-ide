@@ -39,3 +39,7 @@ the version's section is there already and not released (written by hand, or gat
 the notes are added to it under their `###` sections and its date stays; a released version (its
 tag `v<YY.M.N>`, or a section the newest release tag has) is refused, so a release's notes never
 change once it is out.
+
+What waits here can be read at any time: `cargo xtask changelog preview` prints it by product and
+section, and on GitHub the draft release "Next release" holds the same text, written again after
+every merge into `main`.
