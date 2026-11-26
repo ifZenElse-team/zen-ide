@@ -1,0 +1,158 @@
+name: Release build (trial)
+
+# Builds one product's release artefact for every platform on GitHub-hosted runners, to prove the
+# builds. It uses no secret, signs nothing with the release key and publishes nothing: the
+# artefacts are workflow artefacts kept for a few days, and their build.json says the quality gate
+# was skipped, which `cargo xtask release-publish` refuses (docs/releasing.md, "A trial build").
+
+on:
+  workflow_dispatch:
+    inputs:
+      product:
+        description: The product to build
+        type: choice
+        default: gogarden
+        options:
+          - gogarden
+          - rustronin
+          - webwave
+          - jvmjizo
+          - sqlscroll
+          - devopsdaruma
+          - toolbox
+      version:
+        description: The version the build carries (it is not released)
+        type: string
+        default: 0.0.0
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-build-${{ github.ref }}-${{ inputs.product }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  TZ: UTC
+  PRODUCT: ${{ inputs.product }}
+  VERSION: ${{ inputs.version }}
+
+jobs:
+  macos:
+    name: macOS (Apple silicon)
+    runs-on: macos-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: The runner is Apple silicon
+        run: test "$(uname -m)" = arm64
+      - name: Toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - name: Versions
+        run: rustc --version && cargo --version && sw_vers
+      - name: Build
+        run: cargo xtask release-build "$PRODUCT" "$VERSION" --trial --platform macos --out "$RUNNER_TEMP/out"
+      - name: Check the application's signature (ad hoc) and list the files
+        run: |
+          set -eu
+          cd "$RUNNER_TEMP/out"
+          find . -type f -exec ls -l {} +
+          cat ./*/build.json
+          mkdir "$RUNNER_TEMP/unpacked"
+          for archive in ./*/*.tar.gz; do tar -xzf "$archive" -C "$RUNNER_TEMP/unpacked"; done
+          for app in "$RUNNER_TEMP"/unpacked/*.app; do
+            codesign --verify --deep --strict "$app"
+            codesign --display --verbose=2 "$app" 2>&1 | grep -E "^(Identifier|Signature|TeamIdentifier)" || true
+          done
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.product }}-${{ inputs.version }}-macos-aarch64-trial
+          path: ${{ runner.temp }}/out
+          if-no-files-found: error
+          retention-days: 3
+
+  linux:
+    name: Linux (x86_64)
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: taiki-e/install-action@893d6ee8d714b6c7dfe2bcd94e5759e9a7958a7e # v2.90.10
+        with:
+          tool: cargo-zigbuild
+      - name: Zig (the linker of the Linux build, ADR-0150)
+        run: |
+          set -eu
+          python3 -m venv "$RUNNER_TEMP/zig"
+          "$RUNNER_TEMP/zig/bin/pip" install --quiet ziglang==0.17.0
+          mkdir -p "$RUNNER_TEMP/bin"
+          printf '#!/bin/sh\nexec "%s" -m ziglang "$@"\n' "$RUNNER_TEMP/zig/bin/python" > "$RUNNER_TEMP/bin/zig"
+          chmod +x "$RUNNER_TEMP/bin/zig"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      - name: Versions
+        run: rustc --version && cargo --version && zig version && cargo-zigbuild --version
+      - name: Build
+        run: cargo xtask release-build "$PRODUCT" "$VERSION" --trial --platform linux --out "$RUNNER_TEMP/out"
+      - name: List the files and read the package
+        run: |
+          set -eu
+          cd "$RUNNER_TEMP/out"
+          find . -type f -exec ls -l {} +
+          cat ./*/build.json
+          for package in ./*/*.deb; do dpkg-deb --info "$package"; dpkg-deb --contents "$package" | head -40; done
+          mkdir "$RUNNER_TEMP/unpacked"
+          for archive in ./*/*.tar.gz; do tar -xzf "$archive" -C "$RUNNER_TEMP/unpacked"; done
+          file "$RUNNER_TEMP"/unpacked/bin/*
+          objdump -T "$RUNNER_TEMP"/unpacked/bin/* | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.product }}-${{ inputs.version }}-linux-x86_64-trial
+          path: ${{ runner.temp }}/out
+          if-no-files-found: error
+          retention-days: 3
+
+  windows:
+    name: Windows (x86_64, cross-built on Linux)
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Toolchain
+        run: |
+          rustup show active-toolchain || rustup toolchain install
+          rustup target add x86_64-pc-windows-gnu
+      - name: MinGW-w64 (the linker of the Windows build, ADR-0150)
+        run: |
+          set -eu
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gcc-mingw-w64-x86-64 mingw-w64-x86-64-dev
+      - name: Versions
+        run: rustc --version && cargo --version && x86_64-w64-mingw32-gcc --version
+      - name: Build
+        run: cargo xtask release-build "$PRODUCT" "$VERSION" --trial --platform windows --out "$RUNNER_TEMP/out"
+      - name: List the files
+        run: |
+          set -eu
+          cd "$RUNNER_TEMP/out"
+          find . -type f -exec ls -l {} +
+          cat ./*/build.json
+          for archive in ./*/*.zip; do unzip -l "$archive" | head -40; done
+          mkdir "$RUNNER_TEMP/unpacked"
+          for archive in ./*/*.tar.gz; do tar -xzf "$archive" -C "$RUNNER_TEMP/unpacked"; done
+          file "$RUNNER_TEMP"/unpacked/bin/*
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ${{ inputs.product }}-${{ inputs.version }}-windows-x86_64-trial
+          path: ${{ runner.temp }}/out
+          if-no-files-found: error
+          retention-days: 3

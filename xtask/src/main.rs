@@ -62,7 +62,7 @@ const TASKS: &[(&str, &str)] = &[
     ("release-version", "Print the IDEs' next calendar version, YY.M.N (ADR-0146)"),
     (
         "release-build",
-        "Build a release without secrets into a folder with build.json (ADR-0142): release-build ides <YY.M.N> [--allow-version] | toolbox <version> | plugin <id> <version>, [--out <dir>]",
+        "Build a release without secrets into a folder with build.json (ADR-0142): release-build ides <YY.M.N> [--allow-version] | toolbox <version> | plugin <id> <version>, [--out <dir>]; <ide|toolbox> <version> --trial builds one product without the release checks, never published",
     ),
     (
         "release-publish",
