@@ -67,15 +67,17 @@ pub(crate) struct Plan {
 }
 
 pub(crate) fn command(args: &[String]) -> Result<(), String> {
-    let usage = "usage: cargo xtask release-ci (plan | build | stage | verify | live) [v<YY.M.N>] (the tag is CI_COMMIT_TAG in CI)";
+    let ci = crate::ci_host::Ci::from_environment();
+    let usage = format!(
+        "usage: cargo xtask release-ci (plan | build | stage | verify | live) [v<YY.M.N>] (the tag is {} in CI)",
+        ci.tag_variable()
+    );
     let (step, tag) = match args {
-        [step] => (step.as_str(), std::env::var("CI_COMMIT_TAG").map_err(|_| usage.to_owned())?),
+        [step] => (step.as_str(), ci.tag().map(str::to_owned).ok_or_else(|| usage.clone())?),
         [step, tag] => (step.as_str(), tag.clone()),
-        _ => return Err(usage.to_owned()),
+        _ => return Err(usage),
     };
-    if let Some(problem) =
-        tag_problem(std::env::var("GITLAB_CI").ok().as_deref(), std::env::var("CI_COMMIT_TAG").ok().as_deref(), &tag)
-    {
+    if let Some(problem) = ci.tag_problem(&tag) {
         return Err(problem);
     }
     let version = tag_version(&tag)?;
@@ -89,10 +91,10 @@ pub(crate) fn command(args: &[String]) -> Result<(), String> {
             }
         }
         "build" => build(&tag, &version),
-        "stage" => stage(&tag, &version),
+        "stage" => stage(&tag, &version, &ci),
         "verify" => verify(&tag, &version),
         "live" => live(&tag, &version),
-        _ => Err(usage.to_owned()),
+        _ => Err(usage),
     }
 }
 
@@ -102,15 +104,6 @@ pub(crate) fn tag_version(tag: &str) -> Result<String, String> {
         return Err(format!("`{tag}` is not a release tag: a release tag is v<YY.M.N>, such as v26.10.4 (ADR-0171)"));
     }
     Ok(version.to_owned())
-}
-
-pub(crate) fn tag_problem(gitlab_ci: Option<&str>, ci_tag: Option<&str>, tag: &str) -> Option<String> {
-    (gitlab_ci == Some("true") && ci_tag != Some(tag)).then(|| {
-        format!(
-            "a release runs only in the pipeline of its own tag: this pipeline's tag is {}, not {tag}",
-            ci_tag.unwrap_or("none")
-        )
-    })
 }
 
 pub(crate) fn stage_name(tag: &str, pipeline: Option<&str>) -> String {
@@ -246,7 +239,7 @@ fn build(tag: &str, version: &str) -> Result<(), String> {
     Ok(())
 }
 
-fn stage(tag: &str, version: &str) -> Result<(), String> {
+fn stage(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String> {
     let secrets = crate::release::secrets()?;
     let bytes = std::fs::read(PLAN_FILE).map_err(|error| format!("{PLAN_FILE}: {error}; the build job leaves it"))?;
     let built: BuiltRelease = serde_json::from_slice(&bytes).map_err(|error| format!("{PLAN_FILE}: {error}"))?;
@@ -258,7 +251,7 @@ fn stage(tag: &str, version: &str) -> Result<(), String> {
     if groups.iter().any(|group| group.components().any(|part| part == std::path::Component::ParentDir)) {
         return Err(format!("{PLAN_FILE}: a group outside {BUILD_DIR}"));
     }
-    let stage = stage_name(tag, std::env::var("CI_PIPELINE_ID").ok().as_deref());
+    let stage = stage_name(tag, ci.run());
     let mut entries = Vec::new();
     for group in &groups {
         for folder in build_folders(group)? {
@@ -764,24 +757,6 @@ mod tests {
         for bad in ["26.10.4", "v0.3.15", "v26.13.1", "release-26.10.4", "v26.10.4-rc1", ""] {
             assert!(tag_version(bad).is_err(), "{bad}");
         }
-    }
-
-    #[test]
-    fn a_ci_job_releases_only_its_own_tag() {
-        assert_eq!(tag_problem(Some("true"), Some("v26.10.4"), "v26.10.4"), None);
-        assert!(tag_problem(Some("true"), None, "v26.10.4").unwrap().contains("none"), "a branch pipeline");
-        assert!(tag_problem(Some("true"), Some("v26.10.3"), "v26.10.4").is_some());
-        assert_eq!(tag_problem(None, None, "v26.10.4"), None, "outside CI");
-    }
-
-    #[test]
-    fn only_a_protected_pipeline_reads_the_release_secrets() {
-        use crate::release::ci_secrets_problem;
-        assert_eq!(ci_secrets_problem(Some("true"), Some("true")), None);
-        let refused = ci_secrets_problem(Some("true"), Some("false")).unwrap();
-        assert!(refused.contains("protected") && refused.contains("nothing was signed"), "{refused}");
-        assert!(ci_secrets_problem(Some("true"), None).is_some(), "unknown means not protected");
-        assert_eq!(ci_secrets_problem(None, None), None, "outside CI");
     }
 
     #[test]

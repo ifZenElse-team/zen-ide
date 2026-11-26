@@ -7,6 +7,7 @@ mod bench;
 mod calendar;
 mod changelog;
 mod ci;
+mod ci_host;
 mod comments;
 mod cross;
 mod deb;

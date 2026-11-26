@@ -7,8 +7,7 @@ pub(crate) fn run(command: &mut Command, what: &str) -> Result<(), String> {
 }
 
 pub(crate) fn config_dir() -> Result<PathBuf, String> {
-    let env = |name: &str| std::env::var(name).ok();
-    if let Some(problem) = ci_secrets_problem(env("GITLAB_CI").as_deref(), env("CI_COMMIT_REF_PROTECTED").as_deref()) {
+    if let Some(problem) = crate::ci_host::Ci::from_environment().secrets_problem() {
         return Err(problem);
     }
     let base = std::env::var_os("XDG_CONFIG_HOME")
@@ -16,14 +15,6 @@ pub(crate) fn config_dir() -> Result<PathBuf, String> {
         .or_else(|| std::env::var_os("HOME").map(|home| PathBuf::from(home).join(".config")))
         .ok_or("cannot find the home directory")?;
     Ok(base.join("zen-ide"))
-}
-
-pub(crate) fn ci_secrets_problem(gitlab_ci: Option<&str>, protected: Option<&str>) -> Option<String> {
-    (gitlab_ci == Some("true") && protected != Some("true")).then(|| {
-        "the release secrets are used only by a pipeline of a protected tag (ADR-0171): this job's ref is not \
-         protected (CI_COMMIT_REF_PROTECTED is not true); nothing was signed or sent"
-            .to_owned()
-    })
 }
 
 pub(crate) struct Secrets {
@@ -34,16 +25,12 @@ pub(crate) struct Secrets {
 
 pub(crate) fn secrets() -> Result<Secrets, String> {
     let env = |name: &str| std::env::var(name).ok().filter(|value| !value.trim().is_empty());
-    if let Some(problem) = ci_secrets_problem(env("GITLAB_CI").as_deref(), env("CI_COMMIT_REF_PROTECTED").as_deref()) {
+    let ci = crate::ci_host::Ci::from_environment();
+    if let Some(problem) = ci.secrets_problem() {
         return Err(problem);
     }
-    if env("GITLAB_CI").as_deref() == Some("true") || env("ZEN_PUBLISHER_KEY").is_some() {
-        let missing = |name: &str| {
-            format!(
-                "{name} is not set: GitLab gives the release variables only to the jobs of the `release` environment \
-                 in a pipeline of a protected tag (docs/releasing.md)"
-            )
-        };
+    if ci.secrets_come_from_variables() || env("ZEN_PUBLISHER_KEY").is_some() {
+        let missing = |name: &str| format!("{name} is not set: {}", ci.where_variables_live());
         env("ZEN_PUBLISHER_KEY").ok_or_else(|| missing("ZEN_PUBLISHER_KEY"))?;
         return Ok(Secrets {
             server: env("ZEN_RELEASES_SERVER").ok_or_else(|| missing("ZEN_RELEASES_SERVER"))?,
