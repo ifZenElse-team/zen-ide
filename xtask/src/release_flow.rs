@@ -384,9 +384,10 @@ fn plan(record: &BuildRecord) -> Vec<(&'static str, String)> {
 }
 
 pub(crate) fn build_command(args: &[String]) -> Result<(), String> {
-    let usage = "usage: cargo xtask release-build (ides <YY.M.N> [--allow-version] | toolbox <version> | plugin <id> <version>) [--platform macos|linux|windows|all] [--out <dir>]";
+    let usage = "usage: cargo xtask release-build (ides <YY.M.N> [--allow-version] | toolbox <version> | plugin <id> <version>) [--platform macos|linux|windows|all] [--out <dir>]; or a trial build of one product, never published: release-build <ide|toolbox> <version> --trial [--platform ...] [--out <dir>]";
     let mut words = Vec::new();
     let mut out = None;
+    let mut trial = false;
     let mut platform = "macos".to_owned();
     let mut args = args.iter();
     while let Some(arg) = args.next() {
@@ -394,11 +395,15 @@ pub(crate) fn build_command(args: &[String]) -> Result<(), String> {
             "--out" => out = Some(PathBuf::from(args.next().ok_or(usage)?)),
             "--platform" => platform = args.next().ok_or(usage)?.clone(),
             "--allow-version" => words.push(arg.clone()),
+            "--trial" => trial = true,
             option if option.starts_with("--") => return Err(format!("unknown option `{option}`; {usage}")),
             word => words.push(word.to_owned()),
         }
     }
     let platforms = crate::native::platforms(&platform)?;
+    if trial {
+        return trial_build(&words, &platforms, out);
+    }
     if words.first().is_some_and(|word| word == "ides" || crate::release::IDES.iter().any(|ide| ide.0 == word)) {
         let release = crate::release::ides_arguments(&words, "release-build")?;
         let version = release.version.clone();
@@ -430,14 +435,51 @@ pub(crate) fn build_command(args: &[String]) -> Result<(), String> {
             for platform in platforms {
                 let folder = crate::native::folder(&parent, "toolbox", version, platform);
                 match platform {
-                    crate::native::Platform::Macos => crate::release::build_toolbox(version, None, &folder)?,
-                    other => crate::native::build(&toolbox, version, other, &folder)?,
+                    crate::native::Platform::Macos => crate::release::build_toolbox(version, None, &folder, false)?,
+                    other => crate::native::build(&toolbox, version, other, &folder, false)?,
                 }
             }
             Ok(())
         }
         _ => Err(usage.to_owned()),
     }
+}
+
+pub(crate) fn trial_product(words: &[String]) -> Result<(crate::cross::Product, String), String> {
+    let usage = "a trial build is of one product: release-build <ide|toolbox> <version> --trial";
+    let [id, version] = words else { return Err(usage.to_owned()) };
+    let product = crate::cross::product(id).map_err(|error| format!("{error}; {usage}"))?;
+    if semver::Version::parse(version).is_err() {
+        return Err(format!("`{version}` is not a version such as 0.0.0; {usage}"));
+    }
+    Ok((product, version.clone()))
+}
+
+fn trial_build(words: &[String], platforms: &[crate::native::Platform], out: Option<PathBuf>) -> Result<(), String> {
+    let (product, version) = trial_product(words)?;
+    let parent = match out {
+        Some(out) => std::path::absolute(&out).map_err(|error| error.to_string())?,
+        None => default_out("trial", &version)?,
+    };
+    println!(
+        "==> A trial build of {} {version}: not a release. Skipped: the source check, the quality gate, the version \
+         check against the published releases and the release notes. build.json records the gate as `{}`, so \
+         release-publish refuses it.",
+        product.name,
+        crate::release::TRIAL_GATE
+    );
+    for &platform in platforms {
+        let folder = crate::native::folder(&parent, product.id, &version, platform);
+        let notes = Some(crate::release::TRIAL_NOTES);
+        match platform {
+            crate::native::Platform::Macos if product.id == "toolbox" => {
+                crate::release::build_toolbox(&version, notes, &folder, true)?;
+            }
+            crate::native::Platform::Macos => crate::release::build_ide(product.id, &version, notes, &folder, true)?,
+            other => crate::native::build(&product, &version, other, &folder, true)?,
+        }
+    }
+    Ok(())
 }
 
 pub(crate) fn native_published(
@@ -710,6 +752,23 @@ mod tests {
         record.files.clear();
         save(dir.path(), &record);
         assert!(verified(dir.path()).unwrap_err().contains("no files"));
+    }
+
+    #[test]
+    fn a_trial_build_is_of_one_product_and_is_never_published() {
+        let words = |words: &[&str]| words.iter().map(|word| (*word).to_owned()).collect::<Vec<_>>();
+        let (product, version) = trial_product(&words(&["gogarden", "0.0.0"])).unwrap();
+        assert_eq!((product.id, product.package, version.as_str()), ("gogarden", "go-garden", "0.0.0"));
+        assert_eq!(trial_product(&words(&["toolbox", "0.3.20"])).unwrap().0.binary, "zen-toolbox");
+        for refused in [&["ides", "26.11.1"][..], &["plugin", "json", "0.1.2"], &["gogarden"], &["gogarden", "next"]] {
+            assert!(trial_product(&words(refused)).err().unwrap().contains("--trial"), "{refused:?}");
+        }
+        let dir = tempfile::tempdir().unwrap();
+        let mut record = record();
+        record.gate = crate::release::TRIAL_GATE.to_owned();
+        record.files = vec![write(dir.path(), "a.wasm", b"module")];
+        save(dir.path(), &record);
+        assert!(verified(dir.path()).unwrap_err().contains("it must have passed"));
     }
 
     #[test]

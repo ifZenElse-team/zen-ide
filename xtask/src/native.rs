@@ -89,18 +89,25 @@ pub(crate) fn cargo_build(platform: Platform, package: &str) -> Vec<String> {
     args
 }
 
-pub(crate) fn build(product: &Product, version: &str, platform: Platform, out: &Path) -> Result<(), String> {
+pub(crate) fn build(
+    product: &Product,
+    version: &str,
+    platform: Platform,
+    out: &Path,
+    trial: bool,
+) -> Result<(), String> {
     if platform == Platform::Macos {
         return Err("the macOS build is the application bundle, not this one".to_owned());
     }
-    let notes = crate::release::notes(None, &crate::changelog::product_path(product.id), version)?;
+    let given = trial.then_some(crate::release::TRIAL_NOTES);
+    let notes = crate::release::notes(given, &crate::changelog::product_path(product.id), version)?;
     if product.id != "toolbox" {
         bundled_plugins(product.id)?;
     }
     if let Some(problem) = tools_problem(platform) {
         return Err(problem);
     }
-    crate::release::gate()?;
+    crate::release::gate_unless(trial)?;
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
     let target_dir = crate::bench::target_dir(&cargo)?;
     println!("==> Building {} {version} for {} (natively)", product.name, platform.id());
@@ -177,6 +184,9 @@ pub(crate) fn build(product: &Product, version: &str, platform: Platform, out: &
     let kind = if product.id == "toolbox" { "toolbox" } else { "ide" };
     let mut record = crate::release_flow::BuildRecord::new(kind, product.id, product.name, version, notes);
     record.platform = platform.id();
+    if trial {
+        record.gate = crate::release::TRIAL_GATE.to_owned();
+    }
     crate::release_flow::finish(out, record, &[(archive, "update"), download])
 }
 
