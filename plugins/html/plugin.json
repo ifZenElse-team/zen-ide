@@ -1,0 +1,5 @@
+{
+  "name": "HTML",
+  "description": "HTML support: highlighting of tags, attributes, entities, comments and the doctype, folding, the element outline, completion of tags, attributes and values, Emmet abbreviations, closing tags as you type, and colour previews for styles.",
+  "extensions": ["html", "htm", "xhtml"]
+}

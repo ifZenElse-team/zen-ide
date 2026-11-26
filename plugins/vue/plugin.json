@@ -1,0 +1,43 @@
+{
+  "name": "Vue",
+  "description": "Vue single-file components: highlighting of the template with directives and {{ }} interpolations, the script as JavaScript or TypeScript and the style as CSS or SCSS by their lang; folding, the Structure view, completion of directives and blocks, colour previews, and the Vue Language Server for problems, completion, navigation, rename and formatting.",
+  "extensions": ["vue"],
+  "fileTemplates": {
+    "templates": [
+      {
+        "name": "Vue Single File Component",
+        "extension": "vue",
+        "reformat": false,
+        "text": "<script setup lang=\"ts\">\n\n</script>\n\n<template>\n  <div class=\"${NAME}\"></div>\n</template>\n\n<style scoped>\n\n</style>\n"
+      }
+    ]
+  },
+  "serverPlugins": [
+    {
+      "server": "typescript-language-server",
+      "name": "@vue/typescript-plugin",
+      "package": "@vue/typescript-plugin@2.2.12",
+      "languages": ["vue"],
+      "when": { "packages": ["vue"] }
+    }
+  ],
+  "languageServers": [
+    {
+      "id": "vue-language-server",
+      "name": "Vue Language Server",
+      "languages": ["vue"],
+      "extensions": ["vue"],
+      "command": "vue-language-server",
+      "args": ["--stdio"],
+      "versionArgs": ["--version"],
+      "initializationOptions": {
+        "typescript": { "tsdk": "${nodeModulesFolder:typescript/lib/typescript.js}" },
+        "vue": { "hybridMode": false }
+      },
+      "install": {
+        "kind": "npm",
+        "package": "@vue/language-server@2.2.12 typescript@5"
+      }
+    }
+  ]
+}

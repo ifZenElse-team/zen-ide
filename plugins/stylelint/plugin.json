@@ -1,0 +1,43 @@
+{
+  "name": "Stylelint",
+  "description": "Stylelint on save: offered when a project has a Stylelint configuration or depends on stylelint; Run stylelint --fix on save fixes CSS, SCSS and Less files with the project's own Stylelint.",
+  "extensions": [],
+  "project": {
+    "markers": {
+      "files": [
+        ".stylelintrc",
+        ".stylelintrc.json",
+        ".stylelintrc.yaml",
+        ".stylelintrc.yml",
+        ".stylelintrc.js",
+        ".stylelintrc.mjs",
+        ".stylelintrc.cjs",
+        "stylelint.config.js",
+        "stylelint.config.mjs",
+        "stylelint.config.cjs"
+      ],
+      "packages": [
+        "stylelint"
+      ]
+    },
+    "formatters": [
+      {
+        "id": "stylelint",
+        "name": "Stylelint",
+        "command": "stylelint",
+        "args": [
+          "--fix",
+          "--stdin-filename",
+          "${file}"
+        ],
+        "extensions": [
+          "css",
+          "scss",
+          "less"
+        ],
+        "onSave": "codeQuality.stylelint.onSave",
+        "fixer": true
+      }
+    ]
+  }
+}

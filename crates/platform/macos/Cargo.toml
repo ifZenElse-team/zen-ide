@@ -1,0 +1,33 @@
+[package]
+name = "zen-macos"
+description = "Zen Platform, layer L0: the macOS application hooks that have no safe binding (ADR-0079): asking before a system quit; the title-bar double-click setting."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+# The Objective-C runtime and AppKit, on macOS only; elsewhere the crate is plain Rust and installs
+# nothing. The same versions Zen Toolbox already uses.
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2.workspace = true
+objc2-app-kit = { workspace = true, features = ["NSApplication", "NSResponder"] }
+# NSUserDefaults, read through its safe binding: the title-bar double-click setting.
+objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSUserDefaults", "NSString", "NSObject"] }
+
+# The one crate allowed `unsafe` (ADR-0079): the workspace lints, copied, with `unsafe_code` at
+# "deny" instead of "forbid", so that the single macOS module calling the Objective-C runtime can
+# allow it for itself. Every other module keeps the deny, and every unsafe block needs `// SAFETY:`.
+[lints.rust]
+unsafe_code = "deny"
+unreachable_pub = "warn"
+unused_qualifications = "warn"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+dbg_macro = "warn"
+todo = "warn"
+unimplemented = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+undocumented_unsafe_blocks = "deny"

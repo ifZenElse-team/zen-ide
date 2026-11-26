@@ -1,0 +1,3 @@
+# Zen UI: the settings pages of built-in modules and the settings inspectors declare. English is the source language (ADR-0024).
+settings-declared-network = Uses the network: { $hosts }. Turned off, it contacts nothing.
+settings-module-loading = Loading the page…

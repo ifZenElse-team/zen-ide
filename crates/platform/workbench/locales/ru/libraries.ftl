@@ -1,0 +1,11 @@
+workbench-library-read-only = { $file } принадлежит библиотеке, его нельзя изменить
+workbench-library-decompiled-read-only = { $file } декомпилирован из class-файла, его нельзя изменить
+workbench-library-no-contents = Языковой сервер не показывает { $uri }
+workbench-library-decompiled-notice = Объявления { $class }, прочитанные из class-файла: исходники не найдены.
+workbench-library-no-build-tool = Проект собирается не Maven и не Gradle
+workbench-library-not-a-library = { $path } не библиотека Maven или Gradle
+workbench-library-sources-task = Загрузка исходников
+workbench-library-sources-task-one = Загрузка исходников { $library }
+workbench-library-gradle-task = Загрузка библиотек Gradle
+workbench-generated-read-only = { $file } создан Maven для чтения, его нельзя изменить
+workbench-output-read-only = { $file } — вывод `{ $command }`, созданный для чтения; его нельзя изменить или сохранить

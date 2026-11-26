@@ -1,0 +1,31 @@
+{
+  "name": "DuckDB",
+  "description": "DuckDB in the Database workspace: database files and in-memory databases, Parquet, CSV and JSON files read with SQL, databases, schemas, tables, views and columns in the navigator, typed results, transactions, Cancel and export, through the zen-db-duckdb driver program, which drives the duckdb command-line program you install.",
+  "extensions": [],
+  "databaseDrivers": [
+    {
+      "id": "duckdb",
+      "name": "DuckDB",
+      "icon": "database",
+      "protocol": 1,
+      "process": "perConnection",
+      "capabilities": {
+        "models": ["relational"],
+        "language": "sql:duckdb",
+        "transactions": true,
+        "catalogs": true,
+        "schemas": true,
+        "nodeKinds": ["catalog", "schema", "table", "view", "column"],
+        "serverCancel": true,
+        "uriSchemes": ["duckdb"],
+        "settings": [
+          { "key": "file", "kind": "path" },
+          { "key": "program", "kind": "path" }
+        ]
+      },
+      "readVerbs": ["SELECT", "WITH", "FROM", "VALUES", "TABLE", "SHOW", "DESCRIBE", "SUMMARIZE", "EXPLAIN", "PIVOT", "UNPIVOT"],
+      "guardsReadOnly": false,
+      "platforms": {}
+    }
+  ]
+}

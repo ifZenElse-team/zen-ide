@@ -1,0 +1,32 @@
+{
+  "name": "Gradle",
+  "description": "Gradle projects: offered when a project has settings.gradle(.kts) or build.gradle(.kts); the Gradle tool window (the build's projects and tasks, run a task, Reload All Gradle Projects), run configurations of kind Gradle with the project's gradlew first, and Groovy build scripts (*.gradle) highlighted, folded and outlined. Kotlin build scripts (*.gradle.kts) are read by the Kotlin plug-in.",
+  "extensions": [
+    "gradle"
+  ],
+  "project": {
+    "markers": {
+      "files": [
+        "settings.gradle",
+        "settings.gradle.kts",
+        "build.gradle",
+        "build.gradle.kts"
+      ]
+    },
+    "build": {
+      "files": [
+        "settings.gradle",
+        "settings.gradle.kts",
+        "build.gradle",
+        "build.gradle.kts"
+      ],
+      "reload": "gradle.project.reload",
+      "moduleFiles": [
+        "settings.gradle.kts",
+        "settings.gradle",
+        "build.gradle.kts",
+        "build.gradle"
+      ]
+    }
+  }
+}

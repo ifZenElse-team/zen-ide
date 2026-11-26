@@ -1,0 +1,58 @@
+# ZEN_SITE_ADDRESS lists the addresses Caddy serves, separated by ", ". The default serves HTTPS on
+# ide.ifzenelse.space (automatic certificate) and plain HTTP, without a redirect, on the domain, for
+# the clients released before HTTPS (ADR-0040). The production server adds its own addresses.
+# Listing an http:// address explicitly is what turns Caddy's HTTP-to-HTTPS redirect off for it.
+{$ZEN_SITE_ADDRESS:ide.ifzenelse.space, http://ide.ifzenelse.space} {
+	encode gzip
+
+	# The publishing API needs its token encrypted: over plain HTTP only the health check answers.
+	@plain_api {
+		protocol http
+		path /api/*
+		not path /api/v1/health
+	}
+	handle @plain_api {
+		respond "the publishing API is served over HTTPS only" 403
+	}
+
+	# The release server: the signed manifest, artifacts and the publishing API.
+	@releases path /releases/* /api/*
+	handle @releases {
+		reverse_proxy releases:8787
+	}
+
+	# The Inter font bundled in assets/fonts (SIL Open Font License, OFL-Inter.txt next to it).
+	handle /fonts/* {
+		root * /srv
+		header Cache-Control "public, max-age=604800"
+		file_server
+	}
+
+	# Product icons from assets/icons (the Zen icon set).
+	handle /icons/* {
+		root * /srv
+		header Cache-Control "public, max-age=3600"
+		file_server
+	}
+
+	# Everything else: the website. A release made live by its pipeline's button (ADR-0171) brings
+	# its own, staged through the release server and switched by the link site/current in its data
+	# folder; until the first such release, the website deployed with the server
+	# (deploy/releases/site, its docs/ built by `cargo xtask site-docs`).
+	@live file {
+		root /srv/site-live
+		try_files /current/index.html
+	}
+	handle @live {
+		root * /srv/site-live/current
+		header Cache-Control "public, max-age=300"
+		header /install.sh Content-Type "text/plain; charset=utf-8"
+		file_server
+	}
+	handle {
+		root * /srv/site
+		header Cache-Control "public, max-age=300"
+		header /install.sh Content-Type "text/plain; charset=utf-8"
+		file_server
+	}
+}

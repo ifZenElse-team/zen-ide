@@ -1,0 +1,28 @@
+[
+  {
+    "name": "Go File",
+    "extension": "go",
+    "liveTemplates": true,
+    "reformat": false,
+    "markers": ["go.mod", "go.work", "*.go"],
+    "text": "package ${GO_PACKAGE_NAME}\n\n#[[$END$]]#"
+  },
+  {
+    "name": "Simple Application",
+    "extension": "go",
+    "liveTemplates": true,
+    "reformat": false,
+    "kindOf": "Go File",
+    "markers": ["go.mod", "go.work", "*.go"],
+    "text": "package main\n\nfunc main() {\n\t#[[$END$]]#\n}\n"
+  },
+  {
+    "name": "Go Test File",
+    "extension": "go",
+    "fileName": "${NAME}_test",
+    "liveTemplates": true,
+    "reformat": false,
+    "markers": ["go.mod", "go.work", "*.go"],
+    "text": "package ${GO_PACKAGE_NAME_WITH_TEST_SUFFIX}\n\n#[[$END$]]#"
+  }
+]

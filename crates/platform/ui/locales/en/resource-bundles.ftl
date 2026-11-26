@@ -1,0 +1,17 @@
+bundle-default-locale = Default
+bundle-tab-title = Resource Bundle '{ $name }'
+bundle-tree-label = Resource Bundle '{ $name }'
+bundle-add-key = New Property
+bundle-rename-key = Rename Property
+bundle-remove-key = Remove Property
+bundle-undo = Undo
+bundle-filter = Filter keys and values
+bundle-missing-only = Missing translations only
+bundle-summary = { $keys } keys, { $incomplete } incomplete
+bundle-new-key = New key:
+bundle-rename-to = Rename { $key } to:
+bundle-key = Key
+bundle-empty = The bundle has no keys yet: add one with New Property.
+bundle-nothing-shown = No key matches the filter.
+bundle-empty-value = empty
+bundle-missing = missing

@@ -1,0 +1,36 @@
+{
+  "name": "SQL Server",
+  "description": "Microsoft SQL Server and Azure SQL in the Database workspace: the navigator, consoles, results that can be edited by their primary key, transactions, Cancel and export, through the zen-db-sqlserver driver program. TLS through rustls with RustCrypto, negotiated by the server or before anything else (TDS 8.0).",
+  "extensions": [],
+  "databaseDrivers": [
+    {
+      "id": "sqlserver",
+      "name": "SQL Server",
+      "icon": "database",
+      "protocol": 1,
+      "process": "perConnection",
+      "defaultPort": 1433,
+      "capabilities": {
+        "models": ["relational"],
+        "language": "sql:sqlserver",
+        "transactions": true,
+        "isolationLevels": ["READ UNCOMMITTED", "READ COMMITTED", "REPEATABLE READ", "SNAPSHOT", "SERIALIZABLE"],
+        "catalogs": true,
+        "schemas": true,
+        "nodeKinds": ["catalog", "schema", "table", "view", "column"],
+        "serverCancel": true,
+        "bindParameters": true,
+        "rowIdentity": "primaryKey",
+        "serverPaging": true,
+        "uriSchemes": ["sqlserver"],
+        "password": true,
+        "settings": [
+          { "key": "authentication", "kind": "choice", "choices": ["password", "accessToken"], "default": "password" },
+          { "key": "strict", "kind": "bool", "default": "false" }
+        ],
+        "introspection": true
+      },
+      "platforms": {}
+    }
+  ]
+}

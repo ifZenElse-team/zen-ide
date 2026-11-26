@@ -1,0 +1,11 @@
+[package]
+name = "zen-mascot"
+description = "Zen Platform, layer L0: Kozō, the pixel-art mascot of the Zen IDE family, as grids of inks."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lints]
+workspace = true

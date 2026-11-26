@@ -1,0 +1,21 @@
+[
+  { "language": "go", "abbreviation": "for", "description": "go-template-for", "text": "for $CONDITION$ {\n\t$END$\n}" },
+  { "language": "go", "abbreviation": "fori", "description": "go-template-fori", "text": "for $INDEX$ := 0; $INDEX$ < $LIMIT$; $INDEX$++ {\n\t$END$\n}", "variables": [{ "name": "INDEX", "default": "i" }, { "name": "LIMIT", "default": "n" }] },
+  { "language": "go", "abbreviation": "forr", "description": "go-template-forr", "text": "for $KEY$, $VALUE$ := range $COLLECTION$ {\n\t$END$\n}", "variables": [{ "name": "COLLECTION" }, { "name": "KEY", "default": "_" }, { "name": "VALUE", "default": "item" }] },
+  { "language": "go", "abbreviation": "if", "description": "go-template-if", "text": "if $CONDITION$ {\n\t$END$\n}" },
+  { "language": "go", "abbreviation": "ifelse", "description": "go-template-ifelse", "text": "if $CONDITION$ {\n\t$THEN$\n} else {\n\t$END$\n}" },
+  { "language": "go", "abbreviation": "iferr", "description": "go-template-iferr", "text": "if err != nil {\n\treturn $RESULT$\n}\n$END$", "variables": [{ "name": "RESULT", "default": "err" }] },
+  { "language": "go", "abbreviation": "func", "description": "go-template-func", "text": "func $NAME$($PARAMETERS$) $RESULTS$ {\n\t$END$\n}" },
+  { "language": "go", "abbreviation": "meth", "description": "go-template-meth", "text": "func ($RECEIVER$ *$TYPE$) $NAME$($PARAMETERS$) $RESULTS$ {\n\t$END$\n}", "variables": [{ "name": "TYPE" }, { "name": "RECEIVER", "default": "r" }, { "name": "NAME" }] },
+  { "language": "go", "abbreviation": "main", "description": "go-template-main", "text": "func main() {\n\t$END$\n}" },
+  { "language": "go", "abbreviation": "test", "description": "go-template-test", "text": "func Test$NAME$(t *testing.T) {\n\t$END$\n}", "imports": ["testing"] },
+  { "language": "go", "abbreviation": "bench", "description": "go-template-bench", "text": "func Benchmark$NAME$(b *testing.B) {\n\tfor b.Loop() {\n\t\t$END$\n\t}\n}", "imports": ["testing"] },
+  { "language": "go", "abbreviation": "struct", "description": "go-template-struct", "text": "type $NAME$ struct {\n\t$END$\n}" },
+  { "language": "go", "abbreviation": "interface", "description": "go-template-interface", "text": "type $NAME$ interface {\n\t$END$\n}" },
+  { "language": "go", "abbreviation": "switch", "description": "go-template-switch", "text": "switch $VALUE$ {\ncase $CASE$:\n\t$END$\n}" },
+  { "language": "go", "abbreviation": "select", "description": "go-template-select", "text": "select {\ncase $CASE$:\n\t$END$\n}" },
+  { "language": "go", "abbreviation": "go", "description": "go-template-go", "text": "go func() {\n\t$END$\n}()" },
+  { "language": "go", "abbreviation": "defer", "description": "go-template-defer", "text": "defer func() {\n\t$END$\n}()" },
+  { "language": "go", "abbreviation": "print", "description": "go-template-print", "text": "fmt.Println($VALUE$)$END$", "imports": ["fmt"] },
+  { "language": "go", "abbreviation": "printf", "description": "go-template-printf", "text": "fmt.Printf(\"$FORMAT$\\n\", $ARGUMENTS$)$END$", "variables": [{ "name": "FORMAT", "default": "%v" }], "imports": ["fmt"] }
+]

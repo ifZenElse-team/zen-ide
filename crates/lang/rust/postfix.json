@@ -1,0 +1,20 @@
+[
+  { "language": "rust", "key": "let", "description": "rust-postfix-let", "text": "let $NAME$ = $EXPR$;$END$", "variables": [{ "name": "NAME", "default": "value" }] },
+  { "language": "rust", "key": "if", "description": "rust-postfix-if", "text": "if $EXPR$ {\n\t$END$\n}" },
+  { "language": "rust", "key": "else", "description": "rust-postfix-else", "text": "if !$EXPR$ {\n\t$END$\n}" },
+  { "language": "rust", "key": "not", "description": "rust-postfix-not", "text": "!$EXPR$$END$" },
+  { "language": "rust", "key": "while", "description": "rust-postfix-while", "text": "while $EXPR$ {\n\t$END$\n}" },
+  { "language": "rust", "key": "for", "description": "rust-postfix-for", "text": "for $ITEM$ in $EXPR$ {\n\t$END$\n}", "variables": [{ "name": "ITEM", "default": "item" }] },
+  { "language": "rust", "key": "match", "description": "rust-postfix-match", "text": "match $EXPR$ {\n\t$END$\n}" },
+  { "language": "rust", "key": "ifl", "description": "rust-postfix-ifl", "text": "if let Some($VALUE$) = $EXPR$ {\n\t$END$\n}", "variables": [{ "name": "VALUE", "default": "value" }] },
+  { "language": "rust", "key": "ref", "description": "rust-postfix-ref", "text": "&$EXPR$$END$" },
+  { "language": "rust", "key": "refm", "description": "rust-postfix-refm", "text": "&mut $EXPR$$END$" },
+  { "language": "rust", "key": "some", "description": "rust-postfix-some", "text": "Some($EXPR$)$END$" },
+  { "language": "rust", "key": "ok", "description": "rust-postfix-ok", "text": "Ok($EXPR$)$END$" },
+  { "language": "rust", "key": "err", "description": "rust-postfix-err", "text": "Err($EXPR$)$END$" },
+  { "language": "rust", "key": "box", "description": "rust-postfix-box", "text": "Box::new($EXPR$)$END$" },
+  { "language": "rust", "key": "dbg", "description": "rust-postfix-dbg", "text": "dbg!($EXPR$)$END$" },
+  { "language": "rust", "key": "println", "description": "rust-postfix-println", "text": "println!(\"{:?}\", $EXPR$);$END$" },
+  { "language": "rust", "key": "return", "description": "rust-postfix-return", "text": "return $EXPR$;$END$" },
+  { "language": "rust", "key": "par", "description": "rust-postfix-par", "text": "($EXPR$)$END$" }
+]

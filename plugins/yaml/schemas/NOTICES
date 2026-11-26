@@ -1,0 +1,15 @@
+Schemas shipped in the YAML plug-in
+
+github/workflow.json: the JSON Schema of GitHub workflow files, from JSON Schema Store
+Source: https://github.com/SchemaStore/schemastore/blob/498a42a4f41f467d8cdc36a5b5c546605a8935c3/src/schemas/json/github-workflow.json
+Licence: Apache-2.0
+JSON Schema Store
+Copyright 2015-Current Mads Kristensen and Contributors
+
+kubernetes/all.json, kubernetes/_definitions.json: the standalone strict JSON Schemas of Kubernetes 1.34.1, generated from the Kubernetes OpenAPI specification
+Source: https://github.com/yannh/kubernetes-json-schema/tree/e6b2bfea83d04b8cd25276f7db6f0a464efd9f75/v1.34.1-standalone-strict
+Licence: Apache-2.0
+Kubernetes JSON Schema
+Copyright (C) 2017 Gareth Rushgrove
+Copyright (C) 2017 Yanh Hamon
+Generated from the OpenAPI specification of Kubernetes, Copyright The Kubernetes Authors, Apache-2.0

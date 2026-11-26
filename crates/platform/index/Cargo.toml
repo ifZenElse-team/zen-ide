@@ -1,0 +1,22 @@
+[package]
+name = "zen-index"
+description = "Zen Platform, layer L2: indexes of a project: file names and the trigrams of their text; symbols later."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+zen-text.workspace = true
+zen-vfs.workspace = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+ignore.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+tempfile.workspace = true
+
+[lints]
+workspace = true

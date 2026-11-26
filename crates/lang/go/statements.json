@@ -1,0 +1,6 @@
+[
+  {
+    "language": "go",
+    "blocks": ["if", "else", "for", "switch", "select", "func", "struct", "interface"]
+  }
+]

@@ -1,0 +1,812 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zen IDE</title>
+<meta name="description" content="Zen IDE: fast, native, open-source IDEs in pure Rust, built for working with AI agents, by ifzenelse. Early development.">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0E0F15">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238B7CF8'/%3E%3Cstop offset='1' stop-color='%234338CA'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='url(%23g)'/%3E%3Cpath d='M35 16.3A16 16 0 1 1 23.4 18.5' fill='none' stroke='%23fff' stroke-width='5.4' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="preload" href="/fonts/Inter-Regular.ttf" as="font" type="font/ttf" crossorigin>
+<style>
+/* Inter (SIL Open Font License 1.1, see /fonts/OFL-Inter.txt), served from this host. */
+@font-face { font-family: "Inter"; src: url("/fonts/Inter-Regular.ttf") format("truetype"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("/fonts/Inter-SemiBold.ttf") format("truetype"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Inter"; src: url("/fonts/Inter-Bold.ttf") format("truetype"); font-weight: 700; font-display: swap; }
+
+:root {
+  --ink-top: #24203A;
+  --ink-bottom: #0E0F15;
+  --text: #EEEFF4;
+  --text-2: #9AA0B0;
+  --link: #A9ACFF;
+  --accent-from: #7C7FF7;
+  --accent-to: #5B5EE8;
+  --panel: rgba(255, 255, 255, 0.04);
+  --edge: rgba(255, 255, 255, 0.09);
+  --font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+* { box-sizing: border-box; }
+html { background: var(--ink-bottom); }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text);
+  background:
+    radial-gradient(60rem 36rem at 50% -8rem, rgba(124, 127, 247, 0.22), transparent 70%),
+    linear-gradient(180deg, var(--ink-top) 0%, #171824 38%, #12131B 70%, var(--ink-bottom) 100%);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--link); text-underline-offset: 3px; }
+a:hover { color: #C6C8FF; }
+:focus-visible { outline: 2px solid var(--link); outline-offset: 3px; border-radius: 6px; }
+
+.wrap { max-width: 880px; margin: 0 auto; padding: 0 16px; }
+
+header.hero { text-align: center; padding: 88px 0 40px; }
+.logo { width: 88px; height: 88px; display: block; margin: 0 auto 28px; filter: drop-shadow(0 12px 32px rgba(91, 94, 232, 0.45)); }
+h1 { margin: 0; font-size: clamp(2.4rem, 7vw, 3.6rem); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; }
+.tagline { margin: 16px auto 0; max-width: 34rem; font-size: clamp(1.05rem, 2.6vw, 1.25rem); color: var(--text); opacity: 0.92; }
+.status {
+  display: inline-flex; align-items: center; gap: 8px;
+  margin-top: 24px; padding: 6px 14px;
+  font-size: 0.875rem; color: var(--text-2);
+  background: var(--panel); border: 1px solid var(--edge); border-radius: 999px;
+}
+.status::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #E8B04B; box-shadow: 0 0 8px rgba(232, 176, 75, 0.6); }
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 20px 60px rgba(0, 0, 0, 0.25);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+
+.download { padding: 32px 28px; text-align: center; margin-top: 16px; }
+.download h2 { margin: 0 0 6px; font-size: 1.25rem; font-weight: 600; }
+.download .lead { margin: 0 auto 24px; max-width: 32rem; color: var(--text-2); }
+.step { margin: 0 0 10px; font-size: 0.8rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--link); }
+.cmd {
+  display: flex; align-items: stretch; gap: 0;
+  max-width: 40rem; margin: 0 auto; text-align: left;
+  background: rgba(8, 9, 14, 0.7); border: 1px solid var(--edge); border-radius: 12px; overflow: hidden;
+}
+.cmd code {
+  flex: 1; min-width: 0; padding: 14px 16px; overflow-x: auto; white-space: nowrap;
+  font: 0.92rem/1.4 ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; color: var(--text);
+}
+.copy {
+  flex: none; padding: 0 20px; border: 0; cursor: pointer;
+  font: 600 0.95rem/1 var(--font); color: #fff;
+  background: linear-gradient(180deg, var(--accent-from), var(--accent-to));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+.copy:hover { filter: brightness(1.08); }
+.hint { margin: 12px auto 0; max-width: 32rem; font-size: 0.9rem; color: var(--text-2); }
+.copied { margin: 6px 0 0; min-height: 1.3em; font-size: 0.85rem; color: var(--link); }
+.secondary { margin-top: 22px; padding-top: 22px; border-top: 1px solid var(--edge); }
+.btn-2 {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 18px; border-radius: 10px;
+  font: 600 0.95rem/1.2 var(--font); color: var(--link); text-decoration: none;
+  background: rgba(255, 255, 255, 0.05); box-shadow: inset 0 0 0 1px var(--edge);
+}
+.btn-2:hover { color: #C6C8FF; background: rgba(255, 255, 255, 0.08); }
+.btn-2 svg { width: 16px; height: 16px; flex: none; }
+.btn-2[aria-disabled="true"] { cursor: default; color: var(--text-2); background: rgba(255, 255, 255, 0.03); }
+.os-tabs { display: inline-flex; gap: 4px; padding: 4px; margin: 0 auto 22px; border-radius: 999px; background: rgba(8, 9, 14, 0.5); border: 1px solid var(--edge); }
+.os-tabs button { font: inherit; font-size: 0.9rem; color: var(--text-2); background: none; border: 0; padding: 6px 16px; border-radius: 999px; cursor: pointer; }
+.os-tabs button:hover { color: var(--text); }
+.os-tabs button[aria-selected="true"] { color: var(--text); background: rgba(124, 127, 247, 0.25); }
+/* Every pane takes the same cell, so the panel is as tall as the tallest one and keeps its size when
+   the tab changes. */
+.os-panes { display: grid; }
+.os-pane { grid-area: 1 / 1; }
+.os-pane[hidden] { display: block; visibility: hidden; }
+.downloads { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
+.meta { margin: 14px 0 0; font-size: 0.9rem; color: var(--text-2); min-height: 1.4em; }
+.note { margin: 20px auto 0; max-width: 32rem; font-size: 0.85rem; color: var(--text-2); }
+.note kbd { font: inherit; color: var(--text); }
+
+section.ai { margin-top: 56px; }
+section.ai h2 { margin: 0 0 6px; font-size: 1.25rem; font-weight: 600; text-align: center; }
+section.ai .lead { margin: 0 auto 24px; max-width: 38rem; text-align: center; color: var(--text-2); }
+.shot { margin: 0 0 20px; padding: 8px; }
+.shot img { display: block; width: 100%; height: auto; border-radius: 12px; }
+.shot figcaption { padding: 10px 8px 4px; font-size: 0.85rem; color: var(--text-2); text-align: center; }
+.ai-points { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+.ai-points li { padding: 18px 20px; }
+.ai-points strong { display: block; font-weight: 600; margin-bottom: 2px; }
+.ai-points span { color: var(--text-2); font-size: 0.92rem; }
+.ai-points code { font: 0.86em ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; padding: 1px 5px; border-radius: 5px; background: rgba(255, 255, 255, 0.07); }
+/* Kozō, the family's mascot (ADR-0125): pixel art of 40 by 40, scaled up by whole numbers so that
+   every pixel stays square and sharp. The pictures come from `cargo xtask mascot`. */
+section.kozo { margin-top: 56px; }
+section.kozo h2 { margin: 0 0 6px; font-size: 1.25rem; font-weight: 600; text-align: center; }
+section.kozo .lead { margin: 0 auto 28px; max-width: 36rem; text-align: center; color: var(--text-2); }
+.kozo-stage { padding: 28px 16px 24px; }
+.kozo-stage img { display: block; image-rendering: crisp-edges; image-rendering: pixelated; }
+.kozo-main { margin: 0 auto 8px; display: flex; flex-direction: column; align-items: center; }
+.kozo-main img { width: 240px; height: 240px; border-radius: 50%; background: radial-gradient(closest-side, rgba(139, 124, 248, 0.2), transparent); }
+.kozo-main figcaption, .kozo-products .name { margin-top: 6px; font-weight: 600; font-size: 0.95rem; color: var(--text); }
+.kozo-products { list-style: none; margin: 16px 0 0; padding: 20px 0 0; border-top: 1px solid var(--edge); display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 20px 12px; }
+.kozo-products li { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.kozo-products img { width: 160px; height: 160px; }
+.kozo-products .what { font-size: 0.82rem; color: var(--text-2); max-width: 14rem; }
+section.family { margin-top: 56px; }
+section.family h2 { margin: 0 0 6px; font-size: 1.25rem; font-weight: 600; text-align: center; }
+section.family .lead { margin: 0 auto 28px; max-width: 34rem; text-align: center; color: var(--text-2); }
+.products { list-style: none; margin: 0; padding: 24px 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 24px 12px; }
+.products li { display: grid; grid-template-rows: auto auto 1fr auto; justify-items: center; text-align: center; }
+.tile { width: 56px; height: 56px; display: block; }
+.products li:not(.available) .tile { filter: saturate(0.6) brightness(0.8); }
+.products .name { margin-top: 10px; font-weight: 600; font-size: 0.95rem; color: var(--text); }
+.products .lang { font-size: 0.82rem; color: var(--text-2); }
+.products .soon { margin-top: 4px; font-size: 0.72rem; letter-spacing: 0.06em; text-transform: uppercase; color: #8A90A2; }
+.products .soon { white-space: nowrap; align-self: end; }
+.products li.available .soon { color: var(--link); }
+
+.facts { margin: 56px 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.facts li { padding: 18px 20px; }
+.facts strong { display: block; font-weight: 600; margin-bottom: 2px; }
+.facts span { color: var(--text-2); font-size: 0.92rem; }
+
+section.news { margin-top: 56px; }
+section.news > h2 { margin: 0 0 6px; font-size: 1.25rem; font-weight: 600; text-align: center; }
+section.news > .lead { margin: 0 auto 28px; max-width: 34rem; text-align: center; color: var(--text-2); }
+.news-status { margin: 0; padding: 20px 24px; text-align: center; color: var(--text-2); }
+.product-news { padding: 22px 24px 18px; }
+.product-news + .product-news { margin-top: 16px; }
+.product-news > header { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+.product-news > header img { width: 32px; height: 32px; flex: none; }
+.product-news h3 { margin: 0; font-size: 1.05rem; font-weight: 600; }
+.release { padding: 14px 0 6px; }
+.release + .release, details .release:first-of-type { border-top: 1px solid var(--edge); }
+.release h4 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0 0 6px; font-size: 0.98rem; font-weight: 600; }
+.release time { font-size: 0.85rem; font-weight: 400; color: var(--text-2); }
+.release .channel { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--link); }
+.md { font-size: 0.94rem; color: var(--text); overflow-wrap: anywhere; }
+.md h5, .md h6 { margin: 12px 0 4px; font-size: 0.9rem; font-weight: 600; }
+.md p { margin: 6px 0; }
+.md ul { list-style: none; margin: 4px 0; padding: 0; }
+.md li { display: flex; gap: 8px; margin: 3px 0; }
+.md li .mk { flex: none; min-width: 1em; color: var(--text-2); }
+.md code { font: 0.86em ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace; padding: 1px 5px; border-radius: 5px; background: rgba(255, 255, 255, 0.07); }
+.md pre { margin: 8px 0; padding: 10px 12px; overflow-x: auto; border-radius: 10px; background: rgba(8, 9, 14, 0.7); border: 1px solid var(--edge); }
+.md pre code { padding: 0; background: none; }
+.md .muted { color: var(--text-2); }
+.product-news details { margin-top: 4px; }
+.product-news summary { cursor: pointer; padding: 8px 0; font-size: 0.9rem; font-weight: 600; color: var(--link); }
+.news-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 0 0 16px; }
+.news-tabs button { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--edge);
+  background: transparent; color: var(--text-2); font: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+.news-tabs button img { width: 18px; height: 18px; }
+.news-tabs button[aria-selected="true"] { color: var(--text); border-color: var(--link); }
+.news-tabs button:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+.release .md.folded { max-height: 18rem; overflow: hidden; -webkit-mask-image: linear-gradient(#000 70%, transparent); mask-image: linear-gradient(#000 70%, transparent); }
+.release .unfold { margin-top: 6px; padding: 0; border: 0; background: none; color: var(--link); font: inherit; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+
+footer { margin-top: 72px; padding: 28px 0 40px; border-top: 1px solid var(--edge); color: var(--text-2); font-size: 0.85rem; }
+footer p { margin: 0 0 10px; }
+footer .legal { font-size: 0.78rem; color: #868CA0; }
+
+@media (max-width: 560px) {
+  header.hero { padding-top: 56px; }
+  .logo { width: 72px; height: 72px; }
+  .download { padding: 26px 18px; }
+  .cmd { flex-direction: column; }
+  .cmd code { white-space: normal; word-break: break-all; }
+  .copy { padding: 12px 20px; }
+  .products { grid-template-columns: repeat(2, 1fr); }
+  .kozo-products { grid-template-columns: repeat(2, 1fr); }
+  .ai-points { grid-template-columns: 1fr; }
+  .kozo-products img { width: 120px; height: 120px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <svg class="logo" viewBox="0 0 64 64" role="img" aria-label="Zen IDE logo: a white ensō, a brush circle, on an indigo tile">
+      <defs>
+        <linearGradient id="zen-tile" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stop-color="#8B7CF8"/>
+          <stop offset="1" stop-color="#4338CA"/>
+        </linearGradient>
+        <linearGradient id="zen-gloss" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#fff" stop-opacity="0.18"/>
+          <stop offset="0.55" stop-color="#fff" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <rect width="64" height="64" rx="18" fill="url(#zen-tile)"/>
+      <rect width="64" height="64" rx="18" fill="url(#zen-gloss)"/>
+      <!-- The ensō: an arc of 316.8 degrees, open at the top, ending in a brush dot. -->
+      <path d="M35 16.28A16 16 0 1 1 23.43 18.49" fill="none" stroke="#fff" stroke-width="5.44" stroke-linecap="round"/>
+      <circle cx="23.43" cy="18.49" r="3.81" fill="#fff"/>
+    </svg>
+    <h1>Zen IDE</h1>
+    <p class="tagline">Fast, native, open-source IDEs, written in pure Rust and built for working with AI agents.</p>
+    <p class="status">Early development: GoGarden, RustRonin, WebWave, JvmJizo, SqlScroll and DevopsDaruma are in preview</p>
+  </header>
+
+  <main>
+    <section class="panel download" aria-labelledby="toolbox-title">
+      <h2 id="toolbox-title">Zen Toolbox</h2>
+      <p class="lead">The entry point to the family: a small tray app that will install, update and launch every Zen IDE as each one is released.</p>
+      <div class="os-tabs" role="tablist" aria-label="Operating system">
+        <button type="button" role="tab" id="tab-macos" aria-controls="pane-macos" aria-selected="true">macOS</button>
+        <button type="button" role="tab" id="tab-linux" aria-controls="pane-linux" aria-selected="false">Linux</button>
+        <button type="button" role="tab" id="tab-windows" aria-controls="pane-windows" aria-selected="false">Windows</button>
+      </div>
+      <div class="os-panes">
+      <div class="os-pane" id="pane-macos" role="tabpanel" aria-labelledby="tab-macos">
+      <h3 class="step" id="terminal-title">Install from Terminal</h3>
+      <div class="cmd" role="group" aria-labelledby="terminal-title">
+        <code id="install-cmd">curl -fsSL https://ide.ifzenelse.space/install.sh | sh</code>
+        <button type="button" class="copy" id="copy" data-command="install-cmd" data-status="copy-status" aria-describedby="terminal-title">Copy</button>
+      </div>
+      <p class="hint">Installs the latest Zen Toolbox into Applications and opens it, without the “could not verify” warning.</p>
+      <p class="copied" id="copy-status" role="status" aria-live="polite"></p>
+
+      <div class="secondary">
+        <a id="download" class="btn-2" href="#" role="link" aria-disabled="true" tabindex="-1">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m0 0-4-4m4 4 4-4M4 16h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span id="download-label">Checking for the latest release…</span>
+        </a>
+        <p class="meta" id="download-meta" aria-live="polite"></p>
+        <p class="note">The app is not notarised yet, so macOS blocks the first launch of the downloaded app: right-click <kbd>Zen Toolbox</kbd> in Applications and choose <kbd>Open</kbd>. After that it opens normally.</p>
+      </div>
+      </div>
+      <div class="os-pane" id="pane-linux" role="tabpanel" aria-labelledby="tab-linux" hidden>
+        <h3 class="step" id="terminal-title-linux">Install from Terminal</h3>
+        <div class="cmd" role="group" aria-labelledby="terminal-title-linux">
+          <code id="install-cmd-linux">curl -fsSL https://ide.ifzenelse.space/install.sh | sh</code>
+          <button type="button" class="copy" data-command="install-cmd-linux" data-status="copy-status-linux" aria-describedby="terminal-title-linux">Copy</button>
+        </div>
+        <p class="hint">The same script as on the Mac: installs the latest Zen Toolbox for your user, without sudo, adds it to the applications menu and starts it. Ubuntu 22.04 and later, x64 · preview.</p>
+        <p class="copied" id="copy-status-linux" role="status" aria-live="polite"></p>
+        <div class="secondary">
+        <div class="downloads">
+          <a id="lin-toolbox" class="btn-2" href="#" role="link" aria-disabled="true" tabindex="-1">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m0 0-4-4m4 4 4-4M4 16h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Zen Toolbox for Linux</span>
+          </a>
+          <a id="lin-gogarden" class="btn-2" href="#" role="link" aria-disabled="true" tabindex="-1">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m0 0-4-4m4 4 4-4M4 16h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>GoGarden for Linux</span>
+          </a>
+        </div>
+        <p class="meta" id="lin-meta" aria-live="polite">Checking for the latest Linux builds…</p>
+        <p class="note">Linux builds come out from time to time, not with every release, so the Linux version may be behind the Mac one. Or install a package for every user: <kbd>sudo apt install ./zen-toolbox_&lt;version&gt;_amd64.deb</kbd> (or the GoGarden one); a new version is installed the same way.</p>
+        </div>
+      </div>
+      <div class="os-pane" id="pane-windows" role="tabpanel" aria-labelledby="tab-windows" hidden>
+        <h3 class="step">Windows 10 and 11, x64 · preview</h3>
+        <div class="downloads">
+          <a id="win-gogarden" class="btn-2" href="#" role="link" aria-disabled="true" tabindex="-1">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m0 0-4-4m4 4 4-4M4 16h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>GoGarden for Windows</span>
+          </a>
+          <a id="win-toolbox" class="btn-2" href="#" role="link" aria-disabled="true" tabindex="-1">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v10m0 0-4-4m4 4 4-4M4 16h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>Zen Toolbox for Windows</span>
+          </a>
+        </div>
+        <p class="meta" id="win-meta" aria-live="polite">Checking for the latest Windows builds…</p>
+        <p class="note">Windows builds come out from time to time, not with every release. Unzip the archive anywhere and run <kbd>bin\gogarden.exe</kbd> (or <kbd>bin\toolbox.exe</kbd>). They are not signed yet, so SmartScreen may warn on the first run: choose <kbd>More info</kbd>, then <kbd>Run anyway</kbd>.</p>
+      </div>
+      </div>
+    </section>
+
+    <section class="ai" aria-labelledby="ai-title">
+      <h2 id="ai-title">Built for AI agents</h2>
+      <p class="lead">Zen IDE is made for a developer and an AI agent working on the same project at once. The agent works the IDE the way you do, not through a chat box bolted onto the side.</p>
+      <figure class="shot panel">
+        <img src="/img/gogarden.jpg" width="1800" height="1153" alt="GoGarden: the Project tool window on the left and a Go file in the editor, with the name at the caret and its other occurrences highlighted" loading="lazy">
+        <figcaption>GoGarden, the IDE for Go, the first of the family.</figcaption>
+      </figure>
+      <ul class="ai-points">
+        <li class="panel"><strong>Every action is a command</strong><span>Opening a file, navigating, renaming, running: everything you can do with the mouse or a shortcut is a command an agent can run too.</span></li>
+        <li class="panel"><strong>A built-in MCP server</strong><span>Turn it on in Settings → Tools → MCP Server and connect Claude Code, Codex, Cursor or any MCP client to the running IDE. It listens on this computer only. <a href="/docs/">How to connect</a>.</span></li>
+        <li class="panel"><strong>The IDE's knowledge, shared</strong><span>Agents read the same problems, symbols, usages and documentation that you see, straight from the language server.</span></li>
+        <li class="panel"><strong>You stay in charge</strong><span>An agent's edits land in your open editor, with undo, as if you typed them. Nothing leaves your machine unless you connect it.</span></li>
+      </ul>
+    </section>
+    <section class="kozo" aria-labelledby="kozo-title">
+      <h2 id="kozo-title">Meet Kozō</h2>
+      <p class="lead">Kozō (小僧), a young novice monk, is the mascot of the family. He meditates on the splash and welcome screens of every Zen IDE, in a robe of the IDE's colours and with something of its own.</p>
+      <div class="kozo-stage panel">
+        <figure class="kozo-main"><picture><source srcset="/img/kozo/zen-still.png" media="(prefers-reduced-motion: reduce)"><img src="/img/kozo/zen.png" width="240" height="240" alt="Kozō, a bald young monk in an indigo robe, meditating in the lotus position and breathing slowly" loading="lazy"></picture><figcaption>Kozō of the Zen IDE family</figcaption></figure>
+        <ul class="kozo-products">
+          <li><picture><source srcset="/img/kozo/gogarden-still.png" media="(prefers-reduced-motion: reduce)"><img src="/img/kozo/gogarden.png" width="160" height="160" alt="Kozō in GoGarden's teal robe with a watering can" loading="lazy"></picture><span class="name">GoGarden</span><span class="what">Waters his garden: drops fall from the can and a sprout comes up.</span></li>
+          <li><picture><source srcset="/img/kozo/rustronin-still.png" media="(prefers-reduced-motion: reduce)"><img src="/img/kozo/rustronin.png" width="160" height="160" alt="Kozō in RustRonin's orange robe with a wooden sword in front of him" loading="lazy"></picture><span class="name">RustRonin</span><span class="what">Keeps a wooden sword at hand; a glint runs along the blade.</span></li>
+          <li><picture><source srcset="/img/kozo/webwave-still.png" media="(prefers-reduced-motion: reduce)"><img src="/img/kozo/webwave.png" width="160" height="160" alt="Kozō in WebWave's blue robe with a surfboard and a wave rolling by" loading="lazy"></picture><span class="name">WebWave</span><span class="what">Waits for a wave, his surfboard bobbing behind him.</span></li>
+          <li><picture><source srcset="/img/kozo/jvmjizo-still.png" media="(prefers-reduced-motion: reduce)"><img src="/img/kozo/jvmjizo.png" width="160" height="160" alt="Kozō in JvmJizo's green robe beside a small stone Jizō in a red bib" loading="lazy"></picture><span class="name">JvmJizo</span><span class="what">Sits beside a stone Jizō while a maple leaf drifts down.</span></li>
+          <li><picture><source srcset="/img/kozo/toolbox-still.png" media="(prefers-reduced-motion: reduce)"><img src="/img/kozo/toolbox.png" width="160" height="160" alt="Kozō in the family's indigo robe beside a toolbox" loading="lazy"></picture><span class="name">Zen Toolbox</span><span class="what">Sits by his toolbox; now and then a spark flies out.</span></li>
+        </ul>
+      </div>
+    </section>
+    <section class="family" aria-labelledby="family-title">
+      <h2 id="family-title">The family</h2>
+      <p class="lead">One shared engine, the Zen Platform, and one IDE per language. GoGarden came first; RustRonin, for Rust, WebWave, for the web, JvmJizo, for Java and the JVM, SqlScroll, for SQL and databases, and DevopsDaruma, for DevOps, join it. All six are in early development.</p>
+      <ul class="products panel">
+        <li class="first available"><img class="tile" src="/icons/products/gogarden.svg" alt="" width="56" height="56"><span class="name">GoGarden</span><span class="lang">Go</span><span class="soon">Available</span></li>
+        <li class="available"><img class="tile" src="/icons/products/rustronin.svg" alt="" width="56" height="56"><span class="name">RustRonin</span><span class="lang">Rust</span><span class="soon">Available</span></li>
+        <li><img class="tile" src="/icons/products/pypetal.svg" alt="" width="56" height="56"><span class="name">PyPetal</span><span class="lang">Python</span><span class="soon">Planned</span></li>
+        <li class="available"><img class="tile" src="/icons/products/jvmjizo.svg" alt="" width="56" height="56"><span class="name">JvmJizo</span><span class="lang">for Java and the JVM</span><span class="soon">Available</span></li>
+        <li class="available"><img class="tile" src="/icons/products/webwave.svg" alt="" width="56" height="56"><span class="name">WebWave</span><span class="lang" title="TypeScript, JavaScript, HTML and CSS">The web</span><span class="soon">Available</span></li>
+        <li><img class="tile" src="/icons/products/cppcrane.svg" alt="" width="56" height="56"><span class="name">CppCrane</span><span class="lang">C and C++</span><span class="soon">Planned</span></li>
+        <li><img class="tile" src="/icons/products/sharpshuriken.svg" alt="" width="56" height="56"><span class="name">SharpShuriken</span><span class="lang">C#</span><span class="soon">Planned</span></li>
+        <li><img class="tile" src="/icons/products/phppagoda.svg" alt="" width="56" height="56"><span class="name">PhpPagoda</span><span class="lang">PHP</span><span class="soon">Planned</span></li>
+        <li><img class="tile" src="/icons/products/rubyryokan.svg" alt="" width="56" height="56"><span class="name">RubyRyokan</span><span class="lang">Ruby</span><span class="soon">Planned</span></li>
+        <li class="available"><img class="tile" src="/icons/products/sqlscroll.svg" alt="" width="56" height="56"><span class="name">SqlScroll</span><span class="lang">SQL and databases</span><span class="soon">Available</span></li>
+        <li class="available"><img class="tile" src="/icons/products/devopsdaruma.svg" alt="" width="56" height="56"><span class="name">DevopsDaruma</span><span class="lang" title="Containers, infrastructure as code, pipelines">DevOps</span><span class="soon">Available</span></li>
+        <li><img class="tile" src="/icons/products/testtotami.svg" alt="" width="56" height="56"><span class="name">TestTotami</span><span class="lang" title="End-to-end and UI tests, API and load testing, test management">QA and testing</span><span class="soon">Planned</span></li>
+      </ul>
+    </section>
+
+    <section class="news" id="whats-new" aria-labelledby="news-title">
+      <h2 id="news-title">What's new</h2>
+      <p class="lead">The release notes of Zen Toolbox and every released IDE, newest first.</p>
+      <div id="news-list" aria-live="polite"><p class="news-status panel" id="news-status">Loading the release notes…</p></div>
+    </section>
+
+    <ul class="facts" aria-label="Principles">
+      <li class="panel"><strong>Pure Rust, native</strong><span>No Electron, no JVM. One engine shared by every IDE.</span></li>
+      <li class="panel"><strong>Open source</strong><span>Dual-licensed under MIT or Apache-2.0. A non-profit project; commercial use is allowed under the licences.</span></li>
+      <li class="panel"><strong>Yours alone</strong><span>No accounts and no telemetry. Every network call is listed, with the setting that turns it off: <a href="/privacy/">Privacy</a>.</span></li>
+    </ul>
+  </main>
+
+  <footer>
+    <p><a href="/docs/">Documentation</a>: how to use GoGarden and Zen Toolbox. <a href="/changelog.html">Changelog</a>: every release of Zen Toolbox, the IDEs and their plug-ins. <a href="/privacy/">Privacy</a>: no telemetry, and every network call the IDEs make.</p>
+    <p>Zen IDE is made by <strong>ifzenelse</strong>. Code licensed under MIT or Apache-2.0, at your option. The Inter typeface is licensed under the <a href="/fonts/OFL-Inter.txt">SIL Open Font License 1.1</a>.</p>
+    <p class="legal">Rust is a trademark of the Rust Foundation. Oracle, Java, MySQL, and NetSuite are registered trademarks of Oracle and/or its affiliates. Kotlin® is a registered trademark of the Kotlin Foundation. Other names may be trademarks of their respective owners. Zen IDE is an independent project and is not affiliated with, sponsored by or endorsed by any of them or by any other IDE vendor.</p>
+  </footer>
+</div>
+
+<script>
+// Finds the newest stable Zen Toolbox release for macOS on Apple Silicon in the release manifest
+// (docs/release-manifest.md) and points the download button at its installer. The page does not
+// verify the manifest signature; Zen Toolbox does.
+(function () {
+  "use strict";
+  var PRODUCT = "toolbox", CHANNEL = "stable", PLATFORM = "macos-aarch64";
+  var button = document.getElementById("download");
+  var label = document.getElementById("download-label");
+  var meta = document.getElementById("download-meta");
+
+  // Parses "1.2.3" or "1.2.3-beta.1" into comparable parts; null if it is not a version.
+  function parse(version) {
+    var m = /^(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/.exec(String(version));
+    return m ? { core: [+m[1], +m[2], +m[3]], pre: m[4] ? m[4].split(".") : [] } : null;
+  }
+  // Semantic version precedence: core numerically, then a pre-release sorts below the release.
+  function compare(a, b) {
+    for (var i = 0; i < 3; i++) if (a.core[i] !== b.core[i]) return a.core[i] - b.core[i];
+    if (!a.pre.length || !b.pre.length) return b.pre.length - a.pre.length;
+    for (var j = 0; j < Math.max(a.pre.length, b.pre.length); j++) {
+      var x = a.pre[j], y = b.pre[j];
+      if (x === undefined) return -1;
+      if (y === undefined) return 1;
+      var nx = /^\d+$/.test(x), ny = /^\d+$/.test(y);
+      if (nx && ny && +x !== +y) return +x - +y;
+      if (nx !== ny) return nx ? -1 : 1;
+      if (x !== y) return x < y ? -1 : 1;
+    }
+    return 0;
+  }
+  function newest(manifest) {
+    var product = (manifest.products || []).filter(function (p) { return p.id === PRODUCT; })[0];
+    var best = null;
+    (product ? product.releases || [] : []).forEach(function (release) {
+      var v = parse(release.version);
+      var hasPlatform = (release.artifacts || []).some(function (a) { return a.platform === PLATFORM; });
+      if (v && release.channel === CHANNEL && hasPlatform && (!best || compare(v, best.v) > 0)) {
+        best = { v: v, version: release.version };
+      }
+    });
+    return best && best.version;
+  }
+  function unavailable() {
+    label.textContent = "Not available yet";
+    meta.textContent = "Zen Toolbox for macOS will be available here soon.";
+  }
+
+  // ---- macOS, Windows and Linux: the tab of the visitor's system first. ----
+  var tabs = {
+    macos: document.getElementById("tab-macos"),
+    linux: document.getElementById("tab-linux"),
+    windows: document.getElementById("tab-windows")
+  };
+  function choose(os) {
+    Object.keys(tabs).forEach(function (key) {
+      tabs[key].setAttribute("aria-selected", String(key === os));
+      document.getElementById("pane-" + key).hidden = key !== os;
+    });
+  }
+  Object.keys(tabs).forEach(function (key) { tabs[key].addEventListener("click", function () { choose(key); }); });
+  if (/Windows/i.test(navigator.userAgent)) choose("windows");
+  else if (/Linux/i.test(navigator.userAgent) && !/Android/i.test(navigator.userAgent)) choose("linux");
+
+  // The newest stable release of `product` with an artifact for `platform`.
+  function newestFor(manifest, product, platform) {
+    var entry = (manifest.products || []).filter(function (p) { return p.id === product; })[0];
+    var best = null;
+    (entry ? entry.releases || [] : []).forEach(function (release) {
+      var v = parse(release.version);
+      var has = (release.artifacts || []).some(function (a) { return a.platform === platform; });
+      if (v && release.channel === CHANNEL && has && (!best || compare(v, best.v) > 0)) best = { v: v, version: release.version };
+    });
+    return best && best.version;
+  }
+  function windowsLink(manifest, product, name, id) {
+    return downloadLink(manifest, product, "windows-x86_64", id, name.replace("-", " "), "Windows", function (version) {
+      return name + "-" + version + "-windows-x86_64.zip";
+    });
+  }
+  function linuxLink(manifest, product, name, package_, id) {
+    return downloadLink(manifest, product, "linux-x86_64", id, name, "Linux", function (version) {
+      return package_ + "_" + version + "_amd64.deb";
+    });
+  }
+  function downloadLink(manifest, product, platform, id, name, system, fileOf) {
+    var link = document.getElementById(id);
+    var version = newestFor(manifest, product, platform);
+    if (!version) return null;
+    var file = fileOf(version);
+    link.href = "/releases/artifacts/" + product + "/" + encodeURIComponent(version) + "/" + file;
+    link.setAttribute("download", file);
+    link.removeAttribute("aria-disabled");
+    link.removeAttribute("tabindex");
+    link.removeAttribute("role");
+    link.querySelector("span").textContent = name + " " + version + " for " + system;
+    return version;
+  }
+
+  var manifestLoaded = fetch("/releases/manifest.json", { cache: "no-cache" })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); });
+  manifestLoaded
+    .then(function (manifest) {
+      var version = newest(manifest);
+      if (!version) return unavailable();
+      var file = "Zen-Toolbox-" + version + "-macos-aarch64.dmg";
+      button.href = "/releases/artifacts/toolbox/" + encodeURIComponent(version) + "/" + file;
+      button.setAttribute("download", file);
+      button.removeAttribute("aria-disabled");
+      button.removeAttribute("tabindex");
+      button.removeAttribute("role");
+      label.textContent = "Or download the .dmg for macOS";
+      meta.textContent = "Version " + version + " · macOS, Apple Silicon";
+    })
+    .catch(unavailable);
+  manifestLoaded
+    .then(function (manifest) {
+      var found = [windowsLink(manifest, "gogarden", "GoGarden", "win-gogarden"), windowsLink(manifest, "toolbox", "Zen-Toolbox", "win-toolbox")];
+      document.getElementById("win-meta").textContent = found.some(Boolean)
+        ? "Zip archives · x64"
+        : "No Windows build yet. One is coming soon.";
+    })
+    .catch(function () { document.getElementById("win-meta").textContent = "The release list cannot be loaded right now."; });
+  manifestLoaded
+    .then(function (manifest) {
+      var found = [linuxLink(manifest, "toolbox", "Zen Toolbox", "zen-toolbox", "lin-toolbox"), linuxLink(manifest, "gogarden", "GoGarden", "gogarden", "lin-gogarden")];
+      document.getElementById("lin-meta").textContent = found.some(Boolean)
+        ? ".deb packages · x64"
+        : "No Linux build yet. One is coming soon.";
+    })
+    .catch(function () { document.getElementById("lin-meta").textContent = "The release list cannot be loaded right now."; });
+
+  // ---- What's new: the release notes of every product, newest first. ----
+  // Notes are Markdown (docs/release-manifest.md); they are read with the same small subset as
+  // Zen Toolbox and built as DOM nodes with textContent, never as HTML.
+  var newsList = document.getElementById("news-list");
+  var newsStatus = document.getElementById("news-status");
+  var SHOWN = 1; // releases per product before "Earlier releases"
+
+  function el(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  // Inline styles: `code`, **bold**, __bold__, *italic*, [label](https://…) and backslash escapes.
+  // Unmatched markers stay literal.
+  function inline(text, parent) {
+    var chars = Array.from(String(text));
+    var spans = [], current = "", bold = false, italic = false, i = 0;
+    function push(code) {
+      if (!current) return;
+      var last = spans[spans.length - 1];
+      if (last && !last.href && last.bold === bold && last.italic === italic && last.code === code) last.text += current;
+      else spans.push({ text: current, bold: bold, italic: italic, code: code });
+      current = "";
+    }
+    function find(from, found) {
+      for (var k = from; k < chars.length; k++) if (found(k)) return k;
+      return -1;
+    }
+    while (i < chars.length) {
+      var c = chars[i], n = chars[i + 1];
+      if (c === "\\" && n !== undefined && /[!-\/:-@\[-`{-~]/.test(n)) { current += n; i += 2; continue; }
+      if (c === "`") {
+        var end = find(i + 1, function (k) { return chars[k] === "`"; });
+        if (end > i + 1) {
+          push(false);
+          current = chars.slice(i + 1, end).join("");
+          push(true);
+          i = end + 1;
+        } else { current += c; i++; }
+        continue;
+      }
+      if ((c === "*" || c === "_") && n === c) {
+        var closes = bold || find(i + 2, function (k) { return chars[k] === c && chars[k + 1] === c; }) >= 0;
+        if (closes) { push(false); bold = !bold; } else current += c + c;
+        i += 2;
+        continue;
+      }
+      if (c === "*") {
+        var opens = !italic && n !== undefined && !/\s/.test(n) &&
+          find(i + 1, function (k) { return chars[k] === "*" && chars[k + 1] !== "*"; }) >= 0;
+        if (italic || opens) { push(false); italic = !italic; } else current += c;
+        i++;
+        continue;
+      }
+      if (c === "[") {
+        var close = find(i + 1, function (k) { return chars[k] === "]"; });
+        var stop = close >= 0 && chars[close + 1] === "(" ? find(close + 2, function (k) { return chars[k] === ")"; }) : -1;
+        if (stop >= 0) {
+          push(false);
+          var url = chars.slice(close + 2, stop).join("");
+          spans.push({ text: chars.slice(i + 1, close).join(""), bold: bold, italic: italic, code: false,
+            href: /^https?:\/\//i.test(url) ? url : null });
+          i = stop + 1;
+          continue;
+        }
+      }
+      current += c;
+      i++;
+    }
+    push(false);
+    spans.forEach(function (span) {
+      if (!span.text) return;
+      var node = document.createTextNode(span.text);
+      function wrap(tag) { var outer = el(tag); outer.appendChild(node); node = outer; }
+      if (span.code) wrap("code");
+      if (span.italic) wrap("em");
+      if (span.bold) wrap("strong");
+      if (span.href) { wrap("a"); node.href = span.href; node.rel = "noopener"; }
+      parent.appendChild(node);
+    });
+  }
+
+  // Blocks: headings, list items (nested by indentation), paragraphs and fenced code.
+  function blocks(text) {
+    var out = [], pending = null, code = null;
+    function flush() { if (pending) out.push(pending); pending = null; }
+    String(text || "").split("\n").forEach(function (raw) {
+      var line = raw.replace(/\r$/, "");
+      if (code !== null) {
+        if (/^\s*```/.test(line)) { out.push({ type: "code", text: code.join("\n") }); code = null; }
+        else code.push(line);
+        return;
+      }
+      var t = line.trim(), m;
+      if (!t) return flush();
+      if (/^```/.test(t)) { flush(); code = []; return; }
+      if ((m = /^(#{1,6})([ \t].*)?$/.exec(t))) {
+        flush();
+        out.push({ type: "heading", level: m[1].length, text: (m[2] || "").trim().replace(/#+$/, "").trim() });
+        return;
+      }
+      var indent = 0;
+      for (var k = 0; k < line.length && /\s/.test(line[k]); k++) indent += line[k] === "\t" ? 4 : 1;
+      var depth = Math.min(3, Math.floor(indent / 2));
+      if ((m = /^[-*+]( (.*))?$/.exec(t))) {
+        flush();
+        pending = { type: "item", depth: depth, marker: "•", text: (m[2] || "").replace(/^\s+/, "") };
+        return;
+      }
+      if ((m = /^(\d{1,9})[.)] (.*)$/.exec(t))) {
+        flush();
+        pending = { type: "item", depth: depth, marker: (+m[1]) + ".", text: m[2].replace(/^\s+/, "") };
+        return;
+      }
+      if (pending) pending.text += " " + t;
+      else pending = { type: "paragraph", text: t };
+    });
+    flush();
+    if (code !== null) out.push({ type: "code", text: code.join("\n") });
+    return out;
+  }
+
+  function markdown(text, parent) {
+    var list = null;
+    blocks(text).forEach(function (block) {
+      if (block.type !== "item") list = null;
+      if (block.type === "heading") {
+        var heading = el(block.level <= 2 ? "h5" : "h6");
+        inline(block.text, heading);
+        parent.appendChild(heading);
+      } else if (block.type === "paragraph") {
+        var p = el("p");
+        inline(block.text, p);
+        parent.appendChild(p);
+      } else if (block.type === "code") {
+        var pre = el("pre");
+        pre.appendChild(el("code", "", block.text));
+        parent.appendChild(pre);
+      } else {
+        if (!list) { list = el("ul"); parent.appendChild(list); }
+        var item = el("li");
+        item.style.marginLeft = (block.depth * 1.25) + "em";
+        var marker = el("span", "mk", block.marker);
+        marker.setAttribute("aria-hidden", "true");
+        var body = el("span");
+        inline(block.text, body);
+        item.appendChild(marker);
+        item.appendChild(body);
+        list.appendChild(item);
+      }
+    });
+  }
+
+  function release(r) {
+    var box = el("div", "release");
+    var head = el("h4");
+    head.appendChild(el("span", "", String(r.version)));
+    if (r.date) {
+      var date = el("time", "", String(r.date));
+      if (/^\d{4}-\d{2}-\d{2}$/.test(r.date)) date.setAttribute("datetime", r.date);
+      head.appendChild(date);
+    }
+    if (r.channel && r.channel !== CHANNEL) head.appendChild(el("span", "channel", String(r.channel)));
+    box.appendChild(head);
+    var notes = el("div", "md");
+    if (String(r.notes || "").trim()) markdown(r.notes, notes);
+    else notes.appendChild(el("p", "muted", "No notes for this release."));
+    box.appendChild(notes);
+    return box;
+  }
+
+  // Long notes are folded to a few screens' worth, with a button that shows them all.
+  function fold(card) {
+    Array.prototype.forEach.call(card.querySelectorAll(":scope > .release > .md"), function (notes) {
+      if (notes.dataset.folded) return;
+      notes.classList.add("folded");
+      notes.dataset.folded = "1";
+      if (notes.scrollHeight <= notes.clientHeight + 4) { notes.classList.remove("folded"); return; }
+      var unfold = el("button", "unfold", "Show all notes");
+      unfold.type = "button";
+      unfold.addEventListener("click", function () { notes.classList.remove("folded"); unfold.remove(); });
+      notes.after(unfold);
+    });
+  }
+
+  function product(p) {
+    var releases = (p.releases || []).slice().sort(function (a, b) {
+      var x = parse(a.version), y = parse(b.version);
+      if (x && y) return compare(y, x);
+      return x ? -1 : y ? 1 : 0;
+    });
+    if (!releases.length) return null;
+    var card = el("article", "panel product-news");
+    var header = el("header");
+    var icon = el("img");
+    icon.alt = "";
+    icon.width = 32;
+    icon.height = 32;
+    if (p.id === PRODUCT) {
+      var favicon = document.querySelector("link[rel=icon]");
+      if (favicon) icon.src = favicon.href;
+    } else if (/^[a-z]+$/.test(p.id)) {
+      icon.src = "/icons/products/" + p.id + ".svg";
+    }
+    if (icon.src) header.appendChild(icon);
+    header.appendChild(el("h3", "", String(p.name || p.id)));
+    card.appendChild(header);
+    releases.slice(0, SHOWN).forEach(function (r) { card.appendChild(release(r)); });
+    if (releases.length > SHOWN) {
+      var more = el("details");
+      more.appendChild(el("summary", "", "Earlier releases (" + (releases.length - SHOWN) + ")"));
+      releases.slice(SHOWN).forEach(function (r) { more.appendChild(release(r)); });
+      card.appendChild(more);
+    }
+    return card;
+  }
+
+  manifestLoaded
+    .then(function (manifest) {
+      // Zen Toolbox first, then the IDEs in the manifest's order.
+      var products = (manifest.products || []).slice().sort(function (a, b) {
+        return (b.id === PRODUCT) - (a.id === PRODUCT);
+      });
+      var shown = products.filter(function (p) { return (p.releases || []).length; });
+      var cards = shown.map(product);
+      if (!cards.length) { newsStatus.textContent = "No releases yet."; return; }
+      newsList.textContent = "";
+      // One product at a time: a tab per product, its newest release, the others under "Earlier releases".
+      var tabs = el("div", "news-tabs");
+      tabs.setAttribute("role", "tablist");
+      tabs.setAttribute("aria-label", "Products");
+      newsList.appendChild(tabs);
+      function select(index) {
+        cards.forEach(function (card, i) {
+          card.hidden = i !== index;
+          tabs.children[i].setAttribute("aria-selected", i === index ? "true" : "false");
+          tabs.children[i].tabIndex = i === index ? 0 : -1;
+        });
+        fold(cards[index]);
+      }
+      cards.forEach(function (card, i) {
+        var tab = el("button");
+        tab.type = "button";
+        tab.setAttribute("role", "tab");
+        tab.id = "news-tab-" + i;
+        card.id = "news-panel-" + i;
+        card.setAttribute("role", "tabpanel");
+        card.setAttribute("aria-labelledby", tab.id);
+        tab.setAttribute("aria-controls", card.id);
+        var icon = card.querySelector("header img");
+        if (icon) { var small = el("img"); small.alt = ""; small.src = icon.src; tab.appendChild(small); }
+        tab.appendChild(el("span", "", String(shown[i].name || shown[i].id)));
+        tab.addEventListener("click", function () { select(i); });
+        tab.addEventListener("keydown", function (event) {
+          var step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+          if (!step) return;
+          var next = (i + step + cards.length) % cards.length;
+          select(next);
+          tabs.children[next].focus();
+        });
+        tabs.appendChild(tab);
+        newsList.appendChild(card);
+      });
+      select(0);
+    })
+    .catch(function () {
+      newsStatus.textContent = "The release notes cannot be loaded right now. Please try again later.";
+    });
+
+  // Copies an install command; falls back to selecting it so that the visitor can copy it by hand.
+  Array.prototype.forEach.call(document.querySelectorAll(".copy[data-command]"), function (copy) {
+    var command = document.getElementById(copy.getAttribute("data-command"));
+    var status = document.getElementById(copy.getAttribute("data-status"));
+    function fallback() {
+      var range = document.createRange();
+      range.selectNodeContents(command);
+      var selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      status.textContent = ok ? "Copied to the clipboard." : "Selected: press Ctrl+C or ⌘C to copy.";
+    }
+    copy.addEventListener("click", function () {
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(command.textContent).then(function () {
+          copy.textContent = "Copied";
+          status.textContent = "Copied to the clipboard.";
+          setTimeout(function () { copy.textContent = "Copy"; }, 2000);
+        }, fallback);
+      } else {
+        fallback();
+      }
+    });
+  });
+
+  button.addEventListener("click", function (event) {
+    if (button.getAttribute("aria-disabled") === "true") event.preventDefault();
+  });
+})();
+</script>
+<noscript><style>#download, #copy, #whats-new { display: none; }</style></noscript>
+</body>
+</html>

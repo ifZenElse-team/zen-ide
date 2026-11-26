@@ -1,0 +1,4 @@
+<!-- Synthetic fixture written for the Zen IDE tests from the public format documentation; not taken from any JetBrains product. -->
+<component name="DependencyValidationManager">
+  <scope name="Orchard sources" pattern="file[orchard]:internal//*&amp;&amp;!file[orchard]:internal/testdata//*" />
+</component>

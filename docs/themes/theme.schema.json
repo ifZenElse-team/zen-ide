@@ -1,0 +1,812 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Zen IDE theme",
+  "description": "A Zen IDE colour theme (docs/themes.md).",
+  "type": "object",
+  "properties": {
+    "$schema": {
+      "description": "A link to this schema, for editors; ignored by the IDE.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "dark": {
+      "description": "Whether the theme is dark.",
+      "type": "boolean"
+    },
+    "editor": {
+      "description": "Editor colours.",
+      "$ref": "#/$defs/EditorSection"
+    },
+    "formatVersion": {
+      "description": "The version of the format: always 1.",
+      "$ref": "#/$defs/FormatVersion"
+    },
+    "id": {
+      "description": "The stable id other themes name as their parent; made from the name when it is left out.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "name": {
+      "description": "The name shown in the theme list.",
+      "type": "string"
+    },
+    "parent": {
+      "description": "The id of the theme this one changes; Zen Dark when it is left out.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "syntax": {
+      "description": "Code styles: a colour, or a colour with a background and font style.",
+      "$ref": "#/$defs/SyntaxSection"
+    },
+    "terminal": {
+      "description": "Terminal colours.",
+      "$ref": "#/$defs/TerminalSection"
+    },
+    "ui": {
+      "description": "Window colours.",
+      "$ref": "#/$defs/UiSection"
+    }
+  },
+  "required": [
+    "formatVersion",
+    "name",
+    "dark"
+  ],
+  "$defs": {
+    "Color": {
+      "description": "A colour: #RGB, #RRGGBB or #RRGGBBAA, in hexadecimal digits of either case.",
+      "type": "string",
+      "pattern": "^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$"
+    },
+    "EditorSection": {
+      "type": "object",
+      "properties": {
+        "annotation.old": {
+          "description": "Blame annotations of the oldest commits in the gutter.",
+          "$ref": "#/$defs/Color"
+        },
+        "annotation.recent": {
+          "description": "Blame annotations of the newest commits in the gutter; older ones fade towards annotation.old.",
+          "$ref": "#/$defs/Color"
+        },
+        "background": {
+          "description": "The editor's background.",
+          "$ref": "#/$defs/Color"
+        },
+        "bracket.matched.background": {
+          "description": "The background of the bracket next to the caret and of the bracket that matches it.",
+          "$ref": "#/$defs/Color"
+        },
+        "bracket.matched.foreground": {
+          "description": "The bracket next to the caret and the bracket that matches it.",
+          "$ref": "#/$defs/Color"
+        },
+        "bracket.unmatched.background": {
+          "description": "The background of the bracket next to the caret when nothing matches it.",
+          "$ref": "#/$defs/Color"
+        },
+        "bracket.unmatched.foreground": {
+          "description": "The bracket next to the caret when nothing matches it.",
+          "$ref": "#/$defs/Color"
+        },
+        "breakpoint": {
+          "description": "A line breakpoint in the gutter, drawn over the line number.",
+          "$ref": "#/$defs/Color"
+        },
+        "breakpoint.disabled": {
+          "description": "The outline of a disabled line breakpoint in the gutter.",
+          "$ref": "#/$defs/Color"
+        },
+        "caret": {
+          "description": "The caret.",
+          "$ref": "#/$defs/Color"
+        },
+        "completion.constant": {
+          "description": "The mark of a constant or enum member in the completion list.",
+          "$ref": "#/$defs/Color"
+        },
+        "completion.field": {
+          "description": "The mark of a field or property in the completion list.",
+          "$ref": "#/$defs/Color"
+        },
+        "completion.function": {
+          "description": "The mark of a function, method or constructor in the completion list.",
+          "$ref": "#/$defs/Color"
+        },
+        "completion.interface": {
+          "description": "The mark of an interface or type parameter in the completion list.",
+          "$ref": "#/$defs/Color"
+        },
+        "completion.keyword": {
+          "description": "The mark of a keyword in the completion list.",
+          "$ref": "#/$defs/Color"
+        },
+        "completion.module": {
+          "description": "The mark of a module or package in the completion list.",
+          "$ref": "#/$defs/Color"
+        },
+        "completion.other": {
+          "description": "The mark of any other kind of item in the completion list.",
+          "$ref": "#/$defs/Color"
+        },
+        "completion.snippet": {
+          "description": "The mark of a snippet in the completion list.",
+          "$ref": "#/$defs/Color"
+        },
+        "completion.type": {
+          "description": "The mark of a struct, class or enum in the completion list.",
+          "$ref": "#/$defs/Color"
+        },
+        "completion.variable": {
+          "description": "The mark of a variable or value in the completion list.",
+          "$ref": "#/$defs/Color"
+        },
+        "coverage.covered": {
+          "description": "The coverage mark in the gutter of a line the tests ran, and its line in the HTML report.",
+          "$ref": "#/$defs/Color"
+        },
+        "coverage.notCovered": {
+          "description": "The coverage mark in the gutter of a line the tests did not run.",
+          "$ref": "#/$defs/Color"
+        },
+        "coverage.partly": {
+          "description": "The coverage mark in the gutter of a line the tests ran only partly: some of its parts or branches did not run.",
+          "$ref": "#/$defs/Color"
+        },
+        "currentLine": {
+          "description": "The line with the caret.",
+          "$ref": "#/$defs/Color"
+        },
+        "diagnostic.error": {
+          "description": "An error.",
+          "$ref": "#/$defs/Color"
+        },
+        "diagnostic.hint": {
+          "description": "A hint, or a problem of unknown severity.",
+          "$ref": "#/$defs/Color"
+        },
+        "diagnostic.info": {
+          "description": "Information.",
+          "$ref": "#/$defs/Color"
+        },
+        "diagnostic.typo": {
+          "description": "A misspelt word, from the spelling inspection: its wavy line and its mark.",
+          "$ref": "#/$defs/Color"
+        },
+        "diagnostic.warning": {
+          "description": "A warning.",
+          "$ref": "#/$defs/Color"
+        },
+        "diff.deleted": {
+          "description": "The background of a deleted line in the diff viewer.",
+          "$ref": "#/$defs/Color"
+        },
+        "diff.deletedWord": {
+          "description": "The background of the changed words of a deleted line in the diff viewer.",
+          "$ref": "#/$defs/Color"
+        },
+        "diff.filler": {
+          "description": "The filler rows of the diff viewer across from lines the other side does not have.",
+          "$ref": "#/$defs/Color"
+        },
+        "diff.inserted": {
+          "description": "The background of an inserted line in the diff viewer.",
+          "$ref": "#/$defs/Color"
+        },
+        "diff.insertedWord": {
+          "description": "The background of the changed words of an inserted line in the diff viewer.",
+          "$ref": "#/$defs/Color"
+        },
+        "diff.modified": {
+          "description": "The background of a modified line in the diff viewer.",
+          "$ref": "#/$defs/Color"
+        },
+        "diff.modifiedWord": {
+          "description": "The background of the changed words of a modified line in the diff viewer.",
+          "$ref": "#/$defs/Color"
+        },
+        "execution.arrow": {
+          "description": "The arrow in the gutter at the line where the debugger stopped.",
+          "$ref": "#/$defs/Color"
+        },
+        "execution.line": {
+          "description": "The background of the line where the debugger stopped.",
+          "$ref": "#/$defs/Color"
+        },
+        "fold.arrow": {
+          "description": "The fold arrows in the gutter.",
+          "$ref": "#/$defs/Color"
+        },
+        "fold.marker": {
+          "description": "The background of a folded region's mark.",
+          "$ref": "#/$defs/Color"
+        },
+        "fold.text": {
+          "description": "The text of a folded region's mark.",
+          "$ref": "#/$defs/Color"
+        },
+        "foreground": {
+          "description": "Text that is not highlighted, such as a folded region's tail or a preview.",
+          "$ref": "#/$defs/Color"
+        },
+        "gutter.added": {
+          "description": "The change marker in the gutter of lines added since the last commit.",
+          "$ref": "#/$defs/Color"
+        },
+        "gutter.deleted": {
+          "description": "The change marker in the gutter where lines were deleted since the last commit.",
+          "$ref": "#/$defs/Color"
+        },
+        "gutter.modified": {
+          "description": "The change marker in the gutter of lines modified since the last commit.",
+          "$ref": "#/$defs/Color"
+        },
+        "gutter.separator": {
+          "description": "The thin line between the gutter and the text.",
+          "$ref": "#/$defs/Color"
+        },
+        "indentGuide": {
+          "description": "The thin vertical lines at each indent level.",
+          "$ref": "#/$defs/Color"
+        },
+        "indentGuide.selected": {
+          "description": "The indent guide of the block the caret is in.",
+          "$ref": "#/$defs/Color"
+        },
+        "inlayHint.background": {
+          "description": "The background of an inlay hint, such as a parameter name before an argument.",
+          "$ref": "#/$defs/Color"
+        },
+        "inlayHint.foreground": {
+          "description": "The text of an inlay hint.",
+          "$ref": "#/$defs/Color"
+        },
+        "lineNumber": {
+          "description": "Line numbers in the gutter.",
+          "$ref": "#/$defs/Color"
+        },
+        "methodSeparator": {
+          "description": "The thin line above each top-level declaration while Show method separators is on.",
+          "$ref": "#/$defs/Color"
+        },
+        "rightMargin": {
+          "description": "The vertical line at the right margin and the visual guides of the code style.",
+          "$ref": "#/$defs/Color"
+        },
+        "search.mark": {
+          "description": "The marks of search matches by the scroll bar.",
+          "$ref": "#/$defs/Color"
+        },
+        "search.match": {
+          "description": "A search match.",
+          "$ref": "#/$defs/Color"
+        },
+        "selection": {
+          "description": "Selected text.",
+          "$ref": "#/$defs/Color"
+        },
+        "stickyLines.background": {
+          "description": "The background of the sticky lines over the top of the editor.",
+          "$ref": "#/$defs/Color"
+        },
+        "stickyLines.border": {
+          "description": "The line under the sticky lines.",
+          "$ref": "#/$defs/Color"
+        },
+        "symbolHighlight": {
+          "description": "The background of the name at the caret and of its other occurrences in the file, and of the places the symbol is read.",
+          "$ref": "#/$defs/Color"
+        },
+        "symbolHighlight.write": {
+          "description": "The background of the places the symbol at the caret is written: declared, assigned or changed.",
+          "$ref": "#/$defs/Color"
+        },
+        "unused": {
+          "description": "Unused code, such as an unused requirement or import: drawn in this colour instead of underlined.",
+          "$ref": "#/$defs/Color"
+        },
+        "whitespace": {
+          "description": "The dots of spaces and the marks of tabs while whitespaces are shown.",
+          "$ref": "#/$defs/Color"
+        }
+      }
+    },
+    "FormatVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "StyleObject": {
+      "description": "A code style with more than a colour.",
+      "type": "object",
+      "properties": {
+        "background": {
+          "description": "The background behind the text.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Color"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bold": {
+          "description": "Bold text.",
+          "type": "boolean"
+        },
+        "color": {
+          "description": "The text colour.",
+          "$ref": "#/$defs/Color"
+        },
+        "italic": {
+          "description": "Italic text.",
+          "type": "boolean"
+        },
+        "strikethrough": {
+          "description": "Struck-through text.",
+          "type": "boolean"
+        },
+        "underline": {
+          "description": "The underline: `line` or `wave`.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Underline"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "color"
+      ]
+    },
+    "StyleValue": {
+      "description": "A code style: a colour, or an object with the colour and a font style.",
+      "anyOf": [
+        {
+          "description": "Plain text in this colour.",
+          "$ref": "#/$defs/Color"
+        },
+        {
+          "description": "A colour with a background or a font style.",
+          "$ref": "#/$defs/StyleObject"
+        }
+      ]
+    },
+    "SyntaxSection": {
+      "type": "object",
+      "properties": {
+        "attribute": {
+          "description": "An attribute, such as `#[derive(Debug)]`.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "code": {
+          "description": "Code inside a markup language: inline code and code blocks.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "comment": {
+          "description": "A comment.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "constant": {
+          "description": "A constant or static.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "default": {
+          "description": "Code that no other key covers.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "docComment": {
+          "description": "A documentation comment.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "docComment.name": {
+          "description": "The name a documentation comment starts with, such as `Open` in `// Open opens a file`.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "emphasis": {
+          "description": "Emphasised text in a markup language.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "function": {
+          "description": "A function name in a definition or call.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "globalVariable": {
+          "description": "A global variable, such as `console`, `window` or a module-level variable.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "heading": {
+          "description": "A heading in a markup language, such as `# Title` in Markdown.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "keyword": {
+          "description": "A keyword, such as `fn` or `func`.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "lifetime": {
+          "description": "A lifetime or label, such as `'a`.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "link": {
+          "description": "A link's text in a markup language.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "macro": {
+          "description": "A macro invocation, such as `println!`.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "navigationLink": {
+          "description": "The name under the pointer while ⌘ (Ctrl) is held, which a click goes to.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "number": {
+          "description": "A number literal.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "property": {
+          "description": "A property or field where it is declared, such as `name` in `{ name: string }`.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "punctuation": {
+          "description": "Punctuation and operators.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "semantic.builtinType": {
+          "description": "A built-in type, from the language server.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "semantic.call": {
+          "description": "A call of a function or a method, from the language server; declarations keep `function`.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "semantic.package": {
+          "description": "A package name, from the language server.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "semantic.type": {
+          "description": "A type that is not built in, from the language server.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "string": {
+          "description": "A string or character literal.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "strong": {
+          "description": "Strong text in a markup language.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "todo": {
+          "description": "TODO text in a comment, as the patterns of Settings → Editor → TODO find it.",
+          "$ref": "#/$defs/StyleValue"
+        },
+        "type": {
+          "description": "A type or trait name, as the highlighter sees it.",
+          "$ref": "#/$defs/StyleValue"
+        }
+      }
+    },
+    "TerminalSection": {
+      "description": "The terminal's colours.",
+      "type": "object",
+      "properties": {
+        "ansi": {
+          "description": "The 16 ANSI colours: black, red, green, yellow, blue, magenta, cyan, white, then the bright ones; `null` keeps the parent's.",
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Color"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maxItems": 16,
+          "minItems": 16
+        },
+        "background": {
+          "description": "The default background.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Color"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "cursor": {
+          "description": "The block cursor.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Color"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "foreground": {
+          "description": "The default text colour.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Color"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selection": {
+          "description": "Selected text.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Color"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "UiSection": {
+      "type": "object",
+      "properties": {
+        "accent": {
+          "description": "The accent: primary buttons, focused fields, the active stripe button.",
+          "$ref": "#/$defs/Color"
+        },
+        "accent.foreground": {
+          "description": "Text on the accent colour, such as a primary button's label.",
+          "$ref": "#/$defs/Color"
+        },
+        "banner.background": {
+          "description": "Editor notifications, the banner above the editor.",
+          "$ref": "#/$defs/Color"
+        },
+        "button.secondary.border": {
+          "description": "The outline of a secondary button.",
+          "$ref": "#/$defs/Color"
+        },
+        "icon.run": {
+          "description": "The Run button and other run icons.",
+          "$ref": "#/$defs/Color"
+        },
+        "image.checker.dark": {
+          "description": "The dark squares of the board behind transparent images.",
+          "$ref": "#/$defs/Color"
+        },
+        "image.checker.light": {
+          "description": "The light squares of the board behind transparent images.",
+          "$ref": "#/$defs/Color"
+        },
+        "island.background": {
+          "description": "The raised panels: tool windows and the frame of the editor.",
+          "$ref": "#/$defs/Color"
+        },
+        "link": {
+          "description": "Links and link-styled actions.",
+          "$ref": "#/$defs/Color"
+        },
+        "list.hover": {
+          "description": "A hovered row or button in a panel.",
+          "$ref": "#/$defs/Color"
+        },
+        "list.selection": {
+          "description": "A selected row in a list or tree.",
+          "$ref": "#/$defs/Color"
+        },
+        "popup.background": {
+          "description": "Popups, menus and dialogs, which float a step lighter than the window.",
+          "$ref": "#/$defs/Color"
+        },
+        "popup.border": {
+          "description": "The outline of popups, menus and dialogs.",
+          "$ref": "#/$defs/Color"
+        },
+        "popup.code.background": {
+          "description": "The background of code in documentation popups.",
+          "$ref": "#/$defs/Color"
+        },
+        "popup.hover": {
+          "description": "A hovered item in a popup or menu.",
+          "$ref": "#/$defs/Color"
+        },
+        "popup.shadow": {
+          "description": "The shadow under popups and dialogs.",
+          "$ref": "#/$defs/Color"
+        },
+        "project.0": {
+          "description": "The first project colour: a project's badge and the glow of the main toolbar.",
+          "$ref": "#/$defs/Color"
+        },
+        "project.1": {
+          "description": "The second project colour.",
+          "$ref": "#/$defs/Color"
+        },
+        "project.2": {
+          "description": "The third project colour.",
+          "$ref": "#/$defs/Color"
+        },
+        "project.3": {
+          "description": "The fourth project colour.",
+          "$ref": "#/$defs/Color"
+        },
+        "project.4": {
+          "description": "The fifth project colour.",
+          "$ref": "#/$defs/Color"
+        },
+        "project.5": {
+          "description": "The sixth project colour.",
+          "$ref": "#/$defs/Color"
+        },
+        "project.foreground": {
+          "description": "The initials on a project's badge.",
+          "$ref": "#/$defs/Color"
+        },
+        "searchHighlight": {
+          "description": "The background of the part of a label that matches a search, as in the Settings dialog.",
+          "$ref": "#/$defs/Color"
+        },
+        "stripe.active.icon": {
+          "description": "The icon of the active tool window stripe button.",
+          "$ref": "#/$defs/Color"
+        },
+        "tab.active.background": {
+          "description": "The fill of the active editor tab.",
+          "$ref": "#/$defs/Color"
+        },
+        "tab.active.border": {
+          "description": "The outline of the active editor tab.",
+          "$ref": "#/$defs/Color"
+        },
+        "tab.border": {
+          "description": "Borders of tabs, tool bars and panels.",
+          "$ref": "#/$defs/Color"
+        },
+        "tab.modified": {
+          "description": "The name of an editor tab with unsaved changes.",
+          "$ref": "#/$defs/Color"
+        },
+        "text.error": {
+          "description": "Error messages in dialogs and settings.",
+          "$ref": "#/$defs/Color"
+        },
+        "text.primary": {
+          "description": "Primary text.",
+          "$ref": "#/$defs/Color"
+        },
+        "text.secondary": {
+          "description": "Secondary text: paths, hints, status bar items, inactive icons.",
+          "$ref": "#/$defs/Color"
+        },
+        "text.warning": {
+          "description": "Warnings in dialogs and settings, such as a shortcut conflict.",
+          "$ref": "#/$defs/Color"
+        },
+        "textField.background": {
+          "description": "The inside of a text field in a dialog.",
+          "$ref": "#/$defs/Color"
+        },
+        "textField.border": {
+          "description": "The outline of a text field that has no focus.",
+          "$ref": "#/$defs/Color"
+        },
+        "textField.caret": {
+          "description": "The caret in a text field.",
+          "$ref": "#/$defs/Color"
+        },
+        "textField.selection": {
+          "description": "Selected text in a text field.",
+          "$ref": "#/$defs/Color"
+        },
+        "tree.excluded.background": {
+          "description": "The row of an excluded folder in the project tree.",
+          "$ref": "#/$defs/Color"
+        },
+        "tree.excluded.text": {
+          "description": "Excluded folders, such as build output, in the project tree; also invalid input.",
+          "$ref": "#/$defs/Color"
+        },
+        "tree.testRow": {
+          "description": "The row of a test file in the project tree.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.added": {
+          "description": "A new file added to version control.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.conflict": {
+          "description": "A file with merge conflicts.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.currentBranch": {
+          "description": "The label icon of the current branch, in the branches popup.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.deleted": {
+          "description": "A deleted file.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.graph.0": {
+          "description": "The first lane colour of the log graph.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.graph.1": {
+          "description": "The second lane colour of the log graph.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.graph.2": {
+          "description": "The third lane colour of the log graph.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.graph.3": {
+          "description": "The fourth lane colour of the log graph.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.graph.4": {
+          "description": "The fifth lane colour of the log graph.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.graph.5": {
+          "description": "The sixth lane colour of the log graph.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.ignored": {
+          "description": "A file version control ignores.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.incoming": {
+          "description": "The count of commits to pull, in the branches popup.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.modified": {
+          "description": "A file changed since the last commit: its name in the project tree, the tabs and the change lists.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.outgoing": {
+          "description": "The count of commits to push, in the branches popup.",
+          "$ref": "#/$defs/Color"
+        },
+        "vcs.unversioned": {
+          "description": "A file not known to version control.",
+          "$ref": "#/$defs/Color"
+        },
+        "window.background": {
+          "description": "The window behind the panels: the main toolbar, the stripes and the status bar.",
+          "$ref": "#/$defs/Color"
+        }
+      }
+    },
+    "Underline": {
+      "description": "How text is underlined.",
+      "oneOf": [
+        {
+          "description": "A straight line.",
+          "type": "string",
+          "const": "line"
+        },
+        {
+          "description": "A wavy line, as under a misspelt word.",
+          "type": "string",
+          "const": "wave"
+        }
+      ]
+    }
+  }
+}

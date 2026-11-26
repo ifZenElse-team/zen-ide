@@ -1,0 +1,31 @@
+[package]
+name = "zen-releases"
+description = "The Zen IDE release server: stores and serves signed release manifests and artifacts (ADR-0020)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+axum.workspace = true
+clap.workspace = true
+futures-util.workspace = true
+getrandom.workspace = true
+hex.workspace = true
+semver.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+tokio = { workspace = true, features = ["io-util"] }
+tower-http.workspace = true
+ureq.workspace = true
+zen-plugins.workspace = true
+zen-update.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+wat.workspace = true
+
+[lints]
+workspace = true

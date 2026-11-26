@@ -1,0 +1,58 @@
+{
+  "name": "XML",
+  "description": "XML: highlighting of elements, attributes, values, references, comments, CDATA, the doctype, processing instructions and namespace prefixes, folding, the elements in the Structure view, end tags as you type, and problems for tags that do not match; files are XML by their extension or, whatever their name, by what they start with (<?xml, a doctype, a namespaced root element).",
+  "extensions": [
+    "xml",
+    "plist",
+    "xsd",
+    "xsl",
+    "xslt",
+    "svg",
+    "wsdl",
+    "pom",
+    "csproj",
+    "fsproj",
+    "vbproj",
+    "props",
+    "targets",
+    "resx",
+    "xaml",
+    "rss",
+    "atom",
+    "kml",
+    "gpx",
+    "opml",
+    "dtd",
+    "iml"
+  ],
+  "contents": [
+    {
+      "starts": "<?xml"
+    },
+    {
+      "starts": "<!DOCTYPE",
+      "unless": [
+        "<!DOCTYPE html"
+      ]
+    },
+    {
+      "starts": "<",
+      "unless": [
+        "<html",
+        "<!",
+        "<?"
+      ],
+      "firstTag": "xmlns"
+    }
+  ],
+  "fileTemplates": {
+    "templates": [
+      {
+        "name": "XML File",
+        "extension": "xml",
+        "reformat": false,
+        "text": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+      }
+    ]
+  }
+}

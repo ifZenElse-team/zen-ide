@@ -1,0 +1,2 @@
+// Synthetic test file written for Zen IDE from the public description of the format; no part is taken from a real theme.
+{ "name": "Cycle B", "include": "./a.json", "colors": { "editor.foreground": "#BBBBBB", "editor.background": "#0B0B0B" } }

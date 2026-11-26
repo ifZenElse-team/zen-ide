@@ -1,0 +1,85 @@
+import groovy.json.JsonOutput
+import org.gradle.api.artifacts.component.ModuleComponentSelector
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
+import org.gradle.api.artifacts.result.UnresolvedDependencyResult
+
+def analyzed = { configuration ->
+    configuration.canBeResolved && (
+        configuration.name == 'compileClasspath' || configuration.name == 'runtimeClasspath'
+            || configuration.name.endsWith('CompileClasspath') || configuration.name.endsWith('RuntimeClasspath'))
+}
+
+def edgeOf = { edge ->
+    def requested = edge.requested
+    def module = requested instanceof ModuleComponentSelector
+    def out = [
+        requested: requested.displayName,
+        requestedVersion: module ? requested.version : '',
+        group: module ? requested.group : '',
+        module: module ? requested.module : ''
+    ]
+    if (edge instanceof ResolvedDependencyResult) {
+        out.selected = edge.selected.id.displayName
+    } else if (edge instanceof UnresolvedDependencyResult) {
+        out.failure = edge.failure?.message ?: ''
+    }
+    out
+}
+
+def isConstraint = { edge ->
+    try {
+        edge.constraint
+    } catch (Exception ignored) {
+        false
+    }
+}
+
+def causesOf = { reason ->
+    try {
+        reason.descriptions.collect { [cause: it.cause.toString(), text: it.description] }
+    } catch (Exception ignored) {
+        []
+    }
+}
+
+def componentOf = { component ->
+    def id = component.id
+    def version = component.moduleVersion
+    [
+        id: id.displayName,
+        group: version?.group ?: '',
+        module: version?.name ?: '',
+        version: version?.version ?: '',
+        project: id instanceof ProjectComponentIdentifier ? id.projectPath : '',
+        causes: causesOf(component.selectionReason),
+        dependencies: component.dependencies.findAll { !isConstraint(it) }.collect(edgeOf)
+    ]
+}
+
+allprojects { p ->
+    p.tasks.register('zenDependencies') {
+        doLast {
+            def configurations = []
+            p.configurations.findAll(analyzed).each { configuration ->
+                def result = configuration.incoming.resolutionResult
+                def seen = new LinkedHashMap()
+                def stack = [result.root]
+                while (!stack.isEmpty()) {
+                    def component = stack.pop()
+                    if (!seen.containsKey(component.id.displayName)) {
+                        seen[component.id.displayName] = componentOf(component)
+                        component.dependencies.findAll { it instanceof ResolvedDependencyResult }.each { stack << it.selected }
+                    }
+                }
+                configurations << [name: configuration.name, root: result.root.id.displayName, components: seen.values()]
+            }
+            println 'zen-dependencies ' + JsonOutput.toJson([
+                path: p.path,
+                name: p.name,
+                buildFile: p.buildFile.path,
+                configurations: configurations
+            ])
+        }
+    }
+}

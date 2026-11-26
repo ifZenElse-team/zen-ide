@@ -1,0 +1,36 @@
+# Zen UI: вкладка плана запроса в рабочей области «База данных».
+
+ide-dbplan-explain-plan = Показать план запроса
+ide-dbplan-explain = Получить план
+ide-dbplan-cancel = Отмена
+ide-dbplan-analyze = ANALYZE
+ide-dbplan-verbose = VERBOSE
+ide-dbplan-costs = COSTS
+ide-dbplan-buffers = BUFFERS
+ide-dbplan-settings = SETTINGS
+ide-dbplan-analyze-warning = С ANALYZE запрос выполняется. Он выполняется в транзакции, которая затем откатывается, но то, что транзакция не отменяет (последовательности, уведомления, вызовы других систем), останется.
+ide-dbplan-tree = Дерево
+ide-dbplan-raw = Текст
+ide-dbplan-running = Получаем план…
+ide-dbplan-failed = Не удалось прочитать план.
+ide-dbplan-not-run = План не получали после запуска IDE. Нажмите «Получить план», чтобы прочитать его снова.
+ide-dbplan-ignored = Недоступно для этой базы данных, пропущено: { $options }
+ide-dbplan-inlined = Записано в текст команды как литералы в кавычках, так как у этого драйвера нет параметров привязки: { $values }
+ide-dbplan-empty = В плане нет узлов.
+ide-dbplan-total-cost = Стоимость { $cost }
+ide-dbplan-planning = Планирование { $time }
+ide-dbplan-execution = Выполнение { $time }
+ide-dbplan-rolled-back = Откачено
+ide-dbplan-ms = { $ms } мс
+ide-dbplan-column-node = Узел
+ide-dbplan-column-entity = Объект
+ide-dbplan-column-cost = Стоимость
+ide-dbplan-column-rows = Строки
+ide-dbplan-column-time = Время
+ide-dbplan-column-condition = Условие
+ide-dbplan-share = Доля
+ide-dbplan-self-time = Собственное время
+ide-dbplan-self-cost = Собственная стоимость
+ide-dbplan-startup-cost = Стоимость запуска
+ide-dbplan-loops = Циклы
+ide-dbplan-whole = Весь план

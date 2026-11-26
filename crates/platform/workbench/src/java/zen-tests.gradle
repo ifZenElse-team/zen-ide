@@ -1,0 +1,66 @@
+// Zen IDE: reports every test as it runs, one line each, for the IDE's test results (ADR-0153).
+// Passed to Gradle with `-I` by the IDE; it changes nothing in the build.
+import groovy.json.JsonOutput
+
+def zenReport = { Map fields -> println('##zen-test ' + JsonOutput.toJson(fields)) }
+def zenName = { descriptor -> [suite: descriptor.className ?: '', test: descriptor.name] }
+
+allprojects {
+    tasks.withType(Test).configureEach { task ->
+        // A filter for one project's test may match nothing in another's.
+        task.filter.failOnNoMatchingTests = false
+        def port = System.getProperty('zen.debugPort')
+        if (port) {
+            task.jvmArgs("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=localhost:${port}")
+            task.maxParallelForks = 1
+            task.forkEvery = 0
+        }
+        task.beforeSuite { descriptor ->
+            if (descriptor.className) zenReport([event: 'suiteStarted'] + zenName(descriptor))
+        }
+        task.afterSuite { descriptor, result ->
+            if (descriptor.className) {
+                zenReport([event: 'suiteFinished', result: result.resultType.toString(), ms: result.endTime - result.startTime] + zenName(descriptor))
+            }
+        }
+        task.beforeTest { descriptor -> zenReport([event: 'testStarted'] + zenName(descriptor)) }
+        task.onOutput { descriptor, output ->
+            zenReport([event: 'output', stream: output.destination.toString(), text: output.message] + zenName(descriptor))
+        }
+        task.afterTest { descriptor, result ->
+            if (result.exception != null) {
+                def writer = new StringWriter()
+                result.exception.printStackTrace(new PrintWriter(writer))
+                writer.toString().readLines().each { line ->
+                    zenReport([event: 'output', stream: 'StdErr', text: line] + zenName(descriptor))
+                }
+            }
+            zenReport([event: 'testFinished', result: result.resultType.toString(), ms: result.endTime - result.startTime] + zenName(descriptor))
+        }
+    }
+}
+
+def zenCoverage = System.getProperty('zen.coverageDir')
+if (zenCoverage) {
+    allprojects { owner ->
+        owner.afterEvaluate {
+            def prefix = owner.path == ':' ? 'root' : owner.path.substring(1).replace(':', '-')
+            def plugin = owner.plugins.hasPlugin('jacoco')
+            owner.tasks.withType(Test).configureEach { task ->
+                if (plugin) {
+                    task.jacoco.destinationFile = new File(zenCoverage, "${prefix}-${task.name}.exec")
+                    if (task.name == 'test') task.finalizedBy('jacocoTestReport')
+                } else if (System.getProperty('zen.jacocoAgent')) {
+                    def agent = System.getProperty('zen.jacocoAgent')
+                    task.jvmArgs("-javaagent:${agent}=destfile=${new File(zenCoverage, 'jacoco.exec')},append=true")
+                }
+            }
+            if (plugin) {
+                owner.tasks.matching { it.name == 'jacocoTestReport' }.configureEach { report ->
+                    report.reports.xml.required.set(true)
+                    report.reports.xml.outputLocation.set(new File(zenCoverage, "gradle/${prefix}-test.xml"))
+                }
+            }
+        }
+    }
+}

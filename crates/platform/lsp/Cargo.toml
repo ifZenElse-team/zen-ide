@@ -1,0 +1,28 @@
+[package]
+name = "zen-lsp"
+description = "Zen Platform, layer L2: the Language Server Protocol client: server processes, JSON-RPC, capabilities, document sync."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+zen-env.workspace = true
+lsp-types.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+zen-project.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[features]
+fake = []
+
+[[test]]
+name = "fake"
+required-features = ["fake"]
+
+[lints]
+workspace = true

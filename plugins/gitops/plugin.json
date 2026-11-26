@@ -1,0 +1,156 @@
+{
+  "name": "GitOps",
+  "description": "GitOps repositories: recognises Flux, Argo CD, Kustomize and Helm in the project's YAML, shows their objects and how they connect, reports broken paths, references, patches and Helm values in the editor, leads from a reference or a .Values key to what it names and completes values keys in templates. It previews a chart or an overlay with the helm template or kustomize build you have installed, locally and read-only. With the Kubernetes plug-in it also shows what the cluster of the context chosen in the Kubernetes window says of each Flux and Argo CD object (ready, synced, healthy, the revision applied, the last error) through kubectl get, read-only. It never changes a cluster and downloads nothing.",
+  "extensions": [],
+  "runs": [
+    "helm",
+    "kustomize",
+    "kubectl"
+  ],
+  "personOnly": [
+    {
+      "program": "kubectl",
+      "subcommands": [
+        "apply",
+        "create",
+        "replace",
+        "patch",
+        "delete",
+        "edit",
+        "scale",
+        "rollout",
+        "label",
+        "annotate",
+        "set",
+        "drain",
+        "cordon",
+        "uncordon",
+        "taint"
+      ]
+    }
+  ],
+  "targetFiles": [
+    "Chart.yaml",
+    "kustomization.yaml",
+    "kustomization.yml",
+    "Kustomization"
+  ],
+  "index": {
+    "files": [
+      "*.yaml",
+      "*.yml",
+      "*.tpl",
+      "Kustomization"
+    ]
+  },
+  "toolWindows": [
+    {
+      "id": "gitops",
+      "title": {
+        "en": "GitOps",
+        "ru": "GitOps"
+      },
+      "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\"><circle cx=\"3.5\" cy=\"8\" r=\"2.2\"/><circle cx=\"12.5\" cy=\"3.5\" r=\"2.2\"/><circle cx=\"12.5\" cy=\"12.5\" r=\"2.2\"/><path d=\"M5.4 7 10.6 4.5M5.4 9l5.2 2.5\" fill=\"none\" stroke=\"#000\" stroke-width=\"1.4\"/></svg>",
+      "side": "right",
+      "sections": [
+        {
+          "id": "resources",
+          "title": {
+            "en": "Resources",
+            "ru": "Ресурсы"
+          },
+          "rows": "index",
+          "actions": [
+            {
+              "id": "events",
+              "title": {
+                "en": "Show Events",
+                "ru": "Показать события"
+              },
+              "program": "kubectl",
+              "kind": "stream",
+              "rows": true,
+              "args": [
+                "--context",
+                "${window.kubernetes.context}",
+                "get",
+                "events",
+                "--namespace",
+                "${row.namespace}",
+                "--field-selector",
+                "${row.selector}"
+              ]
+            }
+          ],
+          "state": {
+            "columns": [
+              "ready",
+              "synced",
+              "health",
+              "revision",
+              "message",
+              "name",
+              "namespace",
+              "selector"
+            ],
+            "columnTitles": {
+              "ready": {
+                "en": "Ready",
+                "ru": "Готов"
+              },
+              "synced": {
+                "en": "Synced",
+                "ru": "Синхронизирован"
+              },
+              "health": {
+                "en": "Health",
+                "ru": "Здоровье"
+              },
+              "revision": {
+                "en": "Revision",
+                "ru": "Ревизия"
+              },
+              "message": {
+                "en": "Message",
+                "ru": "Сообщение"
+              }
+            },
+            "lists": [
+              {
+                "program": "kubectl",
+                "args": [
+                  "--context",
+                  "${window.kubernetes.context}",
+                  "get",
+                  "kustomizations.kustomize.toolkit.fluxcd.io,helmreleases.helm.toolkit.fluxcd.io,gitrepositories.source.toolkit.fluxcd.io,ocirepositories.source.toolkit.fluxcd.io,helmrepositories.source.toolkit.fluxcd.io,buckets.source.toolkit.fluxcd.io,helmcharts.source.toolkit.fluxcd.io",
+                  "--all-namespaces",
+                  "--output",
+                  "json"
+                ]
+              },
+              {
+                "program": "kubectl",
+                "args": [
+                  "--context",
+                  "${window.kubernetes.context}",
+                  "get",
+                  "applications.argoproj.io",
+                  "--all-namespaces",
+                  "--output",
+                  "json"
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "windowValues": [
+        {
+          "plugin": "kubernetes",
+          "window": "kubernetes",
+          "choice": "context"
+        }
+      ]
+    }
+  ]
+}

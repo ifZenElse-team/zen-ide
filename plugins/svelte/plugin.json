@@ -1,0 +1,38 @@
+{
+  "name": "Svelte",
+  "description": "Svelte components: highlighting of the markup with blocks, tags, directives and {expressions}, the script as JavaScript or TypeScript with its runes and the style as CSS or SCSS by their lang; folding, the Structure view, completion of blocks, directives and runes, end tags as you type, colour previews, and the Svelte Language Server for problems, completion, navigation, rename and formatting.",
+  "extensions": ["svelte"],
+  "fileTemplates": {
+    "templates": [
+      {
+        "name": "Svelte Component",
+        "extension": "svelte",
+        "reformat": false,
+        "text": "<script lang=\"ts\">\n  let { } = $props()\n</script>\n\n<div class=\"${NAME}\"></div>\n\n<style>\n</style>\n"
+      }
+    ]
+  },
+  "serverPlugins": [
+    {
+      "server": "typescript-language-server",
+      "name": "typescript-svelte-plugin",
+      "package": "typescript-svelte-plugin@0.3.52",
+      "languages": ["svelte"],
+      "when": { "packages": ["svelte"] }
+    }
+  ],
+  "languageServers": [
+    {
+      "id": "svelte-language-server",
+      "name": "Svelte Language Server",
+      "languages": ["svelte"],
+      "extensions": ["svelte"],
+      "command": "svelteserver",
+      "args": ["--stdio"],
+      "install": {
+        "kind": "npm",
+        "package": "svelte-language-server@0.18.5 typescript@5"
+      }
+    }
+  ]
+}

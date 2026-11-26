@@ -1,0 +1,24 @@
+[package]
+name = "zen-pty-host"
+description = "zen-pty-host: keeps the IDE's terminals running while the IDE restarts (ADR-0275)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "zen-pty-host"
+path = "src/main.rs"
+
+[dependencies]
+zen-terminal.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+tempfile.workspace = true
+zen-i18n.workspace = true
+zen-workbench.workspace = true
+
+[lints]
+workspace = true

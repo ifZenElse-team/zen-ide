@@ -1,0 +1,40 @@
+{
+  "name": "Maven",
+  "description": "Maven projects: offered when a project has a pom.xml; the Maven tool window (lifecycle, plug-ins and their goals, profiles, dependencies, run a goal, Reload All Maven Projects), run configurations of kind Maven with the project's mvnw first, the dependency tree, Go to Dependency POM, the Maven Archetype project type, modules listed in the parent, and pom.xml as XML with completion of the POM's elements, values, goals and properties.",
+  "extensions": [],
+  "names": [
+    "pom.xml"
+  ],
+  "project": {
+    "markers": {
+      "files": [
+        "pom.xml"
+      ]
+    },
+    "build": {
+      "files": [
+        "pom.xml"
+      ],
+      "reload": "maven.project.reload",
+      "moduleFiles": [
+        "pom.xml"
+      ]
+    }
+  },
+  "projectGenerators": [
+    {
+      "id": "archetype",
+      "name": {
+        "en": "Maven Archetype",
+        "ru": "Maven Archetype"
+      },
+      "icon": "pom.xml",
+      "dynamicForm": true,
+      "network": true,
+      "tool": "maven",
+      "formDependsOn": [
+        "catalog"
+      ]
+    }
+  ]
+}

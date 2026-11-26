@@ -1,0 +1,50 @@
+{
+  "name": "YAML",
+  "description": "Highlights YAML, including Docker Compose files and Kubernetes manifests: keys, strings, numbers, booleans, comments, anchors, tags, block scalars and ${VAR} interpolation.",
+  "extensions": ["yml", "yaml"],
+  "languageServers": [
+    {
+      "id": "yaml-language-server",
+      "name": "YAML Language Server",
+      "languages": ["yaml"],
+      "extensions": ["yml", "yaml"],
+      "command": "yaml-language-server",
+      "workspaceSymbols": false,
+      "args": ["--stdio"],
+      "schemaSupport": { "setting": "yaml.schemas", "register": "yaml/registerContentRequest" },
+      "settings": {
+        "yaml": { "schemaStore": { "enable": false }, "validate": true }
+      },
+      "install": {
+        "kind": "npm",
+        "package": "yaml-language-server"
+      }
+    }
+  ],
+  "schemas": [
+    {
+      "id": "github-workflow",
+      "name": "GitHub workflow",
+      "server": "yaml-language-server",
+      "entry": "github/workflow.json",
+      "files": [
+        ".github/workflows/*.yml",
+        ".github/workflows/*.yaml"
+      ]
+    },
+    {
+      "id": "kubernetes",
+      "name": "Kubernetes 1.34",
+      "server": "yaml-language-server",
+      "entry": "kubernetes/all.json",
+      "files": [
+        "*.k8s.yaml",
+        "*.k8s.yml",
+        "k8s/**/*.yaml",
+        "k8s/**/*.yml",
+        "kubernetes/**/*.yaml",
+        "kubernetes/**/*.yml"
+      ]
+    }
+  ]
+}

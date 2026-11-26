@@ -1,0 +1,7 @@
+[
+  {
+    "language": "rust",
+    "terminator": ";",
+    "blocks": ["if", "else", "for", "while", "loop", "match", "fn", "struct", "enum", "union", "trait", "impl", "mod", "unsafe"]
+  }
+]

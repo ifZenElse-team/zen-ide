@@ -1,0 +1,20 @@
+[package]
+name = "zen-text"
+description = "Zen Platform, layer L0: text snapshots on a rope, edits with inverses, and undo history."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+regex.workspace = true
+ropey.workspace = true
+schemars.workspace = true
+serde.workspace = true
+
+[dev-dependencies]
+proptest.workspace = true
+
+[lints]
+workspace = true

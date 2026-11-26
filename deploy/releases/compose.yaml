@@ -1,0 +1,39 @@
+# The release server behind Caddy. See deploy/releases/README.md.
+name: zen-releases
+
+services:
+  releases:
+    build:
+      context: ../..
+      dockerfile: deploy/releases/Dockerfile
+    restart: unless-stopped
+    env_file: /srv/zen-releases/.env
+    volumes:
+      - /srv/zen-releases/data:/data
+    expose:
+      - "8787"
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    env_file: /srv/zen-releases/.env
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./site:/srv/site:ro
+      # The websites the release server keeps (ADR-0171): site/<stage>/, and site/current, a relative
+      # link to the live one. Create the folder for the server's user first; Docker would
+      # create a missing one as root, and the server could not write into it.
+      - /srv/zen-releases/data/site:/srv/site-live:ro
+      - ../../assets/fonts:/srv/fonts:ro
+      - ../../assets/icons:/srv/icons:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - releases
+
+volumes:
+  caddy_data:
+  caddy_config:

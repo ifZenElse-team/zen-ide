@@ -1,0 +1,40 @@
+{
+  "name": "Oracle",
+  "description": "Oracle Database in the Database workspace: service names, SIDs, TNS aliases, connect strings and TLS, schemas with their tables, views, packages, procedures, functions and sequences in the navigator, typed results, errors that point at their place, transactions with manual commit, Cancel, editing table rows and export, through the zen-db-oracle driver program, which drives SQLcl, the command-line program you install.",
+  "extensions": [],
+  "databaseDrivers": [
+    {
+      "id": "oracle",
+      "name": "Oracle",
+      "icon": "database",
+      "protocol": 1,
+      "process": "perConnection",
+      "defaultPort": 1521,
+      "capabilities": {
+        "models": ["relational"],
+        "language": "sql:oracle",
+        "transactions": true,
+        "isolationLevels": ["READ COMMITTED", "SERIALIZABLE"],
+        "schemas": true,
+        "nodeKinds": ["schema", "table", "view", "column"],
+        "serverCancel": true,
+        "rowIdentity": "primaryKey",
+        "password": true,
+        "settings": [
+          { "key": "connectionType", "kind": "choice", "choices": ["serviceName", "sid", "tns", "custom"], "default": "serviceName" },
+          { "key": "role", "kind": "choice", "choices": ["normal", "SYSDBA", "SYSOPER", "SYSDG", "SYSBACKUP", "SYSKM"], "default": "normal" },
+          { "key": "tnsAlias", "kind": "text" },
+          { "key": "tnsAdmin", "kind": "path" },
+          { "key": "connectString", "kind": "text" },
+          { "key": "wallet", "kind": "path" },
+          { "key": "program", "kind": "path" },
+          { "key": "javaHome", "kind": "path" }
+        ],
+        "introspection": true
+      },
+      "readVerbs": [],
+      "guardsReadOnly": false,
+      "platforms": {}
+    }
+  ]
+}

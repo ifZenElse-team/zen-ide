@@ -1,0 +1,39 @@
+# New Project (project.new.*, ADR-0237).
+workbench-new-project-empty = Empty Project
+workbench-new-project-empty-description = A basic project with free structure.
+workbench-new-project-unknown = There is no project type { $generator }.
+workbench-new-project-crashed = The project generator stopped unexpectedly.
+workbench-new-project-form-pending = The project type's fields are still loading.
+workbench-new-project-required = Fill in { $field }.
+workbench-new-project-no-jdk = No JDK on this computer: download one here, or add one in Settings → JDKs.
+workbench-new-project-no-location = Enter the project's location.
+workbench-new-project-not-absolute = The location must be a full path.
+workbench-new-project-bad-name = The folder's name is not valid.
+workbench-new-project-is-file = The location is a file.
+workbench-new-project-no-parent = The location has no parent folder.
+workbench-new-project-parent-file = { $parent } is a file, not a folder.
+workbench-new-project-read-only = { $parent } cannot be written to.
+workbench-new-project-not-empty = { $path } is not empty.
+workbench-new-project-cancelled = Creating the project was cancelled.
+workbench-new-project-no-job = There is no project creation { $job }.
+workbench-new-project-network-off = Project generators may not use the network: turn it on in Settings → System Settings → Project Generators.
+workbench-new-project-needs-network = Generating this project needs the network: { $error }
+workbench-new-project-service-refused = The service refused the request ({ $status }). { $message }
+workbench-new-project-bad-archive = The service's archive cannot be read: { $error }
+workbench-new-project-saved-form = The network is not available: these choices come from the last saved list.
+workbench-new-project-no-maven = Maven was not found: install it, or download it in Settings → Build, Execution, Deployment → Build Tools → Maven.
+workbench-new-project-tool-agent = Only a person can run { $tool } to generate a project: a generator's template runs code on this computer (ADR-0205).
+workbench-new-project-tool-failed = { $tool } failed; its output is above.
+workbench-new-project-tool-unknown = This IDE cannot run { $tool }.
+# Clone Repository (project.fromVcs.clone, ADR-0244).
+workbench-clone-no-url = Enter the repository's URL.
+workbench-clone-bad-url = This is not a repository's URL.
+workbench-clone-cancelled = The clone was cancelled.
+# Project and Module from Existing Sources (ADR-0244).
+workbench-sources-not-found = { $path } does not exist.
+workbench-module-no-build = This project has no build that lists modules.
+workbench-module-is-root = This folder is the project itself.
+workbench-module-unsaved = { $file } has unsaved changes: save it first.
+workbench-module-project-jdk = Project JDK { $jdk }
+workbench-new-project-tool-safe-mode = { $tool } cannot generate a project while this window shows a project that is not trusted: Maven reads the settings of the folders around it, and a generator's template runs code on this computer. Trust the project first, or create it from the Welcome screen.
+workbench-new-project-lists-person-only = Only a person changes these lists: a catalog names where an archetype's code comes from, and creating from it runs that code.

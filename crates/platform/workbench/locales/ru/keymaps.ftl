@@ -1,0 +1,15 @@
+workbench-keymap-macos = macOS
+workbench-keymap-error-unknown = Раскладки «{ $id }» нет.
+workbench-keymap-error-builtin = Встроенную раскладку нельзя переименовать или удалить.
+workbench-keymap-error-broken = Раскладку «{ $id }» нельзя использовать: { $error }
+workbench-keymap-error-empty-name = У раскладки должно быть имя.
+workbench-keymap-error-no-folder = Нет папки раскладок.
+workbench-keymap-error-read = Не удалось прочитать { $path }: { $error }
+workbench-keymap-error-format = { $path } не является раскладкой известного формата: файлом .xml раскладки, экспортированным из IDE JetBrains.
+workbench-keymap-error-import = Не удалось импортировать { $path }: { $error }
+workbench-keymap-error-write = Не удалось сохранить раскладку в { $path }: { $error }
+workbench-keymap-missing = Раскладка «{ $id }» не найдена; вместо неё используется раскладка macOS.
+workbench-keymap-error-version = formatVersion { $version } не поддерживается
+workbench-keymap-error-bad-id = «{ $id }» не может быть идентификатором вашей раскладки
+workbench-keymap-error-too-large = файл больше { $megabytes } МБ, слишком велик для раскладки
+workbench-keymap-error-empty-abbreviation = В аббревиатуре нужен символ, кроме пробела.

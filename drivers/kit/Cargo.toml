@@ -1,0 +1,18 @@
+[package]
+name = "zen-db-driver-kit"
+description = "Zen IDE database driver programs: the external driver protocol v1 over standard input and output, sessions, cancel and TLS through rustls with RustCrypto (ADR-0174, ADR-0175)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+serde_json.workspace = true
+tokio = { workspace = true, features = ["io-std", "io-util", "sync", "time"] }
+rustls.workspace = true
+rustls-rustcrypto.workspace = true
+webpki-roots.workspace = true
+
+[lints]
+workspace = true

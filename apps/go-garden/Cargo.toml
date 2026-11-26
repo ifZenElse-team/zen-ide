@@ -1,0 +1,37 @@
+[package]
+name = "go-garden"
+description = "GoGarden: the Zen IDE for Go."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "gogarden"
+path = "src/main.rs"
+
+[dependencies]
+eframe.workspace = true
+serde_json.workspace = true
+zen-core.workspace = true
+zen-i18n.workspace = true
+zen-lang-go.workspace = true
+zen-lang-rust.workspace = true
+zen-ui.workspace = true
+zen-update.workspace = true
+zen-workbench.workspace = true
+zen-modules.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+zen-automation.workspace = true
+zen-testkit.workspace = true
+zen-jb-import.workspace = true
+zen-plugins.workspace = true
+zen-syntax.workspace = true
+zen-lsp = { workspace = true, features = ["fake"] }
+zen-run = { workspace = true, features = ["fake"] }
+
+[lints]
+workspace = true

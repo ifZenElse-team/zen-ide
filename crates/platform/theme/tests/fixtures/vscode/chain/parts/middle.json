@@ -1,0 +1,12 @@
+// Synthetic test file written for Zen IDE from the public description of the format; no part is taken from a real theme.
+{
+  "name": "Chain Middle",
+  "type": "light",
+  "include": "../root.json",
+  "colors": { "editor.foreground": "#D0D0D0", "editor.background": "#303030" },
+  "tokenColors": [
+    { "scope": "keyword", "settings": { "foreground": "#00CC00" } },
+    { "scope": "string", "settings": { "foreground": "#00AA00" } },
+  ],
+  "semanticTokenColors": { "namespace": "#445566" },
+}

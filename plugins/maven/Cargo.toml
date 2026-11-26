@@ -1,0 +1,27 @@
+[package]
+name = "zen-plugin-maven"
+description = "Zen IDE plug-in: Maven projects, offered for a pom.xml; the Maven tool window and pom.xml read as XML with POM completion (ADR-0031, ADR-0149)."
+version = "0.2.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+serde_json.workspace = true
+
+[lints.rust]
+unsafe_code = "deny"
+unreachable_pub = "warn"
+unused_qualifications = "warn"
+
+[lints.clippy]
+all = { level = "warn", priority = -1 }
+dbg_macro = "warn"
+todo = "warn"
+unimplemented = "warn"
+print_stdout = "warn"
+print_stderr = "warn"

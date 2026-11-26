@@ -1,0 +1,27 @@
+processing-compiler-page = Compiler
+processing-compiler-note = How the IDE compiles Java code itself, when it builds a Java application with javac.
+processing-page = Annotation Processors
+processing-no-project = Open a project to change its annotation processing settings; they are kept per project.
+processing-unknown = There is no annotation processing setting { $key }.
+processing-bad-value = The annotation processing setting { $key } cannot be { $value }.
+processing-enabled = Enable annotation processing
+processing-source = Obtain processors from:
+processing-source-build = Project build (Maven or Gradle)
+processing-source-custom = Processor path
+processing-custom-path = Processor path:
+processing-from-build = From the { $tool } build: { $value }
+processing-generated = Store generated sources relative to the module
+processing-generated-main = Production sources directory:
+processing-options = Annotation processor options
+processing-options-field = Options:
+processing-options-note = Separate options with semicolons: name=value; other=value. They are passed as -Aname=value, over the build's.
+processing-lombok = Lombok
+processing-lombok-none = The project does not depend on Lombok.
+processing-lombok-found = Lombok { $version }: the Java language server runs with { $jar } as its agent.
+processing-lombok-newest = Lombok { $version }, the newest in the local repositories, as the build does not name a version: the Java language server runs with { $jar } as its agent.
+processing-lombok-missing = { $file } depends on Lombok { $version }, which is not in the local Maven repository or the Gradle cache yet. Reload the project so that the build downloads it; the Java language server then restarts with it.
+processing-reach-note = These settings apply when the IDE compiles a Java application with javac, and turn the Java language server's processing of Gradle projects on or off. For Maven projects the language server follows the processors and options in pom.xml.
+processing-restart-lombok = { $server } restarts with Lombok { $version } as its agent.
+processing-restart-no-lombok = { $server } restarts without Lombok: the project no longer depends on it.
+processing-restart-settings = { $server } restarts to apply the annotation processing settings.
+processing-restart-jdk = { $server } restarts with the project's JDK { $version }.

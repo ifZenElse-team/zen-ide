@@ -1,0 +1,30 @@
+# Zen IDE: the Migrations tab of the Database workspace.
+
+ide-database-migrations = Migrations
+ide-dbmigrations-refresh = Refresh
+ide-dbmigrations-up = Up
+ide-dbmigrations-down = Down
+ide-dbmigrations-connect = Connect
+ide-dbmigrations-offline = Not connected: the state of each migration is read only while the connection is.
+ide-dbmigrations-scanning = Looking for migrations…
+ide-dbmigrations-no-sets = No migrations
+ide-dbmigrations-no-connection = Choose a connection
+ide-dbmigrations-choose-connection = choose a connection to see what is applied
+ide-dbmigrations-empty = No migration folders were found in this project.
+ide-dbmigrations-no-migrations = This folder has no migrations.
+ide-dbmigrations-counts = { $applied } applied, { $pending } pending, { $failed } failed or missing
+ide-dbmigrations-files = { $count } migrations
+ide-dbmigrations-no-table = no { $table } table yet
+ide-dbmigrations-run-waiting = reading the password
+ide-dbmigrations-run-running = running in the Run window
+ide-dbmigrations-run-ended = last run ended with code { $code }
+ide-dbmigrations-state-applied = Applied
+ide-dbmigrations-state-pending = Pending
+ide-dbmigrations-state-failed = Failed
+ide-dbmigrations-state-unknown = Unknown
+ide-dbmigrations-state-missing = No file
+ide-dbmigrations-col-state = State
+ide-dbmigrations-col-version = Version
+ide-dbmigrations-col-name = Name
+ide-dbmigrations-col-file = File
+ide-dbmigrations-read-only = { $name } is read-only: migrations do not run on it.

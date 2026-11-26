@@ -1,0 +1,5 @@
+{
+  "name": "SQL",
+  "description": "SQL for PostgreSQL, MySQL, MariaDB, SQLite, ClickHouse and standard SQL: highlighting, folding, structure, keyword completion and syntax problems, in the bound connection's dialect.",
+  "extensions": ["sql", "ddl", "dml", "pgsql", "psql", "mysql", "plsql"]
+}

@@ -1,0 +1,11 @@
+{
+  "name": "Ant",
+  "description": "Ant builds: offered when a project has a build.xml; the Ant tool window (build files and their targets, the default one marked, add and remove build files, filter targets, run a target with its output in the Run tool window, each build file's JDK, classpath, memory and properties), run configurations of kind Ant, and build.xml as XML with completion of tasks, attributes, target names and properties and Go to Declaration of a target.",
+  "extensions": [],
+  "names": ["build.xml"],
+  "project": {
+    "markers": {
+      "files": ["build.xml"]
+    }
+  }
+}

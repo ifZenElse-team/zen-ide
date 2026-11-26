@@ -1,0 +1,32 @@
+[package]
+name = "zen-lang-go"
+description = "The Go plug-in of Zen IDE, a built-in module: highlighting, Go modules, the Structure, run, test and debug, gopls, go.mod checks, the Go toolchain and its settings."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+flate2.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+zen-core.workspace = true
+zen-i18n.workspace = true
+zen-lsp.workspace = true
+zen-modules.workspace = true
+zen-project.workspace = true
+zen-run.workspace = true
+zen-syntax.workspace = true
+zen-update.workspace = true
+
+[dev-dependencies]
+# Each test thread has its own interface language (zen-i18n's docs).
+zen-i18n = { workspace = true, features = ["thread-languages"] }
+zen-dap.workspace = true
+zen-editor.workspace = true
+tempfile.workspace = true
+
+[lints]
+workspace = true

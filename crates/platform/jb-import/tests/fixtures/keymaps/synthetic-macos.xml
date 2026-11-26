@@ -1,0 +1,28 @@
+<!-- A synthetic keymap written for the tests of zen-jb-import; not exported from any product. -->
+<keymap version="1" name="Fixture Keys" parent="Mac OS X 10.5+">
+  <action id="EditorDuplicate">
+    <keyboard-shortcut first-keystroke="meta shift D" />
+  </action>
+  <action id="GotoDeclaration">
+    <keyboard-shortcut first-keystroke="control B" />
+    <mouse-shortcut keystroke="meta button1" />
+  </action>
+  <action id="GotoDeclarationOnly">
+    <keyboard-shortcut first-keystroke="meta B" />
+    <keyboard-shortcut first-keystroke="control B" />
+  </action>
+  <action id="CommentByLineComment" />
+  <action id="ReformatCode">
+    <keyboard-shortcut first-keystroke="meta alt L" />
+    <keyboard-shortcut first-keystroke="meta K" second-keystroke="meta F" />
+  </action>
+  <action id="GotoFile">
+    <keyboard-shortcut first-keystroke="meta shift N" />
+  </action>
+  <action id="EditorEscape">
+    <keyboard-shortcut first-keystroke="meta NUMPAD5" />
+  </action>
+  <action id="Fixture.NoSuchAction">
+    <keyboard-shortcut first-keystroke="meta U" />
+  </action>
+</keymap>

@@ -1,0 +1,17 @@
+workbench-ant-kind = Ant
+workbench-ant-field-build-file = Build file:
+workbench-ant-field-targets = Targets:
+workbench-ant-no-build-file = { $path } is not a file: name the Ant build file to run.
+workbench-ant-not-found = Ant is not found: ant is not on this computer (PATH, ANT_HOME, SDKMAN). Install Ant, or use Download Ant.
+workbench-ant-no-jdk = { $path } is not a JDK: it has no bin folder.
+workbench-ant-not-listed = { $path } is not a build file of the Ant tool window; add it first (ant.buildFile.add).
+workbench-ant-outside = { $path } is not in the project.
+workbench-ant-not-build-file = { $path } is not an Ant build file: its root element is not <project>.
+workbench-ant-no-build-files = The Ant tool window lists no build file; add one first (ant.buildFile.add).
+workbench-ant-unreadable = { $path } does not read: { $error }
+workbench-ant-no-target = { $path } has no target { $target }.
+workbench-ant-download-task = Downloading Ant { $version }
+workbench-ant-download-no-folder = The IDE has no data folder to download Ant into.
+workbench-ant-download-checksum = The download of { $url } does not match its SHA-512; nothing was installed.
+workbench-ant-download-unavailable = Ant cannot be downloaded here.
+workbench-ant-download-done = Ant is installed in { $folder }.

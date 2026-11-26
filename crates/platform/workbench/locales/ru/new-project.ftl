@@ -1,0 +1,39 @@
+# Новый проект (project.new.*, ADR-0237).
+workbench-new-project-empty = Пустой проект
+workbench-new-project-empty-description = Простой проект со свободной структурой.
+workbench-new-project-unknown = Типа проекта { $generator } нет.
+workbench-new-project-crashed = Генератор проекта неожиданно остановился.
+workbench-new-project-form-pending = Поля типа проекта ещё загружаются.
+workbench-new-project-required = Заполните поле «{ $field }».
+workbench-new-project-no-jdk = На компьютере нет JDK: скачайте его здесь или добавьте в «Настройки» → JDK.
+workbench-new-project-no-location = Укажите расположение проекта.
+workbench-new-project-not-absolute = Расположение должно быть полным путём.
+workbench-new-project-bad-name = Недопустимое имя папки.
+workbench-new-project-is-file = По этому пути находится файл.
+workbench-new-project-no-parent = У расположения нет родительской папки.
+workbench-new-project-parent-file = { $parent } — файл, а не папка.
+workbench-new-project-read-only = В { $parent } нельзя записывать.
+workbench-new-project-not-empty = Папка { $path } не пуста.
+workbench-new-project-cancelled = Создание проекта отменено.
+workbench-new-project-no-job = Создания проекта { $job } нет.
+workbench-new-project-network-off = Генераторам проектов запрещено выходить в сеть: включите её в Настройки → Системные настройки → Генераторы проектов.
+workbench-new-project-needs-network = Для генерации этого проекта нужна сеть: { $error }
+workbench-new-project-service-refused = Сервис отклонил запрос ({ $status }). { $message }
+workbench-new-project-bad-archive = Архив сервиса не удаётся прочитать: { $error }
+workbench-new-project-saved-form = Сеть недоступна: варианты взяты из последнего сохранённого списка.
+workbench-new-project-no-maven = Maven не найден: установите его или скачайте в Settings → Build, Execution, Deployment → Build Tools → Maven.
+workbench-new-project-tool-agent = Запустить { $tool }, чтобы создать проект, может только человек: шаблон генератора выполняет код на этом компьютере (ADR-0205).
+workbench-new-project-tool-failed = { $tool } завершился с ошибкой; вывод выше.
+workbench-new-project-tool-unknown = Эта IDE не умеет запускать { $tool }.
+# Clone Repository (project.fromVcs.clone, ADR-0244).
+workbench-clone-no-url = Введите URL репозитория.
+workbench-clone-bad-url = Это не URL репозитория.
+workbench-clone-cancelled = Клонирование отменено.
+# Project and Module from Existing Sources (ADR-0244).
+workbench-sources-not-found = { $path } не существует.
+workbench-module-no-build = В этом проекте нет сборки, в которой перечисляются модули.
+workbench-module-is-root = Эта папка и есть проект.
+workbench-module-unsaved = В { $file } есть несохранённые изменения: сначала сохраните файл.
+workbench-module-project-jdk = JDK проекта { $jdk }
+workbench-new-project-tool-safe-mode = { $tool } не может создать проект, пока в этом окне открыт проект без доверия: Maven читает настройки окружающих папок, а шаблон генератора выполняет код на этом компьютере. Сначала доверьте проекту или создайте новый с экрана приветствия.
+workbench-new-project-lists-person-only = Эти списки меняет только человек: каталог указывает, откуда берётся код архетипа, а создание проекта из него запускает этот код.

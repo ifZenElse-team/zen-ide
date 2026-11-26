@@ -1,0 +1,8 @@
+[
+  { "language": "go", "id": "if", "title": "go-surround-if", "text": "if $CONDITION$ {\n\t$SELECTION$\n}" },
+  { "language": "go", "id": "ifElse", "title": "go-surround-if-else", "text": "if $CONDITION$ {\n\t$SELECTION$\n} else {\n\t$END$\n}" },
+  { "language": "go", "id": "for", "title": "go-surround-for", "text": "for $CONDITION$ {\n\t$SELECTION$\n}" },
+  { "language": "go", "id": "func", "title": "go-surround-func", "text": "func() {\n\t$SELECTION$\n}()" },
+  { "language": "go", "id": "parentheses", "title": "go-surround-parentheses", "text": "($SELECTION$)", "expression": true },
+  { "language": "go", "id": "not", "title": "go-surround-not", "text": "!($SELECTION$)", "expression": true }
+]

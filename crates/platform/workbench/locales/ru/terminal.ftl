@@ -1,0 +1,31 @@
+# Zen Workbench: сессии терминала.
+
+terminal-tab-local = Локальный
+terminal-tab-local-numbered = Локальный ({ $number })
+terminal-session-start-failed = Не удалось запустить терминал: { $error }
+terminal-session-unsupported = Терминал недоступен в этой версии
+terminal-session-elsewhere = Этот терминал работает в хосте терминалов прежней версии (протокол { $protocol }), который эта версия IDE показать не может. Его программы работают, пока не завершатся, а вкладка закроется, когда тот хост остановится.
+terminal-session-none = Нет ни одной сессии терминала; откройте её командой terminal.session.new
+terminal-session-missing = Нет сессии терминала { $id }
+terminal-tab-missing = Нет вкладки терминала { $tab }
+terminal-session-no-folder = Нет папки { $path }
+terminal-send-too-long = Текст длиннее { $limit } байт
+terminal-link-empty = Укажите ссылку: URL или путь к файлу
+terminal-link-no-file = Нет файла или папки { $path } ни в папке терминала, ни в проекте
+terminal-link-folder-in-editor = { $path } — папка, её нельзя открыть в редакторе
+terminal-link-action-not-offered = Действие { $action } не предлагается для ссылки вида { $kind }
+terminal-link-browser-user-only = Открыть ссылку в браузере может только человек: ⌘-щелчок по ней в терминале; скопировать её можно действием copyLink
+terminal-link-browser-failed = Не удалось открыть браузер: { $error }
+terminal-selection-none = В терминале ничего не выделено
+terminal-lines-out-of-range = В сессии { $lines } строк: выберите строки от 1 до { $lines }
+terminal-paste-user-only = Вставить буфер обмена в терминал может только человек: нажмите ⌘V
+terminal-session-ended-restart = Сеанс завершён: компьютер перезагрузился
+terminal-session-ended-host = Сеанс завершён: хост терминалов остановился
+terminal-rerun-user-only = Повторить команду после перезапуска может только человек: нажмите «Выполнить снова» во вкладке терминала
+terminal-rerun-none = В этом терминале нет команды, которую можно повторить
+terminal-agent-resuming = Беседа { $agent } возобновляется
+terminal-agent-unknown = Нет адаптера агента { $agent }; их список даёт terminal.agent.list
+terminal-agent-bad-session = В id беседы только буквы, цифры и - _ . : (не больше 128)
+terminal-agent-no-terminal = В этом окне нет терминала { $terminal }
+terminal-agent-no-host = Беседы агентов возобновляются только там, где работает хост терминалов (macOS и Linux)
+terminal-agent-report-failed = Не удалось сохранить id беседы агента: { $error }

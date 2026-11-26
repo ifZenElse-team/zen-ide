@@ -1,0 +1,12 @@
+ide-endpoints-title = Endpoints
+ide-endpoints-refresh = Refresh
+ide-endpoints-empty = No request mappings in the project.
+ide-endpoints-loading = Reading the project's sources…
+ide-endpoints-any = ANY
+ide-endpoints-not-available = The Endpoints tool window needs the Spring Boot plug-in and an open project.
+ide-starters-title = Edit Starters
+ide-starters-version = Spring Boot { $version }, module { $module }
+ide-starters-asking = Asking the Spring Initializr service…
+ide-starters-apply = Apply
+ide-starters-retry = Try Again
+ide-starters-edit = Edit Starters…

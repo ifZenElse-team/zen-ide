@@ -1,0 +1,12 @@
+[
+  {
+    "language": "rust",
+    "opening": "///",
+    "keywords": ["fn", "struct", "enum", "union", "trait", "type", "const", "static", "mod", "macro_rules"],
+    "skip": ["#["],
+    "noResult": ["()"],
+    "resultContains": "Result",
+    "text": "/// $END$\n$RESULT$",
+    "result": "///\n/// # Errors\n///\n/// "
+  }
+]

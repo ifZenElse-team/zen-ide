@@ -1,0 +1,56 @@
+{"Time":"2026-10-18T18:06:09.222086+08:00","Action":"start","Package":"example.com/demo/calc"}
+{"Time":"2026-10-18T18:06:09.829305+08:00","Action":"run","Package":"example.com/demo/calc","Test":"TestAdd"}
+{"Time":"2026-10-18T18:06:09.829453+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestAdd","Output":"=== RUN   TestAdd\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.829537+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestAdd","Output":"--- PASS: TestAdd (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.829556+08:00","Action":"pass","Package":"example.com/demo/calc","Test":"TestAdd","Elapsed":0}
+{"Time":"2026-10-18T18:06:09.829573+08:00","Action":"run","Package":"example.com/demo/calc","Test":"TestWrong"}
+{"Time":"2026-10-18T18:06:09.829582+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestWrong","Output":"=== RUN   TestWrong\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.829591+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestWrong","Output":"    calc_test.go:15: checking\n"}
+{"Time":"2026-10-18T18:06:09.829603+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestWrong","Output":"    calc_test.go:17: Add(2, 2) = 4, want 5\n","OutputType":"error"}
+{"Time":"2026-10-18T18:06:09.829617+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestWrong","Output":"--- FAIL: TestWrong (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.829642+08:00","Action":"fail","Package":"example.com/demo/calc","Test":"TestWrong","Elapsed":0}
+{"Time":"2026-10-18T18:06:09.829651+08:00","Action":"run","Package":"example.com/demo/calc","Test":"TestSkipped"}
+{"Time":"2026-10-18T18:06:09.829659+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestSkipped","Output":"=== RUN   TestSkipped\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.829667+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestSkipped","Output":"    calc_test.go:22: not ready\n"}
+{"Time":"2026-10-18T18:06:09.829761+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestSkipped","Output":"--- SKIP: TestSkipped (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.82979+08:00","Action":"skip","Package":"example.com/demo/calc","Test":"TestSkipped","Elapsed":0}
+{"Time":"2026-10-18T18:06:09.829805+08:00","Action":"run","Package":"example.com/demo/calc","Test":"TestTable"}
+{"Time":"2026-10-18T18:06:09.829814+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestTable","Output":"=== RUN   TestTable\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.829823+08:00","Action":"run","Package":"example.com/demo/calc","Test":"TestTable/one"}
+{"Time":"2026-10-18T18:06:09.829831+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestTable/one","Output":"=== RUN   TestTable/one\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.829839+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestTable/one","Output":"--- PASS: TestTable/one (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.829847+08:00","Action":"pass","Package":"example.com/demo/calc","Test":"TestTable/one","Elapsed":0}
+{"Time":"2026-10-18T18:06:09.829862+08:00","Action":"run","Package":"example.com/demo/calc","Test":"TestTable/two_words"}
+{"Time":"2026-10-18T18:06:09.829871+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestTable/two_words","Output":"=== RUN   TestTable/two_words\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.829878+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestTable/two_words","Output":"    calc_test.go:29: failed case\n","OutputType":"error"}
+{"Time":"2026-10-18T18:06:09.829892+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestTable/two_words","Output":"--- FAIL: TestTable/two_words (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.829904+08:00","Action":"fail","Package":"example.com/demo/calc","Test":"TestTable/two_words","Elapsed":0}
+{"Time":"2026-10-18T18:06:09.829915+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestTable","Output":"--- FAIL: TestTable (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.829951+08:00","Action":"fail","Package":"example.com/demo/calc","Test":"TestTable","Elapsed":0}
+{"Time":"2026-10-18T18:06:09.829957+08:00","Action":"run","Package":"example.com/demo/calc","Test":"TestParallel"}
+{"Time":"2026-10-18T18:06:09.829963+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestParallel","Output":"=== RUN   TestParallel\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.829969+08:00","Action":"run","Package":"example.com/demo/calc","Test":"TestParallel/a"}
+{"Time":"2026-10-18T18:06:09.829974+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestParallel/a","Output":"=== RUN   TestParallel/a\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.829989+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestParallel/a","Output":"=== PAUSE TestParallel/a\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.829995+08:00","Action":"pause","Package":"example.com/demo/calc","Test":"TestParallel/a"}
+{"Time":"2026-10-18T18:06:09.830001+08:00","Action":"run","Package":"example.com/demo/calc","Test":"TestParallel/b"}
+{"Time":"2026-10-18T18:06:09.830006+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestParallel/b","Output":"=== RUN   TestParallel/b\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.830012+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestParallel/b","Output":"=== PAUSE TestParallel/b\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.830017+08:00","Action":"pause","Package":"example.com/demo/calc","Test":"TestParallel/b"}
+{"Time":"2026-10-18T18:06:09.830111+08:00","Action":"cont","Package":"example.com/demo/calc","Test":"TestParallel/a"}
+{"Time":"2026-10-18T18:06:09.830141+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestParallel/a","Output":"=== CONT  TestParallel/a\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.830157+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestParallel/a","Output":"--- PASS: TestParallel/a (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.830172+08:00","Action":"pass","Package":"example.com/demo/calc","Test":"TestParallel/a","Elapsed":0}
+{"Time":"2026-10-18T18:06:09.83018+08:00","Action":"cont","Package":"example.com/demo/calc","Test":"TestParallel/b"}
+{"Time":"2026-10-18T18:06:09.830186+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestParallel/b","Output":"=== CONT  TestParallel/b\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.830193+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestParallel/b","Output":"--- PASS: TestParallel/b (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.8302+08:00","Action":"pass","Package":"example.com/demo/calc","Test":"TestParallel/b","Elapsed":0}
+{"Time":"2026-10-18T18:06:09.830206+08:00","Action":"output","Package":"example.com/demo/calc","Test":"TestParallel","Output":"--- PASS: TestParallel (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.830211+08:00","Action":"pass","Package":"example.com/demo/calc","Test":"TestParallel","Elapsed":0}
+{"Time":"2026-10-18T18:06:09.830217+08:00","Action":"run","Package":"example.com/demo/calc","Test":"ExampleAdd"}
+{"Time":"2026-10-18T18:06:09.830227+08:00","Action":"output","Package":"example.com/demo/calc","Test":"ExampleAdd","Output":"=== RUN   ExampleAdd\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.830248+08:00","Action":"output","Package":"example.com/demo/calc","Test":"ExampleAdd","Output":"--- PASS: ExampleAdd (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.830269+08:00","Action":"pass","Package":"example.com/demo/calc","Test":"ExampleAdd","Elapsed":0}
+{"Time":"2026-10-18T18:06:09.830287+08:00","Action":"output","Package":"example.com/demo/calc","Output":"FAIL\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.830718+08:00","Action":"output","Package":"example.com/demo/calc","Output":"FAIL\texample.com/demo/calc\t0.608s\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:09.830755+08:00","Action":"fail","Package":"example.com/demo/calc","Elapsed":0.609}

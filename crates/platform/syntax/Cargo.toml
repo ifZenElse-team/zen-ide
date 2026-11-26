@@ -1,0 +1,19 @@
+[package]
+name = "zen-syntax"
+description = "Zen Platform, layer L1: syntax highlighting and outline types, and their extension points."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+schemars.workspace = true
+serde.workspace = true
+zen-text.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[lints]
+workspace = true

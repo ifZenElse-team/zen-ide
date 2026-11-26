@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic fixture written for the Zen IDE tests from the public format documentation; not taken from any JetBrains product. -->
+<project version="4">
+  <component name="RunManager" selected="Go Build.Serve">
+    <configuration name="Scratch" type="GoApplicationRunConfiguration" factoryName="Go Application" temporary="true">
+      <kind value="FILE" />
+      <filePath value="$PROJECT_DIR$/main.go" />
+      <method v="2" />
+    </configuration>
+  </component>
+</project>

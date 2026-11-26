@@ -1,0 +1,24 @@
+[package]
+name = "zen-db-duckdb"
+description = "Zen IDE database driver program for DuckDB through the duckdb command-line program, speaking the external driver protocol v1 (ADR-0174, ADR-0175)."
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "zen-db-duckdb"
+path = "src/main.rs"
+
+[dependencies]
+zen-db-driver-kit.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio = { workspace = true, features = ["io-util", "process", "sync", "time"] }
+
+[target.'cfg(unix)'.dependencies]
+rustix.workspace = true
+
+[lints]
+workspace = true

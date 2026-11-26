@@ -1,0 +1,52 @@
+{
+  "name": "Terraform",
+  "description": "Terraform and HCL files: highlighting of blocks, attributes, expressions, interpolation and heredocs, folding and the blocks in the Structure view; with terraform-ls, problems, completion, navigation and formatting; terraform init, validate, plan and apply from the run icon, apply and the other state-changing commands asked to you every time.",
+  "extensions": ["tf", "tfvars", "hcl"],
+  "names": [".terraformrc", "terraform.rc"],
+  "runs": ["terraform"],
+  "personOnly": [
+    {
+      "program": "terraform",
+      "subcommands": ["apply", "destroy", "import", "state", "taint", "untaint", "refresh", "force-unlock"]
+    }
+  ],
+  "languageServers": [
+    {
+      "id": "terraform-ls",
+      "name": "Terraform Language Server",
+      "languages": ["terraform", "terraform-vars"],
+      "extensions": ["tf", "tfvars"],
+      "languageIds": { "tf": "terraform", "tfvars": "terraform-vars" },
+      "watches": [".terraform.lock.hcl"],
+      "command": "terraform-ls",
+      "args": ["serve"],
+      "versionArgs": ["version"],
+      "install": {
+        "kind": "archive",
+        "hint": "terraform-ls (MPL-2.0), downloaded from releases.hashicorp.com when you click Install; or put terraform-ls on PATH (brew install hashicorp/tap/terraform-ls).",
+        "platforms": {
+          "macos-aarch64": {
+            "url": "https://releases.hashicorp.com/terraform-ls/0.39.1/terraform-ls_0.39.1_darwin_arm64.zip",
+            "sha256": "07748aa989fc3b9f6e4538ff83bc2e607ebc20c7587ce6556ae555d631e70b1b"
+          },
+          "macos-x86_64": {
+            "url": "https://releases.hashicorp.com/terraform-ls/0.39.1/terraform-ls_0.39.1_darwin_amd64.zip",
+            "sha256": "25814afdbec9163de4ad8db58960195b9fc65ddc5405a5df7163bbdbd08b5325"
+          },
+          "linux-x86_64": {
+            "url": "https://releases.hashicorp.com/terraform-ls/0.39.1/terraform-ls_0.39.1_linux_amd64.zip",
+            "sha256": "fe2a158e4a1a8ec8047dae9e06c439b468412aa579929ba28b2e1258cedef9c0"
+          },
+          "linux-aarch64": {
+            "url": "https://releases.hashicorp.com/terraform-ls/0.39.1/terraform-ls_0.39.1_linux_arm64.zip",
+            "sha256": "a72a6d9f72580cfc30cc06d3c973fd5f55790f62e3ddb195998435070d9af36d"
+          },
+          "windows-x86_64": {
+            "url": "https://releases.hashicorp.com/terraform-ls/0.39.1/terraform-ls_0.39.1_windows_amd64.zip",
+            "sha256": "bb8523b2e109c2ad719dbf6245c4be035386e322cb44e8f01c74b1caa4680efb"
+          }
+        }
+      }
+    }
+  ]
+}

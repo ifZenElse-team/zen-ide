@@ -1,0 +1,15 @@
+workbench-keymap-macos = macOS
+workbench-keymap-error-unknown = There is no keymap “{ $id }”.
+workbench-keymap-error-builtin = The built-in keymap cannot be renamed or deleted.
+workbench-keymap-error-broken = The keymap “{ $id }” cannot be used: { $error }
+workbench-keymap-error-empty-name = A keymap needs a name.
+workbench-keymap-error-no-folder = There is no keymaps folder.
+workbench-keymap-error-read = Cannot read { $path }: { $error }
+workbench-keymap-error-format = { $path } is not a keymap of a known format: a keymap .xml exported from a JetBrains IDE.
+workbench-keymap-error-import = Cannot import { $path }: { $error }
+workbench-keymap-error-write = Cannot save the keymap to { $path }: { $error }
+workbench-keymap-missing = The keymap “{ $id }” is not found; the macOS keymap is used instead.
+workbench-keymap-error-version = formatVersion { $version } is not supported
+workbench-keymap-error-bad-id = “{ $id }” cannot be the id of a keymap of yours
+workbench-keymap-error-too-large = the file is larger than { $megabytes } MB, too large for a keymap
+workbench-keymap-error-empty-abbreviation = An abbreviation needs a character other than a space.

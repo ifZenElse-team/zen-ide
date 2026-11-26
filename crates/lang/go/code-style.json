@@ -1,0 +1,47 @@
+{
+  "language": "go",
+  "title": "settings-section-code-style-go",
+  "preview": "package main\n\nimport (\n\t\"fmt\"\n\n\t\"example.com/project/internal/store\"\n)\n\nconst limit = 10\n\nvar names = []string{\"a\", \"b\"}\n\ntype Point struct {\n\tX, Y int\n}\n\nfunc (p Point) String() string {\n\treturn fmt.Sprintf(\"(%d, %d)\", p.X, p.Y)\n}\n\nfunc main() {\n\tfor i := 0; i < limit; i++ {\n\t\tfmt.Println(store.Get(i), names)\n\t}\n}\n",
+  "options": [
+    {
+      "id": "gofumpt",
+      "label": "go-code-style-gofumpt",
+      "group": "go-code-style-formatter",
+      "tab": "wrappingAndBraces",
+      "kind": { "type": "boolean" },
+      "default": false,
+      "serverSetting": { "section": "gopls", "path": "gofumpt" }
+    },
+    {
+      "id": "alignStructTags",
+      "label": "go-code-style-align-struct-tags",
+      "group": "go-code-style-formatter",
+      "tab": "wrappingAndBraces",
+      "kind": { "type": "boolean" },
+      "default": true
+    },
+    {
+      "id": "local",
+      "label": "go-code-style-local",
+      "group": "go-code-style-import-groups",
+      "tab": "imports",
+      "kind": { "type": "text" },
+      "default": "",
+      "serverSetting": { "section": "gopls", "path": "local" }
+    }
+  ],
+  "notes": {
+    "tabsAndIndents": "go-code-style-note-tabs",
+    "spaces": "go-code-style-note-spaces",
+    "wrappingAndBraces": "go-code-style-note-wrapping",
+    "blankLines": "go-code-style-note-blank-lines",
+    "imports": "go-code-style-note-imports",
+    "arrangement": "go-code-style-note-arrangement"
+  },
+  "arrangement": [
+    { "id": "const", "label": "go-code-style-arrange-const" },
+    { "id": "var", "label": "go-code-style-arrange-var" },
+    { "id": "type", "label": "go-code-style-arrange-type" },
+    { "id": "func", "label": "go-code-style-arrange-func" }
+  ]
+}

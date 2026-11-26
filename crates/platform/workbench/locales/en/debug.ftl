@@ -1,0 +1,62 @@
+# The debugger (ADR-0052): debug sessions, breakpoints and watches.
+
+debug-cannot-debug = The configuration “{ $name }” cannot be debugged.
+debug-cannot-start = Cannot debug “{ $name }”: { $error }
+debug-debugger-missing = Cannot debug “{ $name }”: the debugger is not installed.
+debug-no-session = There is no debug session.
+debug-unknown-session = There is no debug session { $id }.
+debug-session-ended = The debug session { $id } has ended.
+debug-not-connected = The debugger is not connected yet.
+debug-not-stopped = The program is not stopped.
+debug-no-thread = The program has no threads.
+debug-no-frame = No frame is selected.
+debug-no-hover = The debugger does not evaluate values for hovers.
+debug-no-set-value = This debugger cannot change this value.
+debug-no-smart-step = This debugger cannot list the calls to step into.
+debug-no-reset-frame = This debugger cannot reset frames.
+debug-frame-cannot-reset = The frame { $id } cannot be reset.
+debug-no-source = The stopped frame has no source file.
+debug-unknown-frame = There is no frame { $id }.
+debug-no-line = There is no line to act on: give a line or put the caret in the file.
+debug-listen-failed = Cannot wait for the debugger to connect: { $error }
+debug-launch-failed = Cannot start the debugger: { $error }
+debug-connect-failed = The debugger did not connect: { $error }
+debug-handshake-failed = The debugger could not start the program: { $error }
+debug-adapter-error = The debugger failed: { $error }
+debug-disconnected = Disconnected from the debugger
+debug-server-adapter = Connecting to the debugger { $server } runs, at { $address }
+debug-server-adapter-no-port = The language server did not give a debugger port: { $answer }
+debug-no-breakpoint = There is no breakpoint at line { $line } of { $path }.
+debug-empty-watch = A watch needs an expression.
+debug-unknown-watch = There is no watch “{ $expression }”.
+debug-error-io = cannot talk to the debugger: { $error }
+debug-error-closed = the debugger is not running
+debug-error-timeout = the debugger did not answer in time
+debug-reload-title = Reload Changed Classes
+debug-reload-done = { $count ->
+    [one] Reloaded 1 class: { $classes }
+   *[other] Reloaded { $count } classes: { $classes }
+}
+debug-reload-none = No classes changed since they were last loaded.
+debug-reload-failed = The changed classes were not reloaded: { $error }
+debug-reload-unsupported = This debugger cannot reload changed classes.
+debug-log-hit = Breakpoint reached at { $place }
+debug-cannot-move = Line { $line } has a breakpoint already.
+debug-empty-function = A function breakpoint needs a function name.
+debug-no-function = There is no function breakpoint “{ $name }”.
+debug-empty-filter = An exception breakpoint needs a filter.
+debug-no-filter = There is no exception breakpoint “{ $filter }”.
+debug-no-data-breakpoints = This debugger cannot watch data.
+debug-cannot-watch = This cannot be watched: { $reason }
+debug-no-data = There is no data breakpoint “{ $id }”.
+debug-stream-java-only = Trace Current Stream Chain works in Java files.
+debug-stream-none = There is no stream chain on this line.
+debug-stream-not-created = The stream is not made on this line: a stream kept in a variable can be used only once, so trace the line that makes it, such as list.stream()….
+debug-stream-no-operations = The stream on this line has no operations to trace.
+debug-stream-side-effect = The chain calls { $call }, which has side effects: tracing it would run them again.
+debug-stream-infinite = The stream is infinite: add limit(…) or takeWhile(…) to trace it.
+debug-coroutines-no-event = Coroutines are read in a thread that a breakpoint or a step stopped, not Pause: step once or stop at a breakpoint.
+debug-coroutines-not-jvm = Coroutines are listed for Java and Kotlin programs.
+debug-coroutines-not-installed = The coroutine debug agent is not in this program: turn on Track coroutines in its run configuration and debug it again.
+debug-coroutines-no-library = The program has no kotlinx-coroutines-debug on its classpath.
+debug-coroutines-no-frame = None of the top { $count } frames can read the coroutines: step into the program's own code and look again.

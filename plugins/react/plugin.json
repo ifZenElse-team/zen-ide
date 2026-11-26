@@ -1,0 +1,105 @@
+{
+  "name": "React",
+  "description": "React projects: offered when a project depends on react; run configurations vite, vite build and vite preview in a Vite project, and templates for a function component (TSX or JSX), a hook and a context. JSX and TSX are served by the TypeScript plug-ins and their language server.",
+  "extensions": [],
+  "project": {
+    "markers": {
+      "packages": [
+        "react"
+      ]
+    },
+    "runConfigurations": [
+      {
+        "name": "vite",
+        "kind": "npm",
+        "options": {
+          "command": "exec",
+          "script": "vite"
+        },
+        "when": {
+          "files": [
+            "vite.config.ts",
+            "vite.config.js",
+            "vite.config.mjs",
+            "vite.config.mts"
+          ],
+          "packages": [
+            "vite"
+          ]
+        }
+      },
+      {
+        "name": "vite build",
+        "kind": "npm",
+        "options": {
+          "command": "exec",
+          "script": "vite"
+        },
+        "common": {
+          "programArguments": "build"
+        },
+        "when": {
+          "files": [
+            "vite.config.ts",
+            "vite.config.js",
+            "vite.config.mjs",
+            "vite.config.mts"
+          ],
+          "packages": [
+            "vite"
+          ]
+        }
+      },
+      {
+        "name": "vite preview",
+        "kind": "npm",
+        "options": {
+          "command": "exec",
+          "script": "vite"
+        },
+        "common": {
+          "programArguments": "preview"
+        },
+        "when": {
+          "files": [
+            "vite.config.ts",
+            "vite.config.js",
+            "vite.config.mjs",
+            "vite.config.mts"
+          ],
+          "packages": [
+            "vite"
+          ]
+        }
+      }
+    ]
+  },
+  "fileTemplates": {
+    "templates": [
+      {
+        "name": "React Component",
+        "extension": "tsx",
+        "reformat": false,
+        "text": "export function ${NAME}() {\n  return <div className=\"${NAME}\"></div>\n}\n"
+      },
+      {
+        "name": "React Component (JSX)",
+        "extension": "jsx",
+        "reformat": false,
+        "text": "export function ${NAME}() {\n  return <div className=\"${NAME}\"></div>\n}\n"
+      },
+      {
+        "name": "React Hook",
+        "extension": "ts",
+        "reformat": false,
+        "text": "import { useState } from 'react'\n\nexport function ${NAME}() {\n  const [value, setValue] = useState<unknown>(null)\n  return { value, setValue }\n}\n"
+      },
+      {
+        "name": "React Context",
+        "extension": "tsx",
+        "reformat": false,
+        "text": "import { createContext, useContext, type ReactNode } from 'react'\n\ntype ${NAME}Value = {}\n\nconst ${NAME}Context = createContext<${NAME}Value | null>(null)\n\nexport function ${NAME}Provider({ children }: { children: ReactNode }) {\n  const value: ${NAME}Value = {}\n  return <${NAME}Context.Provider value={value}>{children}</${NAME}Context.Provider>\n}\n\nexport function use${NAME}() {\n  const context = useContext(${NAME}Context)\n  if (!context) {\n    throw new Error('use${NAME} must be used inside ${NAME}Provider')\n  }\n  return context\n}\n"
+      }
+    ]
+  }
+}

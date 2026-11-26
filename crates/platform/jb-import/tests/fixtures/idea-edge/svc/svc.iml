@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic fixture written for the Zen IDE tests from the public format documentation; not taken from any JetBrains product. -->
+<module type="WEB_MODULE" version="4">
+  <component name="NewModuleRootManager">
+    <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/generated" />
+      <excludeFolder url="file://$PROJECT_DIR$/logs" />
+      <excludePattern pattern="*.log;*.out" />
+    </content>
+  </component>
+</module>

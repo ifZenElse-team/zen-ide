@@ -1,0 +1,28 @@
+[
+  {
+    "name": "Prettier",
+    "fileType": "javascript",
+    "program": "$ProjectFileDir$/node_modules/.bin/prettier",
+    "arguments": "--write $FilePath$",
+    "outputPaths": "$FilePath$",
+    "workingDirectory": "$ProjectFileDir$",
+    "triggerOnExternal": false
+  },
+  {
+    "name": "TypeScript",
+    "fileType": "typescript",
+    "program": "tsc",
+    "arguments": "--sourceMap $FileName$",
+    "outputPaths": "$FileNameWithoutExtension$.js:$FileNameWithoutExtension$.js.map",
+    "workingDirectory": "$FileDir$",
+    "outputFilters": ["^$FILE_PATH$\\($LINE$,$COLUMN$\\): $MESSAGE$"]
+  },
+  {
+    "name": "SCSS",
+    "fileType": "scss",
+    "program": "sass",
+    "arguments": "$FileName$:$FileNameWithoutExtension$.css",
+    "outputPaths": "$FileNameWithoutExtension$.css:$FileNameWithoutExtension$.css.map",
+    "workingDirectory": "$FileDir$"
+  }
+]

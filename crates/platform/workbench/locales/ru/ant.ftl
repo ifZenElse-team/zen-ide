@@ -1,0 +1,17 @@
+workbench-ant-kind = Ant
+workbench-ant-field-build-file = Файл сборки:
+workbench-ant-field-targets = Цели:
+workbench-ant-no-build-file = { $path } — не файл: укажите файл сборки Ant для запуска.
+workbench-ant-not-found = Ant не найден: на этом компьютере нет ant (PATH, ANT_HOME, SDKMAN). Установите Ant или нажмите Download Ant.
+workbench-ant-no-jdk = { $path } — не JDK: в нём нет папки bin.
+workbench-ant-not-listed = { $path } нет среди файлов сборки окна Ant; сначала добавьте его (ant.buildFile.add).
+workbench-ant-outside = { $path } не входит в проект.
+workbench-ant-not-build-file = { $path } — не файл сборки Ant: его корневой элемент не <project>.
+workbench-ant-no-build-files = В окне Ant нет ни одного файла сборки; сначала добавьте его (ant.buildFile.add).
+workbench-ant-unreadable = { $path } не читается: { $error }
+workbench-ant-no-target = В { $path } нет цели { $target }.
+workbench-ant-download-task = Загрузка Ant { $version }
+workbench-ant-download-no-folder = У IDE нет папки данных, куда скачать Ant.
+workbench-ant-download-checksum = Загрузка { $url } не совпадает со своей SHA-512; ничего не установлено.
+workbench-ant-download-unavailable = Здесь Ant скачать нельзя.
+workbench-ant-download-done = Ant установлен в { $folder }.

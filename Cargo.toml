@@ -1,0 +1,229 @@
+[workspace]
+resolver = "3"
+members = ["crates/platform/*", "crates/lang/*", "plugins/*", "drivers/*", "apps/*", "xtask"]
+
+[workspace.package]
+version = "0.0.0"
+edition = "2024"
+# The latest stable Rust; raised with every stable release (ADR-0013).
+rust-version = "1.99"
+license = "MIT OR Apache-2.0"
+authors = ["The ifzenelse team and the Zen IDE contributors"]
+repository = "https://github.com/ifZenElse-team/zen-ide"
+publish = false
+
+[workspace.dependencies]
+# internal
+zen-automation = { path = "crates/platform/automation" }
+zen-testkit = { path = "crates/platform/testkit" }
+zen-core = { path = "crates/platform/core" }
+zen-editor = { path = "crates/platform/editor" }
+zen-i18n = { path = "crates/platform/i18n" }
+zen-image = { path = "crates/platform/image" }
+zen-jb-import = { path = "crates/platform/jb-import" }
+zen-index = { path = "crates/platform/index" }
+zen-lang-go = { path = "crates/lang/go" }
+zen-lang-rust = { path = "crates/lang/rust" }
+zen-spell = { path = "crates/platform/spell" }
+zen-syntax = { path = "crates/platform/syntax" }
+zen-terminal = { path = "crates/platform/terminal" }
+zen-text = { path = "crates/platform/text" }
+zen-theme = { path = "crates/platform/theme" }
+zen-toolbox = { path = "crates/platform/toolbox" }
+zen-plugins = { path = "crates/platform/plugins" }
+zen-project = { path = "crates/platform/project" }
+zen-run = { path = "crates/platform/run" }
+zen-ui = { path = "crates/platform/ui" }
+zen-update = { path = "crates/platform/update" }
+zen-vcs = { path = "crates/platform/vcs" }
+zen-vfs = { path = "crates/platform/vfs" }
+zen-env = { path = "crates/platform/env" }
+zen-workbench = { path = "crates/platform/workbench" }
+zen-modules = { path = "crates/platform/modules" }
+zen-lsp = { path = "crates/platform/lsp" }
+zen-dap = { path = "crates/platform/dap" }
+zen-http = { path = "crates/platform/http" }
+zen-net = { path = "crates/platform/net" }
+zen-db = { path = "crates/platform/db" }
+zen-macos = { path = "crates/platform/macos" }
+zen-mascot = { path = "crates/platform/mascot" }
+zen-secrets = { path = "crates/platform/secrets" }
+zen-db-driver-kit = { path = "drivers/kit" }
+
+# external
+# Line breaks are LF, CRLF and CR only, as in the Language Server Protocol; Unicode line separators
+# (U+2028 and others) are ordinary characters. Hence `cr_lines` without `unicode_lines`.
+ropey = { version = "1.6", default-features = false, features = ["cr_lines", "simd"] }
+proptest = "1"
+schemars = "1"
+eframe = "0.37"
+egui = "0.37"
+# SVG product icons (assets/icons): vector only, no fonts or embedded raster images.
+png = "0.18"
+egui_extras = { version = "0.37", default-features = false, features = ["svg"] }
+resvg = { version = "0.48", default-features = false }
+# The monospaced fonts installed on the machine, for Editor → Font (ADR-0053): reads font files only,
+# pure Rust, without memory mapping or fontconfig.
+fontdb = { version = "0.24", default-features = false, features = ["std", "fs"] }
+# The image viewer (zen-image): pure-Rust decoders only, no threads or C codecs.
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "gif", "webp", "bmp", "ico"] }
+# Without default features: the Linux backend is ksni (D-Bus, pure Rust) instead of GTK (ADR-0002).
+tray-icon = { version = "0.26", default-features = false, features = ["ksni"] }
+winit = "0.30"
+# For Zen Toolbox on macOS: whether a mouse button or ⌘ is down when its window loses focus.
+objc2-app-kit = { version = "0.3.2", default-features = false, features = ["std", "NSEvent"] }
+# The Objective-C runtime, for zen-macos only: adding applicationShouldTerminate: to the application
+# delegate winit installs (ADR-0079). The version objc2-app-kit 0.3 is built on.
+objc2 = { version = "0.6.5", default-features = false, features = ["std"] }
+# Secrets in the macOS Keychain (zen-secrets, ADR-0165): the store interface and the Apple store,
+# which reaches the Security framework through security-framework; nothing compiled from C.
+keyring-core = "1"
+apple-native-keyring-store = { version = "1.0.2", features = ["keychain"] }
+# The Security framework's error codes, to tell a denied Keychain access from a failure.
+security-framework = "3.7"
+# Clearing a secret's bytes when it is dropped (zen-secrets); pure Rust.
+zeroize = "1"
+# System file dialogs (default backend: xdg-portal on Linux, no GTK)
+rfd = "0.17"
+# Deleting files moves them to the system's Trash (zen-vfs); pure-Rust bindings to the system APIs.
+# On Windows the Recycle Bin is reached through COM; a GUI thread is single-threaded (STA).
+trash = { version = "5", default-features = false, features = ["coinit_apartmentthreaded"] }
+# Watching project files (zen-vfs): FSEvents on macOS, inotify on Linux, through Rust bindings.
+notify = { version = "8", default-features = false, features = ["macos_fsevent"] }
+# The file index (zen-index): walks a project respecting .gitignore; pure Rust.
+ignore = "0.4"
+# Find and replace in the editor (zen-editor): regular expressions, pure Rust.
+regex = "1"
+# Text in other encodings than UTF-8 (zen-vcs patches); pure Rust, also a dependency of gitoxide.
+encoding_rs = "0.8"
+# The system clipboard's file lists (copy and paste of files in the project tree); pure Rust.
+arboard = { version = "3", default-features = false, features = ["image-data"] }
+# Localisation (ADR-0024)
+fluent-bundle = "0.16"
+unic-langid = "0.9"
+sys-locale = "0.3"
+# Release server and updates (ADR-0020)
+axum = "0.8"
+clap = { version = "4", features = ["derive", "env"] }
+ed25519-dalek = "3"
+getrandom = "0.3"
+hex = "0.4"
+semver = "1"
+sha2 = "0.11"
+tempfile = "3"
+ttf-parser = "0.25"
+# Release archives are .tar.gz; flate2 with its pure-Rust backend (ADR-0002).
+tar = "0.4"
+# Plug-ins (ADR-0031): a pure-Rust WebAssembly interpreter, validating untrusted modules.
+# Test plug-in modules are written in the WebAssembly text format.
+wat = "1"
+wasmi = { version = "2", default-features = false, features = ["std", "validate"] }
+flate2 = { version = "1", default-features = false, features = ["rust_backend"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "fs", "signal"] }
+tower-http = { version = "0.7", features = ["fs"] }
+# The built-in terminal (zen-terminal): a pure-Rust VT/xterm emulator with its PTY event loop.
+# Without default features: the emulator state is never serialised.
+alacritty_terminal = { version = "0.26", default-features = false }
+# Stopping the process group of a run (zen-run): safe bindings to kill(2).
+rustix = { version = "1.1", features = ["process"] }
+# Plain HTTP only: no TLS stack until the HTTPS question of ADR-0020 is decided.
+# The Language Server Protocol's types (MIT), for zen-lsp.
+lsp-types = "0.97"
+# Markdown to HTML for the website's documentation (xtask only; MIT).
+pulldown-cmark = { version = "0.13", default-features = false, features = ["html"] }
+# TeX math in the Markdown preview (ADR-0225): parsing and layout with STIX Two Math (OFL), pure Rust.
+latex-rust = "=3.0.1"
+# Mermaid diagrams in the Markdown preview (ADR-0261): parsing, layout and SVG, pure Rust, one dependency.
+mermaid-svg = "=0.7.0"
+ureq = { version = "3", default-features = false, features = ["rustls-no-provider", "rustls-webpki-roots"] }
+# TLS for ureq: rustls with RustCrypto's pure-Rust algorithms, no C (ADR-0040).
+rustls = { version = "0.23", default-features = false, features = ["std", "tls12"] }
+rustls-rustcrypto = "0.0.2-alpha"
+# The database engine (zen-db, ADR-0164): PostgreSQL over tokio, TLS through rustls without a provider
+# of its own (the process's RustCrypto provider), SCRAM in pure Rust.
+tokio-postgres = { version = "0.7.18", default-features = false, features = ["runtime"] }
+tokio-postgres-rustls = { version = "0.14", default-features = false }
+postgres-protocol = "0.6.12"
+# MySQL and MariaDB (ADR-0164): rustls without a provider, flate2's Rust backend, no zlib.
+mysql_async = { version = "0.37.1", default-features = false, features = ["minimal-rust", "default-rustls-no-provider"] }
+jiff = "0.2.38"
+# The IDE log (ADR-0245): the facade egui, wgpu and winit already write to.
+log = "0.4"
+# Parquet export for zen-db (ADR-0181): Arrow arrays written by arrow-rs with pure-Rust codecs only
+# (Snappy, LZ4, gzip through zlib-rs); no zstd, whose crate builds C.
+parquet = { version = "60", default-features = false, features = ["arrow", "snap", "lz4", "flate2-rust_backend"] }
+arrow-array = { version = "60", default-features = false }
+arrow-schema = { version = "60", default-features = false }
+tokio-util = { version = "0.7", default-features = false }
+futures-util = { version = "0.3", default-features = false }
+fallible-iterator = "0.2"
+bytes = { version = "1", default-features = false }
+webpki-roots = "1"
+# Redis and Valkey for zen-db (ADR-0164): tokio with rustls and no crypto provider of its own (the
+# process's RustCrypto one), certificates unchecked for TLS mode require, Sentinel, Cluster, streams.
+redis = { version = "1.8.0", default-features = false, features = ["tokio-rustls-comp", "tls-rustls-insecure", "cluster-async", "sentinel", "streams"] }
+# External database driver programs (drivers/, ADR-0174, ADR-0175), never part of an IDE's build.
+# SQL Server over TDS without tiberius' TLS features, which bring aws-lc or OpenSSL: the drivers
+# speak TLS themselves through rustls with RustCrypto.
+tiberius = { version = "0.13.0", default-features = false, features = ["tds73"] }
+tokio-rustls = { version = "0.26", default-features = false, features = ["tls12"] }
+# MongoDB: our own client (ADR-0175) on the pure-Rust BSON crate, with SCRAM from RustCrypto.
+bson = { version = "3.1", features = ["serde", "serde_json-1"] }
+sha1 = "0.11"
+hmac = "0.13"
+md-5 = "0.11"
+base64 = "0.22"
+stringprep = "0.1"
+# The structure snapshot of a database connection: postcard with a CRC-32 header.
+postcard = { version = "1.1", default-features = false, features = ["use-std"] }
+crc32fast = "1.5"
+roxmltree = "0.21"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Reading git repositories (zen-vcs): gitoxide, pure Rust, without its network and parallel features
+# (ADR-0047). Operations that write run the user's git program.
+# Line and word diffs (zen-vcs), the diff library gitoxide uses; pure Rust, also in WebAssembly.
+gix-imara-diff = "0.3"
+gix = { version = "0.89", default-features = false, features = ["sha1", "status", "blame", "revision", "blob-diff", "index", "dirwalk", "excludes", "attributes"] }
+
+# Every crate opts in with `[lints] workspace = true`. A crate that needs `unsafe` must be listed as an
+# exception in the layering rules with a documented reason (ADR-0002), and defines its own lints.
+[workspace.lints.rust]
+unsafe_code = "forbid"
+unreachable_pub = "warn"
+unused_qualifications = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+dbg_macro = "warn"
+todo = "warn"
+unimplemented = "warn"
+print_stdout = "warn"
+print_stderr = "warn"
+
+# Debug builds keep line tables for our crates (backtraces still name files and lines) and no
+# debug info for dependencies: full debug info made target/debug grow by tens of gigabytes.
+[profile.dev]
+debug = "line-tables-only"
+
+[profile.dev.package."*"]
+debug = false
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+
+# The WebAssembly interpreter dispatches through tail calls, which overflow the stack without
+# optimisation and with debug assertions; plug-ins (ADR-0031) must work in debug builds and tests too.
+[profile.dev.package.wasmi]
+opt-level = 3
+debug-assertions = false
+overflow-checks = false
+[profile.dev.package.wasmi_core]
+opt-level = 3
+debug-assertions = false
+overflow-checks = false
+[profile.dev.package.wasmi_ir]
+opt-level = 3
+debug-assertions = false
+overflow-checks = false

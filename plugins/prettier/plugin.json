@@ -1,0 +1,70 @@
+{
+  "name": "Prettier",
+  "description": "Prettier as the project's formatter: offered when a project has a Prettier configuration or depends on prettier; Reformat Code and, when chosen, saving format JavaScript, TypeScript, JSX, TSX, JSON, CSS, SCSS, Less, HTML, Vue, Svelte (with its plug-in), Markdown, YAML and GraphQL files with the project's own Prettier, which respects .prettierignore.",
+  "extensions": [],
+  "project": {
+    "markers": {
+      "files": [
+        ".prettierrc",
+        ".prettierrc.json",
+        ".prettierrc.json5",
+        ".prettierrc.yaml",
+        ".prettierrc.yml",
+        ".prettierrc.toml",
+        ".prettierrc.js",
+        ".prettierrc.mjs",
+        ".prettierrc.cjs",
+        ".prettierrc.ts",
+        "prettier.config.js",
+        "prettier.config.mjs",
+        "prettier.config.cjs",
+        "prettier.config.ts"
+      ],
+      "packages": [
+        "prettier"
+      ]
+    },
+    "formatters": [
+      {
+        "id": "prettier",
+        "name": "Prettier",
+        "command": "prettier",
+        "args": [
+          "--stdin-filepath",
+          "${file}"
+        ],
+        "extensions": [
+          "js",
+          "mjs",
+          "cjs",
+          "jsx",
+          "ts",
+          "mts",
+          "cts",
+          "tsx",
+          "json",
+          "jsonc",
+          "json5",
+          "css",
+          "scss",
+          "less",
+          "html",
+          "htm",
+          "vue",
+          "svelte",
+          "md",
+          "markdown",
+          "mdx",
+          "yaml",
+          "yml",
+          "graphql",
+          "gql",
+          "handlebars",
+          "hbs"
+        ],
+        "onReformat": "codeQuality.prettier.onReformat",
+        "onSave": "codeQuality.prettier.onSave"
+      }
+    ]
+  }
+}

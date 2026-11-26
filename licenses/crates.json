@@ -1,0 +1,196 @@
+{
+  "about": "Crates whose package ships no licence file (docs/licences.md). licence names a text in licenses/texts/, one the crate's licence expression allows; copyright is the upstream notice prepended to it; files are licence files inside the package that the scan does not find on its own.",
+  "crates": {
+    "accesskit": {
+      "licence": "Apache-2.0"
+    },
+    "accesskit_atspi_common": {
+      "licence": "Apache-2.0"
+    },
+    "accesskit_consumer": {
+      "licence": "Apache-2.0"
+    },
+    "accesskit_macos": {
+      "licence": "Apache-2.0"
+    },
+    "accesskit_unix": {
+      "licence": "Apache-2.0"
+    },
+    "accesskit_windows": {
+      "licence": "Apache-2.0"
+    },
+    "accesskit_winit": {
+      "licence": "Apache-2.0"
+    },
+    "block2": {
+      "licence": "MIT",
+      "copyright": "Copyright (c) Steven Sheldon\nCopyright (c) Mads Marquart",
+      "source": "https://github.com/madsmtm/objc2/blob/objc2-0.5.3/LICENSE.txt (Steven Sheldon) and LICENSE-MIT.txt on master (Mads Marquart)"
+    },
+    "clipboard-win": {
+      "licence": "BSL-1.0",
+      "source": "https://github.com/DoumanAsh/clipboard-win/blob/master/LICENSE"
+    },
+    "defmt": {
+      "licence": "Apache-2.0"
+    },
+    "dispatch": {
+      "licence": "MIT",
+      "copyright": "Copyright (c) Steven Sheldon",
+      "source": "the authors field of the crate; its repository has no licence file"
+    },
+    "dispatch2": {
+      "licence": "Apache-2.0"
+    },
+    "ecolor": {
+      "licence": "Apache-2.0"
+    },
+    "eframe": {
+      "licence": "Apache-2.0"
+    },
+    "egui": {
+      "licence": "Apache-2.0"
+    },
+    "egui-wgpu": {
+      "licence": "Apache-2.0"
+    },
+    "egui-winit": {
+      "licence": "Apache-2.0"
+    },
+    "egui_extras": {
+      "licence": "Apache-2.0"
+    },
+    "egui_glow": {
+      "licence": "Apache-2.0"
+    },
+    "egui_system_font_provider": {
+      "licence": "Apache-2.0"
+    },
+    "emath": {
+      "licence": "Apache-2.0"
+    },
+    "epaint": {
+      "licence": "Apache-2.0"
+    },
+    "epaint_default_fonts": {
+      "licence": "Apache-2.0",
+      "files": [
+        "fonts/OFL.txt",
+        "fonts/UFL.txt",
+        "fonts/Hack-Regular.txt",
+        "fonts/emoji-icon-font-mit-license.txt",
+        "fonts/egui-icons.txt"
+      ]
+    },
+    "flatbuffers": {
+      "licence": "Apache-2.0"
+    },
+    "fluent-langneg": {
+      "licence": "Apache-2.0"
+    },
+    "gl_generator": {
+      "licence": "Apache-2.0"
+    },
+    "intl_pluralrules": {
+      "licence": "Apache-2.0"
+    },
+    "keyed_priority_queue": {
+      "licence": "MIT",
+      "copyright": "Copyright (c) 2019 Angelicos Phosphoros",
+      "source": "https://github.com/AngelicosPhosphoros/keyed_priority_queue/blob/master/LICENSE.md"
+    },
+    "khronos_api": {
+      "licence": "Apache-2.0"
+    },
+    "mysql-common-derive": {
+      "licence": "Apache-2.0"
+    },
+    "objc-sys": {
+      "licence": "MIT",
+      "copyright": "Copyright (c) Steven Sheldon\nCopyright (c) Mads Marquart",
+      "source": "https://github.com/madsmtm/objc2/blob/objc2-0.5.3/LICENSE.txt (Steven Sheldon) and LICENSE-MIT.txt on master (Mads Marquart)"
+    },
+    "objc2": {
+      "licence": "MIT",
+      "copyright": "Copyright (c) Steven Sheldon\nCopyright (c) Mads Marquart",
+      "source": "https://github.com/madsmtm/objc2/blob/objc2-0.5.3/LICENSE.txt (Steven Sheldon) and LICENSE-MIT.txt on master (Mads Marquart)"
+    },
+    "objc2-app-kit": {
+      "licence": "MIT",
+      "copyright": "Copyright (c) Steven Sheldon\nCopyright (c) Mads Marquart",
+      "source": "https://github.com/madsmtm/objc2/blob/objc2-0.5.3/LICENSE.txt (Steven Sheldon) and LICENSE-MIT.txt on master (Mads Marquart)"
+    },
+    "objc2-core-data": {
+      "licence": "MIT",
+      "copyright": "Copyright (c) Steven Sheldon\nCopyright (c) Mads Marquart",
+      "source": "https://github.com/madsmtm/objc2/blob/objc2-0.5.3/LICENSE.txt (Steven Sheldon) and LICENSE-MIT.txt on master (Mads Marquart)"
+    },
+    "objc2-core-foundation": {
+      "licence": "Apache-2.0"
+    },
+    "objc2-core-graphics": {
+      "licence": "Apache-2.0"
+    },
+    "objc2-core-image": {
+      "licence": "MIT",
+      "copyright": "Copyright (c) Steven Sheldon\nCopyright (c) Mads Marquart",
+      "source": "https://github.com/madsmtm/objc2/blob/objc2-0.5.3/LICENSE.txt (Steven Sheldon) and LICENSE-MIT.txt on master (Mads Marquart)"
+    },
+    "objc2-core-text": {
+      "licence": "Apache-2.0"
+    },
+    "objc2-encode": {
+      "licence": "MIT",
+      "copyright": "Copyright (c) Steven Sheldon\nCopyright (c) Mads Marquart",
+      "source": "https://github.com/madsmtm/objc2/blob/objc2-0.5.3/LICENSE.txt (Steven Sheldon) and LICENSE-MIT.txt on master (Mads Marquart)"
+    },
+    "objc2-foundation": {
+      "licence": "MIT",
+      "copyright": "Copyright (c) Steven Sheldon\nCopyright (c) Mads Marquart",
+      "source": "https://github.com/madsmtm/objc2/blob/objc2-0.5.3/LICENSE.txt (Steven Sheldon) and LICENSE-MIT.txt on master (Mads Marquart)"
+    },
+    "objc2-io-surface": {
+      "licence": "Apache-2.0"
+    },
+    "objc2-metal": {
+      "licence": "MIT",
+      "copyright": "Copyright (c) Steven Sheldon\nCopyright (c) Mads Marquart",
+      "source": "https://github.com/madsmtm/objc2/blob/objc2-0.5.3/LICENSE.txt (Steven Sheldon) and LICENSE-MIT.txt on master (Mads Marquart)"
+    },
+    "objc2-quartz-core": {
+      "licence": "MIT",
+      "copyright": "Copyright (c) Steven Sheldon\nCopyright (c) Mads Marquart",
+      "source": "https://github.com/madsmtm/objc2/blob/objc2-0.5.3/LICENSE.txt (Steven Sheldon) and LICENSE-MIT.txt on master (Mads Marquart)"
+    },
+    "objc2-system-configuration": {
+      "licence": "Apache-2.0"
+    },
+    "profiling": {
+      "licence": "Apache-2.0"
+    },
+    "spirv": {
+      "licence": "Apache-2.0"
+    },
+    "tiberius-macros": {
+      "licence": "Apache-2.0"
+    },
+    "wasmi": {
+      "licence": "Apache-2.0"
+    },
+    "wasmi_collections": {
+      "licence": "Apache-2.0"
+    },
+    "wasmi_core": {
+      "licence": "Apache-2.0"
+    },
+    "wasmi_ir": {
+      "licence": "Apache-2.0"
+    },
+    "wasmparser": {
+      "licence": "Apache-2.0"
+    },
+    "winapi-x86_64-pc-windows-gnu": {
+      "licence": "Apache-2.0"
+    }
+  }
+}

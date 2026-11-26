@@ -1,0 +1,12 @@
+ide-endpoints-title = Endpoints
+ide-endpoints-refresh = Обновить
+ide-endpoints-empty = В проекте нет обработчиков запросов.
+ide-endpoints-loading = Читаются исходники проекта…
+ide-endpoints-any = ЛЮБОЙ
+ide-endpoints-not-available = Окну Endpoints нужен плагин Spring Boot и открытый проект.
+ide-starters-title = Изменить стартеры
+ide-starters-version = Spring Boot { $version }, модуль { $module }
+ide-starters-asking = Запрос к сервису Spring Initializr…
+ide-starters-apply = Применить
+ide-starters-retry = Повторить
+ide-starters-edit = Изменить стартеры…

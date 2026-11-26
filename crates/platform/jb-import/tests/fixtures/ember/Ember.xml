@@ -1,0 +1,25 @@
+<!-- Synthetic test file written for Zen IDE from the public description of the format; no part is taken from a real scheme. -->
+<scheme name="Ember Test" parent_scheme="Darcula">
+  <colors>
+    <option name="CARET_COLOR" value="e06040" />
+  </colors>
+  <attributes>
+    <option name="TEXT">
+      <value>
+        <option name="FOREGROUND" value="d8d8d8" />
+        <option name="BACKGROUND" value="121212" />
+      </value>
+    </option>
+    <option name="DEFAULT_KEYWORD">
+      <value>
+        <option name="FOREGROUND" value="c04020" />
+        <option name="FONT_TYPE" value="1" />
+      </value>
+    </option>
+    <option name="UNKNOWN_FIXTURE_ATTRIBUTE">
+      <value>
+        <option name="FOREGROUND" value="777777" />
+      </value>
+    </option>
+  </attributes>
+</scheme>

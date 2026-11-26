@@ -1,0 +1,11 @@
+// Synthetic test file written for Zen IDE from the public description of the format; no part is taken from a real theme.
+{
+  "name": "Chain Root",
+  "type": "dark",
+  "colors": { "editorCursor.foreground": "#ABCDEF", "editor.background": "#404040" },
+  "tokenColors": [
+    { "scope": "keyword.control", "settings": { "foreground": "#0000CC" } },
+    { "scope": "comment", "settings": { "foreground": "#888888" } },
+  ],
+  "semanticTokenColors": { "namespace": "#112233", "type": "#334455" },
+}

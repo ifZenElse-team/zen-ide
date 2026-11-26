@@ -1,0 +1,8 @@
+<!-- Synthetic fixture written for the Zen IDE tests from the public format documentation; not taken from any JetBrains product. -->
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="GoUnusedParameter" enabled="false" level="WEAK WARNING" enabled_by_default="false" />
+    <inspection_tool class="GoShadowedVar" enabled="true" level="ERROR" enabled_by_default="true" />
+  </profile>
+</component>

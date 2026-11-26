@@ -1,0 +1,1081 @@
+{
+  "name": "Kotlin",
+  "description": "Kotlin and Kotlin scripts, Gradle's Kotlin DSL (*.gradle.kts) among them: highlighting, folding, the Structure view and the mains and tests to run and debug by our own lexer; a Kotlin language server for problems, completion, navigation, rename and formatting, downloaded when you ask: the Kotlin team's kotlin-lsp by default, or fwcd's open-source Kotlin Language Server, chosen in Settings → Language Servers; Kotlin file templates. Offered when a Kotlin file opens.",
+  "extensions": [
+    "kt",
+    "kts"
+  ],
+  "liveTemplates": {
+    "templates": [
+      {"language": "kotlin", "abbreviation": "main", "description": {"en": "main() function", "ru": "Функция main()"}, "text": "fun main() {\n\t$END$\n}"},
+      {"language": "kotlin", "abbreviation": "maina", "description": {"en": "main() function with arguments", "ru": "Функция main() с аргументами"}, "text": "fun main(args: Array<String>) {\n\t$END$\n}"},
+      {"language": "kotlin", "abbreviation": "maino", "description": {"en": "main() function in an object", "ru": "Функция main() в объекте"}, "text": "@JvmStatic\nfun main(args: Array<String>) {\n\t$END$\n}"},
+      {"language": "kotlin", "abbreviation": "sout", "description": {"en": "Prints a value to System.out", "ru": "Печатает значение в System.out"}, "text": "println($END$)"},
+      {"language": "kotlin", "abbreviation": "serr", "description": {"en": "Prints a value to System.err", "ru": "Печатает значение в System.err"}, "text": "System.err.println($END$)"},
+      {"language": "kotlin", "abbreviation": "soutv", "description": {"en": "Prints a value with its name", "ru": "Печатает значение с его именем"}, "text": "println(\"$VALUE$ = $${$VALUE$}\")$END$", "variables": [{"name": "VALUE", "default": "value"}]},
+      {"language": "kotlin", "abbreviation": "fun0", "description": {"en": "A function without parameters", "ru": "Функция без параметров"}, "text": "fun $NAME$(): $RESULT$ {\n\t$END$\n}", "variables": [{"name": "NAME", "default": "name"}, {"name": "RESULT", "default": "Unit"}]},
+      {"language": "kotlin", "abbreviation": "fun1", "description": {"en": "A function with one parameter", "ru": "Функция с одним параметром"}, "text": "fun $NAME$($PARAMETER$: $TYPE$): $RESULT$ {\n\t$END$\n}", "variables": [{"name": "NAME", "default": "name"}, {"name": "PARAMETER", "default": "value"}, {"name": "TYPE", "default": "Any"}, {"name": "RESULT", "default": "Unit"}]},
+      {"language": "kotlin", "abbreviation": "fun2", "description": {"en": "A function with two parameters", "ru": "Функция с двумя параметрами"}, "text": "fun $NAME$($FIRST$: $FIRST_TYPE$, $SECOND$: $SECOND_TYPE$): $RESULT$ {\n\t$END$\n}", "variables": [{"name": "NAME", "default": "name"}, {"name": "FIRST", "default": "first"}, {"name": "FIRST_TYPE", "default": "Any"}, {"name": "SECOND", "default": "second"}, {"name": "SECOND_TYPE", "default": "Any"}, {"name": "RESULT", "default": "Unit"}]},
+      {"language": "kotlin", "abbreviation": "void", "description": {"en": "A function that returns nothing", "ru": "Функция, которая ничего не возвращает"}, "text": "fun $NAME$($PARAMETERS$) {\n\t$END$\n}", "variables": [{"name": "NAME", "default": "name"}, {"name": "PARAMETERS"}]},
+      {"language": "kotlin", "abbreviation": "ifn", "description": {"en": "Inserts an 'if null' check", "ru": "Проверка на null"}, "text": "if ($VALUE$ == null) {\n\t$END$\n}", "variables": [{"name": "VALUE"}]},
+      {"language": "kotlin", "abbreviation": "inn", "description": {"en": "Inserts an 'if not null' check", "ru": "Проверка, что не null"}, "text": "if ($VALUE$ != null) {\n\t$END$\n}", "variables": [{"name": "VALUE"}]},
+      {"language": "kotlin", "abbreviation": "iter", "description": {"en": "Iterates over a collection", "ru": "Цикл по коллекции"}, "text": "for ($ITEM$ in $ITERABLE$) {\n\t$END$\n}", "variables": [{"name": "ITERABLE"}, {"name": "ITEM", "default": "item"}]},
+      {"language": "kotlin", "abbreviation": "fori", "description": {"en": "Counts from zero up to a number", "ru": "Цикл от нуля до числа"}, "text": "for ($INDEX$ in 0 until $LIMIT$) {\n\t$END$\n}", "variables": [{"name": "INDEX", "default": "i"}, {"name": "LIMIT"}]},
+      {"language": "kotlin", "abbreviation": "interface", "description": {"en": "An interface", "ru": "Интерфейс"}, "text": "interface $NAME$ {\n\t$END$\n}", "variables": [{"name": "NAME"}]},
+      {"language": "kotlin", "abbreviation": "singleton", "description": {"en": "An object declaration", "ru": "Объявление объекта"}, "text": "object $NAME$ {\n\t$END$\n}", "variables": [{"name": "NAME"}]},
+      {"language": "kotlin", "abbreviation": "closure", "description": {"en": "A function literal", "ru": "Функциональный литерал"}, "text": "{ $PARAMETERS$ -> $END$ }", "variables": [{"name": "PARAMETERS"}]},
+      {"language": "kotlin", "abbreviation": "anonymous", "description": {"en": "An anonymous object", "ru": "Анонимный объект"}, "text": "object : $TYPE$ {\n\t$END$\n}", "variables": [{"name": "TYPE"}]},
+      {"language": "kotlin", "abbreviation": "exfun", "description": {"en": "An extension function", "ru": "Функция-расширение"}, "text": "fun $RECEIVER$.$NAME$($PARAMETERS$): $RESULT$ {\n\t$END$\n}", "variables": [{"name": "RECEIVER"}, {"name": "NAME", "default": "name"}, {"name": "PARAMETERS"}, {"name": "RESULT", "default": "Unit"}]},
+      {"language": "kotlin", "abbreviation": "exval", "description": {"en": "An extension read-only property", "ru": "Свойство-расширение только для чтения"}, "text": "val $RECEIVER$.$NAME$: $TYPE$\n\tget() = $END$", "variables": [{"name": "RECEIVER"}, {"name": "NAME", "default": "name"}, {"name": "TYPE"}]},
+      {"language": "kotlin", "abbreviation": "exvar", "description": {"en": "An extension mutable property", "ru": "Изменяемое свойство-расширение"}, "text": "var $RECEIVER$.$NAME$: $TYPE$\n\tget() = $GETTER$\n\tset(value) {\n\t\t$END$\n\t}", "variables": [{"name": "RECEIVER"}, {"name": "NAME", "default": "name"}, {"name": "TYPE"}, {"name": "GETTER"}]}
+    ],
+    "postfix": [
+      {"language": "kotlin", "key": "val", "description": {"en": "Declares a read-only variable", "ru": "Объявляет переменную только для чтения"}, "text": "val $NAME$ = $EXPR$$END$", "variables": [{"name": "NAME", "default": "value"}]},
+      {"language": "kotlin", "key": "var", "description": {"en": "Declares a mutable variable", "ru": "Объявляет изменяемую переменную"}, "text": "var $NAME$ = $EXPR$$END$", "variables": [{"name": "NAME", "default": "value"}]},
+      {"language": "kotlin", "key": "if", "description": {"en": "Checks a boolean expression", "ru": "Проверяет логическое выражение"}, "text": "if ($EXPR$) {\n\t$END$\n}"},
+      {"language": "kotlin", "key": "else", "description": {"en": "Checks that a boolean expression is false", "ru": "Проверяет, что логическое выражение ложно"}, "text": "if (!$EXPR$) {\n\t$END$\n}"},
+      {"language": "kotlin", "key": "not", "description": {"en": "Negates a boolean expression", "ru": "Отрицает логическое выражение"}, "text": "!$EXPR$$END$"},
+      {"language": "kotlin", "key": "nn", "description": {"en": "Checks that the expression is not null", "ru": "Проверяет, что выражение не null"}, "text": "if ($EXPR$ != null) {\n\t$END$\n}"},
+      {"language": "kotlin", "key": "notnull", "description": {"en": "Checks that the expression is not null", "ru": "Проверяет, что выражение не null"}, "text": "if ($EXPR$ != null) {\n\t$END$\n}"},
+      {"language": "kotlin", "key": "null", "description": {"en": "Checks that the expression is null", "ru": "Проверяет, что выражение равно null"}, "text": "if ($EXPR$ == null) {\n\t$END$\n}"},
+      {"language": "kotlin", "key": "for", "description": {"en": "Iterates over a collection", "ru": "Цикл по коллекции"}, "text": "for ($ITEM$ in $EXPR$) {\n\t$END$\n}", "variables": [{"name": "ITEM", "default": "item"}]},
+      {"language": "kotlin", "key": "iter", "description": {"en": "Iterates over a collection", "ru": "Цикл по коллекции"}, "text": "for ($ITEM$ in $EXPR$) {\n\t$END$\n}", "variables": [{"name": "ITEM", "default": "item"}]},
+      {"language": "kotlin", "key": "while", "description": {"en": "Loops while the expression is true", "ru": "Цикл, пока выражение истинно"}, "text": "while ($EXPR$) {\n\t$END$\n}"},
+      {"language": "kotlin", "key": "when", "description": {"en": "Branches on the value", "ru": "when по значению"}, "text": "when ($EXPR$) {\n\t$END$\n}"},
+      {"language": "kotlin", "key": "return", "description": {"en": "Returns the value", "ru": "Возвращает значение"}, "text": "return $EXPR$$END$"},
+      {"language": "kotlin", "key": "throw", "description": {"en": "Throws the exception", "ru": "Бросает исключение"}, "text": "throw $EXPR$$END$"},
+      {"language": "kotlin", "key": "sout", "description": {"en": "Prints the value", "ru": "Печатает значение"}, "text": "println($EXPR$)$END$"},
+      {"language": "kotlin", "key": "try", "description": {"en": "Puts the expression into try/catch", "ru": "Оборачивает выражение в try/catch"}, "text": "try {\n\t$EXPR$\n} catch ($NAME$: $EXCEPTION$) {\n\t$END$\n}", "variables": [{"name": "NAME", "default": "e"}, {"name": "EXCEPTION", "default": "Exception"}]},
+      {"language": "kotlin", "key": "cast", "description": {"en": "Casts the expression to a type", "ru": "Приводит выражение к типу"}, "text": "($EXPR$ as $TYPE$)$END$", "variables": [{"name": "TYPE"}]},
+      {"language": "kotlin", "key": "par", "description": {"en": "Puts the expression in parentheses", "ru": "Заключает выражение в скобки"}, "text": "($EXPR$)$END$"},
+      {"language": "kotlin", "key": "lambda", "description": {"en": "Makes a function literal that gives the expression", "ru": "Функциональный литерал, который возвращает выражение"}, "text": "{ $EXPR$ }$END$"},
+      {"language": "kotlin", "key": "let", "description": {"en": "Runs a block when the value is not null", "ru": "Выполняет блок, если значение не null"}, "text": "$EXPR$?.let { $END$ }"},
+      {"language": "kotlin", "key": "arg", "description": {"en": "Passes the expression to a call", "ru": "Передаёт выражение в вызов"}, "text": "$CALL$($EXPR$)$END$", "variables": [{"name": "CALL"}]},
+      {"language": "kotlin", "key": "spread", "description": {"en": "Spreads the array into arguments", "ru": "Раскрывает массив в аргументы"}, "text": "*$EXPR$$END$"},
+      {"language": "kotlin", "key": "assert", "description": {"en": "Asserts the condition", "ru": "Проверяет условие через assert"}, "text": "assert($EXPR$)$END$"}
+    ],
+    "surrounders": [
+      {"language": "kotlin", "id": "if", "title": {"en": "if", "ru": "if"}, "text": "if ($CONDITION$) {\n\t$SELECTION$\n}"},
+      {"language": "kotlin", "id": "ifElse", "title": {"en": "if / else", "ru": "if / else"}, "text": "if ($CONDITION$) {\n\t$SELECTION$\n} else {\n\t$END$\n}"},
+      {"language": "kotlin", "id": "while", "title": {"en": "while", "ru": "while"}, "text": "while ($CONDITION$) {\n\t$SELECTION$\n}"},
+      {"language": "kotlin", "id": "doWhile", "title": {"en": "do / while", "ru": "do / while"}, "text": "do {\n\t$SELECTION$\n} while ($CONDITION$)"},
+      {"language": "kotlin", "id": "for", "title": {"en": "for", "ru": "for"}, "text": "for ($LOOP$) {\n\t$SELECTION$\n}"},
+      {"language": "kotlin", "id": "tryCatch", "title": {"en": "try / catch", "ru": "try / catch"}, "text": "try {\n\t$SELECTION$\n} catch ($NAME$: $EXCEPTION$) {\n\t$END$\n}", "variables": [{"name": "NAME", "default": "e"}, {"name": "EXCEPTION", "default": "Exception"}]},
+      {"language": "kotlin", "id": "tryFinally", "title": {"en": "try / finally", "ru": "try / finally"}, "text": "try {\n\t$SELECTION$\n} finally {\n\t$END$\n}"},
+      {"language": "kotlin", "id": "tryCatchFinally", "title": {"en": "try / catch / finally", "ru": "try / catch / finally"}, "text": "try {\n\t$SELECTION$\n} catch ($NAME$: $EXCEPTION$) {\n\t$CATCH$\n} finally {\n\t$END$\n}", "variables": [{"name": "NAME", "default": "e"}, {"name": "EXCEPTION", "default": "Exception"}, {"name": "CATCH"}]},
+      {"language": "kotlin", "id": "synchronized", "title": {"en": "synchronized", "ru": "synchronized"}, "text": "synchronized($LOCK$) {\n\t$SELECTION$\n}", "variables": [{"name": "LOCK", "default": "this"}]},
+      {"language": "kotlin", "id": "runnable", "title": {"en": "Runnable", "ru": "Runnable"}, "text": "val $NAME$ = Runnable {\n\t$SELECTION$\n}", "variables": [{"name": "NAME", "default": "runnable"}]},
+      {"language": "kotlin", "id": "functionLiteral", "title": {"en": "{ } function literal", "ru": "{ } функциональный литерал"}, "text": "{\n\t$SELECTION$\n}"},
+      {"language": "kotlin", "id": "parentheses", "title": {"en": "(expr)", "ru": "(выражение)"}, "text": "($SELECTION$)", "expression": true},
+      {"language": "kotlin", "id": "not", "title": {"en": "!(expr)", "ru": "!(выражение)"}, "text": "!($SELECTION$)", "expression": true},
+      {"language": "kotlin", "id": "template", "title": {"en": "\"${expr}\"", "ru": "\"${выражение}\""}, "text": "\"$${$SELECTION$}\"", "expression": true}
+    ],
+    "docComments": [
+      {"language": "kotlin", "opening": "/**", "onEnter": true, "keywords": ["fun", "class", "interface", "object", "val", "var", "typealias"], "skip": ["@"], "noResult": ["Unit"], "throwsAnnotation": "@Throws(", "text": "/**\n * $END$\n$PARAMETERS$\n$RESULT$\n$THROWS$\n */", "parameter": " * @param $PARAMETER$", "result": " * @return", "thrown": " * @throws $EXCEPTION$"}
+    ],
+    "statements": [
+      {"language": "kotlin", "blocks": ["if", "else", "for", "while", "do", "when", "try", "catch", "finally", "fun", "class", "interface", "object", "init"], "parenthesized": ["if", "for", "while", "when", "catch"]}
+    ]
+  },
+  "tests": [
+    {
+      "id": "kotlin",
+      "extensions": [
+        "kt"
+      ],
+      "pairs": [
+        {
+          "subject": "src/main/kotlin/{path}{name}.kt",
+          "test": "src/test/kotlin/{path}{name}Test.kt"
+        },
+        {
+          "subject": "src/main/kotlin/{path}{name}.kt",
+          "test": "src/test/kotlin/{path}{name}Tests.kt"
+        },
+        {
+          "subject": "src/main/kotlin/{path}{name}.kt",
+          "test": "src/test/kotlin/{path}{name}IT.kt"
+        },
+        {
+          "subject": "src/main/kotlin/{path}{name}.kt",
+          "test": "src/test/kotlin/{path}Test{name}.kt"
+        },
+        {
+          "subject": "src/main/java/{path}{name}.kt",
+          "test": "src/test/java/{path}{name}Test.kt"
+        },
+        {
+          "subject": "src/main/java/{path}{name}.kt",
+          "test": "src/test/java/{path}{name}Tests.kt"
+        },
+        {
+          "subject": "src/main/java/{path}{name}.kt",
+          "test": "src/test/java/{path}{name}IT.kt"
+        },
+        {
+          "subject": "src/main/java/{path}{name}.kt",
+          "test": "src/test/java/{path}Test{name}.kt"
+        },
+        {
+          "subject": "src/commonMain/kotlin/{path}{name}.kt",
+          "test": "src/commonTest/kotlin/{path}{name}Test.kt"
+        },
+        {
+          "subject": "src/commonMain/kotlin/{path}{name}.kt",
+          "test": "src/commonTest/kotlin/{path}{name}Tests.kt"
+        },
+        {
+          "subject": "src/commonMain/kotlin/{path}{name}.kt",
+          "test": "src/commonTest/kotlin/{path}{name}IT.kt"
+        },
+        {
+          "subject": "src/commonMain/kotlin/{path}{name}.kt",
+          "test": "src/commonTest/kotlin/{path}Test{name}.kt"
+        },
+        {
+          "subject": "src/jvmMain/kotlin/{path}{name}.kt",
+          "test": "src/jvmTest/kotlin/{path}{name}Test.kt"
+        },
+        {
+          "subject": "src/jvmMain/kotlin/{path}{name}.kt",
+          "test": "src/jvmTest/kotlin/{path}{name}Tests.kt"
+        },
+        {
+          "subject": "src/jvmMain/kotlin/{path}{name}.kt",
+          "test": "src/jvmTest/kotlin/{path}{name}IT.kt"
+        },
+        {
+          "subject": "src/jvmMain/kotlin/{path}{name}.kt",
+          "test": "src/jvmTest/kotlin/{path}Test{name}.kt"
+        }
+      ],
+      "members": "^[ \\t]*(?:@[\\w.:]+(?:\\([^)\\n]*\\))?\\s+)*(?:(?:public|private|protected|internal|override|open|abstract|final|suspend|inline|operator|infix|tailrec|external|actual|expect)\\s+)*fun\\s+(?:<(?:[^<>\\n]|<(?:[^<>\\n]|<[^<>\\n]*>)*>)*>\\s*)?(?:[\\w.]+(?:<(?:[^<>\\n]|<(?:[^<>\\n]|<[^<>\\n]*>)*>)*>)?\\??\\.)?(?P<name>`[^`\\n]+`|[\\w$]+)\\s*\\(",
+      "tests": [
+        "{name}",
+        "test{Name}"
+      ],
+      "packageLine": "package ${PACKAGE}\n\n",
+      "insert": "beforeLastBrace",
+      "frameworks": [
+        {
+          "id": "junit5",
+          "name": "JUnit 5",
+          "detect": [
+            {
+              "file": "pom.xml",
+              "contains": "junit-jupiter"
+            },
+            {
+              "file": "build.gradle",
+              "contains": "junit-jupiter"
+            },
+            {
+              "file": "build.gradle.kts",
+              "contains": "junit-jupiter"
+            },
+            {
+              "file": "gradle/libs.versions.toml",
+              "contains": "junit-jupiter"
+            },
+            {
+              "file": "pom.xml",
+              "contains": "junit-bom"
+            },
+            {
+              "file": "build.gradle",
+              "contains": "junit-bom"
+            },
+            {
+              "file": "build.gradle.kts",
+              "contains": "junit-bom"
+            },
+            {
+              "file": "gradle/libs.versions.toml",
+              "contains": "junit-bom"
+            }
+          ],
+          "file": "${PACKAGE_LINE}import org.junit.jupiter.api.AfterEach\nimport org.junit.jupiter.api.BeforeEach\nimport org.junit.jupiter.api.Test\nimport org.junit.jupiter.api.Assertions.*\n\nclass ${NAME} {\n\n    @BeforeEach\n    fun setUp() {\n    }\n\n    @AfterEach\n    fun tearDown() {\n    }\n${METHODS}}\n",
+          "method": "\n    @Test\n    fun ${TEST}() {\n    }\n"
+        },
+        {
+          "id": "junit4",
+          "name": "JUnit 4",
+          "detect": [
+            {
+              "file": "pom.xml",
+              "contains": "<artifactId>junit</artifactId>"
+            },
+            {
+              "file": "build.gradle",
+              "contains": "junit:junit"
+            },
+            {
+              "file": "build.gradle.kts",
+              "contains": "junit:junit"
+            },
+            {
+              "file": "gradle/libs.versions.toml",
+              "contains": "junit:junit"
+            }
+          ],
+          "file": "${PACKAGE_LINE}import org.junit.After\nimport org.junit.Before\nimport org.junit.Test\nimport org.junit.Assert.*\n\nclass ${NAME} {\n\n    @Before\n    fun setUp() {\n    }\n\n    @After\n    fun tearDown() {\n    }\n${METHODS}}\n",
+          "method": "\n    @Test\n    fun ${TEST}() {\n    }\n"
+        },
+        {
+          "id": "testng",
+          "name": "TestNG",
+          "detect": [
+            {
+              "file": "pom.xml",
+              "contains": "org.testng"
+            },
+            {
+              "file": "build.gradle",
+              "contains": "org.testng"
+            },
+            {
+              "file": "build.gradle.kts",
+              "contains": "org.testng"
+            },
+            {
+              "file": "gradle/libs.versions.toml",
+              "contains": "org.testng"
+            }
+          ],
+          "file": "${PACKAGE_LINE}import org.testng.annotations.AfterMethod\nimport org.testng.annotations.BeforeMethod\nimport org.testng.annotations.Test\nimport org.testng.Assert.*\n\nclass ${NAME} {\n\n    @BeforeMethod\n    fun setUp() {\n    }\n\n    @AfterMethod\n    fun tearDown() {\n    }\n${METHODS}}\n",
+          "method": "\n    @Test\n    fun ${TEST}() {\n    }\n"
+        },
+        {
+          "id": "kotlin.test",
+          "name": "kotlin.test",
+          "detect": [
+            {
+              "file": "pom.xml",
+              "contains": "kotlin-test"
+            },
+            {
+              "file": "build.gradle",
+              "contains": "kotlin-test"
+            },
+            {
+              "file": "build.gradle.kts",
+              "contains": "kotlin-test"
+            },
+            {
+              "file": "gradle/libs.versions.toml",
+              "contains": "kotlin-test"
+            },
+            {
+              "file": "build.gradle.kts",
+              "contains": "kotlin(\"test\")"
+            }
+          ],
+          "file": "${PACKAGE_LINE}import kotlin.test.AfterTest\nimport kotlin.test.BeforeTest\nimport kotlin.test.Test\n\nclass ${NAME} {\n\n    @BeforeTest\n    fun setUp() {\n    }\n\n    @AfterTest\n    fun tearDown() {\n    }\n${METHODS}}\n",
+          "method": "\n    @Test\n    fun ${TEST}() {\n    }\n"
+        }
+      ]
+    }
+  ],
+  "languageServers": [
+    {
+      "id": "kotlin-lsp",
+      "name": "Kotlin LSP",
+      "languages": [
+        "kotlin"
+      ],
+      "extensions": [
+        "kt",
+        "kts"
+      ],
+      "watches": [
+        "build.gradle",
+        "build.gradle.kts",
+        "settings.gradle",
+        "settings.gradle.kts",
+        "pom.xml",
+        "gradle.properties",
+        "libs.versions.toml"
+      ],
+      "command": "${glob:bin/intellij-server}",
+      "args": [
+        "--stdio"
+      ],
+      "install": {
+        "kind": "archive",
+        "hint": "The Kotlin team's language server (github.com/Kotlin/kotlin-lsp), downloaded from its vendor when you click Install. It brings its own Java runtime; there is no archive for this computer.",
+        "platforms": {
+          "macos-aarch64": {
+            "url": "https://download.jetbrains.com/language-server/kotlin-server/263.7084.0/kotlin-server-263.7084.0-aarch64.sit",
+            "sha256": "b403bf8a54bd458e3ba6731cf8abb3340be08b439c03576dfc02b13faf3694b8"
+          },
+          "macos-x86_64": {
+            "url": "https://download.jetbrains.com/language-server/kotlin-server/263.7084.0/kotlin-server-263.7084.0.sit",
+            "sha256": "b29c393a5e541153d03d626e7946268437e358a667a5f914a126dbb4007664b1"
+          },
+          "linux-x86_64": {
+            "url": "https://download.jetbrains.com/language-server/kotlin-server/263.7084.0/kotlin-server-263.7084.0.tar.gz",
+            "sha256": "ae0c4b01e17ab73a4a5227a78ea99e6dcbe3e499600315b22759a4e4cddd11df"
+          },
+          "linux-aarch64": {
+            "url": "https://download.jetbrains.com/language-server/kotlin-server/263.7084.0/kotlin-server-263.7084.0-aarch64.tar.gz",
+            "sha256": "450ab7c1d80e48106aa429b48cb4226d82ca12a8a2400447ae02386794780cac"
+          }
+        }
+      },
+      "notice": {
+        "text": {
+          "en": "kotlin-lsp is JetBrains software, downloaded from JetBrains under JetBrains' terms; partly closed-source.",
+          "ru": "kotlin-lsp — программа JetBrains, скачивается с сайта JetBrains на условиях JetBrains; исходный код открыт не полностью."
+        },
+        "url": "https://github.com/Kotlin/kotlin-lsp"
+      },
+      "optimizeImports": [
+        "source.organizeImports"
+      ]
+    },
+    {
+      "id": "kotlin-language-server",
+      "name": "Kotlin Language Server (fwcd)",
+      "languages": [
+        "kotlin"
+      ],
+      "extensions": [
+        "kt",
+        "kts"
+      ],
+      "watches": [
+        "build.gradle",
+        "build.gradle.kts",
+        "settings.gradle",
+        "settings.gradle.kts",
+        "pom.xml",
+        "gradle.properties",
+        "libs.versions.toml"
+      ],
+      "command": "${glob:bin/kotlin-language-server}",
+      "args": [],
+      "install": {
+        "kind": "archive",
+        "url": "https://github.com/fwcd/kotlin-language-server/releases/download/1.3.13/server.zip",
+        "sha256": "4fe7d71d087b307c7869036171bd9d8c6a4284cd7c25b89098b0a24eb2d9b6d2",
+        "hint": "fwcd/kotlin-language-server (MIT), downloaded from its GitHub releases when you click Install; it runs on the project's JDK."
+      }
+    }
+  ],
+  "fileTemplates": {
+    "templates": [
+      {
+        "name": "Kotlin File",
+        "sourceFolder": true,
+        "group": "Kotlin Class/File",
+        "extension": "kt",
+        "text": "#if (${PACKAGE_NAME})package ${PACKAGE_NAME}\n\n#end\n"
+      },
+      {
+        "name": "Kotlin Class",
+        "sourceFolder": true,
+        "group": "Kotlin Class/File",
+        "extension": "kt",
+        "text": "#if (${PACKAGE_NAME})package ${PACKAGE_NAME}\n\n#end\nclass ${NAME} {\n}\n"
+      },
+      {
+        "name": "Kotlin Data Class",
+        "sourceFolder": true,
+        "group": "Kotlin Class/File",
+        "extension": "kt",
+        "text": "#if (${PACKAGE_NAME})package ${PACKAGE_NAME}\n\n#end\ndata class ${NAME}(\n)\n"
+      },
+      {
+        "name": "Kotlin Interface",
+        "sourceFolder": true,
+        "group": "Kotlin Class/File",
+        "extension": "kt",
+        "text": "#if (${PACKAGE_NAME})package ${PACKAGE_NAME}\n\n#end\ninterface ${NAME} {\n}\n"
+      },
+      {
+        "name": "Kotlin Enum",
+        "sourceFolder": true,
+        "group": "Kotlin Class/File",
+        "extension": "kt",
+        "text": "#if (${PACKAGE_NAME})package ${PACKAGE_NAME}\n\n#end\nenum class ${NAME} {\n}\n"
+      },
+      {
+        "name": "Kotlin Object",
+        "sourceFolder": true,
+        "group": "Kotlin Class/File",
+        "extension": "kt",
+        "text": "#if (${PACKAGE_NAME})package ${PACKAGE_NAME}\n\n#end\nobject ${NAME} {\n}\n"
+      },
+      {
+        "name": "Kotlin Script",
+        "extension": "kts",
+        "text": ""
+      }
+    ]
+  },
+  "codeStyles": [
+    {
+      "language": "kotlin",
+      "title": {
+        "en": "Kotlin",
+        "ru": "Kotlin"
+      },
+      "preview": "package com.example.shop\n\nimport java.util.UUID\nimport kotlin.math.max\n\ndata class Item(val id: UUID, val price: Int, val free: Boolean = false)\n\nclass Basket(private val limit: Int = 10) : Iterable<Item> {\n    private val items = mutableListOf<Item>()\n\n    fun add(item: Item) {\n        if (items.size >= limit && !item.free) {\n            throw IllegalStateException(\"The basket is full: ${items.size} items\")\n        } else {\n            items += item\n        }\n    }\n\n    fun total(discountPercent: Int): Int {\n        var sum = 0\n        for (index in 0 until items.size) {\n            sum += items[index].price * (100 - discountPercent) / 100\n        }\n        return when (sum) {\n            0 -> 0\n            else -> max(sum, 1)\n        }\n    }\n\n    override fun iterator(): Iterator<Item> = items.iterator()\n}\n",
+      "options": [
+        {
+          "id": "spaceBeforeIfParentheses",
+          "label": {
+            "en": "'if' parentheses",
+            "ru": "Скобки if"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before parentheses",
+            "ru": "Перед круглыми скобками"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "ij_kotlin_space_before_if_parentheses",
+          "editorConfig": "ij_kotlin_space_before_if_parentheses"
+        },
+        {
+          "id": "spaceBeforeForParentheses",
+          "label": {
+            "en": "'for' parentheses",
+            "ru": "Скобки for"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before parentheses",
+            "ru": "Перед круглыми скобками"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "ij_kotlin_space_before_for_parentheses",
+          "editorConfig": "ij_kotlin_space_before_for_parentheses"
+        },
+        {
+          "id": "spaceBeforeWhileParentheses",
+          "label": {
+            "en": "'while' parentheses",
+            "ru": "Скобки while"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before parentheses",
+            "ru": "Перед круглыми скобками"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "ij_kotlin_space_before_while_parentheses",
+          "editorConfig": "ij_kotlin_space_before_while_parentheses"
+        },
+        {
+          "id": "spaceBeforeWhenParentheses",
+          "label": {
+            "en": "'when' parentheses",
+            "ru": "Скобки when"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before parentheses",
+            "ru": "Перед круглыми скобками"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "ij_kotlin_space_before_when_parentheses",
+          "editorConfig": "ij_kotlin_space_before_when_parentheses"
+        },
+        {
+          "id": "spaceBeforeCatchParentheses",
+          "label": {
+            "en": "'catch' parentheses",
+            "ru": "Скобки catch"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before parentheses",
+            "ru": "Перед круглыми скобками"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "ij_kotlin_space_before_catch_parentheses",
+          "editorConfig": "ij_kotlin_space_before_catch_parentheses"
+        },
+        {
+          "id": "spaceAroundAssignment",
+          "label": {
+            "en": "Assignment operators (=, +=, ...)",
+            "ru": "Операторы присваивания (=, +=, ...)"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Around operators",
+            "ru": "Вокруг операторов"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "ij_kotlin_space_around_assignment_operators",
+          "editorConfig": "ij_kotlin_space_around_assignment_operators"
+        },
+        {
+          "id": "spaceAroundAdditive",
+          "label": {
+            "en": "Additive operators (+, -)",
+            "ru": "Аддитивные операторы (+, -)"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Around operators",
+            "ru": "Вокруг операторов"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "ij_kotlin_space_around_additive_operators",
+          "editorConfig": "ij_kotlin_space_around_additive_operators"
+        },
+        {
+          "id": "spaceAroundMultiplicative",
+          "label": {
+            "en": "Multiplicative operators (*, /, %)",
+            "ru": "Мультипликативные операторы (*, /, %)"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Around operators",
+            "ru": "Вокруг операторов"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "ij_kotlin_space_around_multiplicative_operators",
+          "editorConfig": "ij_kotlin_space_around_multiplicative_operators"
+        },
+        {
+          "id": "spaceAroundRange",
+          "label": {
+            "en": "Range operator (..)",
+            "ru": "Оператор диапазона (..)"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Around operators",
+            "ru": "Вокруг операторов"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "ij_kotlin_space_around_range",
+          "editorConfig": "ij_kotlin_space_around_range"
+        },
+        {
+          "id": "spaceBeforeTypeColon",
+          "label": {
+            "en": "Before colon in a type annotation",
+            "ru": "Перед двоеточием типа"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Colons and commas",
+            "ru": "Двоеточия и запятые"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "ij_kotlin_space_before_type_colon",
+          "editorConfig": "ij_kotlin_space_before_type_colon"
+        },
+        {
+          "id": "spaceAfterTypeColon",
+          "label": {
+            "en": "After colon in a type annotation",
+            "ru": "После двоеточия типа"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Colons and commas",
+            "ru": "Двоеточия и запятые"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "ij_kotlin_space_after_type_colon",
+          "editorConfig": "ij_kotlin_space_after_type_colon"
+        },
+        {
+          "id": "spaceBeforeExtendColon",
+          "label": {
+            "en": "Before colon of supertypes",
+            "ru": "Перед двоеточием супертипов"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Colons and commas",
+            "ru": "Двоеточия и запятые"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "ij_kotlin_space_before_extend_colon",
+          "editorConfig": "ij_kotlin_space_before_extend_colon"
+        },
+        {
+          "id": "spaceAfterExtendColon",
+          "label": {
+            "en": "After colon of supertypes",
+            "ru": "После двоеточия супертипов"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Colons and commas",
+            "ru": "Двоеточия и запятые"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "ij_kotlin_space_after_extend_colon",
+          "editorConfig": "ij_kotlin_space_after_extend_colon"
+        },
+        {
+          "id": "spaceBeforeComma",
+          "label": {
+            "en": "Before comma",
+            "ru": "Перед запятой"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Colons and commas",
+            "ru": "Двоеточия и запятые"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "ij_kotlin_space_before_comma",
+          "editorConfig": "ij_kotlin_space_before_comma"
+        },
+        {
+          "id": "spaceAfterComma",
+          "label": {
+            "en": "After comma",
+            "ru": "После запятой"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Colons and commas",
+            "ru": "Двоеточия и запятые"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "ij_kotlin_space_after_comma",
+          "editorConfig": "ij_kotlin_space_after_comma"
+        },
+        {
+          "id": "lineLength",
+          "label": {
+            "en": "Hard wrap at",
+            "ru": "Жёсткий перенос на"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Hard wrap",
+            "ru": "Жёсткий перенос"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 40,
+            "max": 1000
+          },
+          "default": 120,
+          "configKey": "max_line_length",
+          "editorConfig": "max_line_length"
+        },
+        {
+          "id": "trailingComma",
+          "label": {
+            "en": "Use trailing comma in declarations",
+            "ru": "Завершающая запятая в объявлениях"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Trailing commas",
+            "ru": "Завершающие запятые"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "ij_kotlin_allow_trailing_comma",
+          "editorConfig": "ij_kotlin_allow_trailing_comma"
+        },
+        {
+          "id": "trailingCommaOnCallSite",
+          "label": {
+            "en": "Use trailing comma in calls",
+            "ru": "Завершающая запятая в вызовах"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Trailing commas",
+            "ru": "Завершающие запятые"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "ij_kotlin_allow_trailing_comma_on_call_site",
+          "editorConfig": "ij_kotlin_allow_trailing_comma_on_call_site"
+        },
+        {
+          "id": "elseOnNewLine",
+          "label": {
+            "en": "'else' on new line",
+            "ru": "else на новой строке"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "New lines",
+            "ru": "Новые строки"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "ij_kotlin_else_on_new_line",
+          "editorConfig": "ij_kotlin_else_on_new_line"
+        },
+        {
+          "id": "catchOnNewLine",
+          "label": {
+            "en": "'catch' on new line",
+            "ru": "catch на новой строке"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "New lines",
+            "ru": "Новые строки"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "ij_kotlin_catch_on_new_line",
+          "editorConfig": "ij_kotlin_catch_on_new_line"
+        },
+        {
+          "id": "finallyOnNewLine",
+          "label": {
+            "en": "'finally' on new line",
+            "ru": "finally на новой строке"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "New lines",
+            "ru": "Новые строки"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "ij_kotlin_finally_on_new_line",
+          "editorConfig": "ij_kotlin_finally_on_new_line"
+        },
+        {
+          "id": "keepBlankLinesInDeclarations",
+          "label": {
+            "en": "In declarations",
+            "ru": "В объявлениях"
+          },
+          "tab": "blankLines",
+          "group": {
+            "en": "Keep maximum blank lines",
+            "ru": "Сохранять не больше пустых строк"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 99
+          },
+          "default": 2,
+          "configKey": "ij_kotlin_keep_blank_lines_in_declarations",
+          "editorConfig": "ij_kotlin_keep_blank_lines_in_declarations"
+        },
+        {
+          "id": "keepBlankLinesInCode",
+          "label": {
+            "en": "In code",
+            "ru": "В коде"
+          },
+          "tab": "blankLines",
+          "group": {
+            "en": "Keep maximum blank lines",
+            "ru": "Сохранять не больше пустых строк"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 99
+          },
+          "default": 2,
+          "configKey": "ij_kotlin_keep_blank_lines_in_code",
+          "editorConfig": "ij_kotlin_keep_blank_lines_in_code"
+        },
+        {
+          "id": "keepBlankLinesBeforeRightBrace",
+          "label": {
+            "en": "Before '}'",
+            "ru": "Перед «}»"
+          },
+          "tab": "blankLines",
+          "group": {
+            "en": "Keep maximum blank lines",
+            "ru": "Сохранять не больше пустых строк"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 99
+          },
+          "default": 2,
+          "configKey": "ij_kotlin_keep_blank_lines_before_right_brace",
+          "editorConfig": "ij_kotlin_keep_blank_lines_before_right_brace"
+        },
+        {
+          "id": "nameCountToUseStar",
+          "label": {
+            "en": "Top-level names count to use import with '*'",
+            "ru": "Число имён верхнего уровня для импорта со «*»"
+          },
+          "tab": "imports",
+          "group": {
+            "en": "Star imports",
+            "ru": "Импорты со звёздочкой"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 1,
+            "max": 999
+          },
+          "default": 5,
+          "configKey": "ij_kotlin_name_count_to_use_star_import",
+          "editorConfig": "ij_kotlin_name_count_to_use_star_import"
+        },
+        {
+          "id": "memberCountToUseStar",
+          "label": {
+            "en": "Java statics and enum members count to use import with '*'",
+            "ru": "Число статических членов Java и элементов перечислений для импорта со «*»"
+          },
+          "tab": "imports",
+          "group": {
+            "en": "Star imports",
+            "ru": "Импорты со звёздочкой"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 1,
+            "max": 999
+          },
+          "default": 3,
+          "configKey": "ij_kotlin_name_count_to_use_star_import_for_members",
+          "editorConfig": "ij_kotlin_name_count_to_use_star_import_for_members"
+        },
+        {
+          "id": "packagesToUseStar",
+          "label": {
+            "en": "Packages to always import with '*', separated by commas",
+            "ru": "Пакеты, всегда импортируемые со «*», через запятую"
+          },
+          "tab": "imports",
+          "group": {
+            "en": "Star imports",
+            "ru": "Импорты со звёздочкой"
+          },
+          "kind": {
+            "type": "text"
+          },
+          "default": "java.util.*,kotlinx.android.synthetic.**",
+          "configKey": "ij_kotlin_packages_to_use_import_on_demand",
+          "editorConfig": "ij_kotlin_packages_to_use_import_on_demand"
+        },
+        {
+          "id": "importLayout",
+          "label": {
+            "en": "Import layout, separated by commas (* for all other imports, ^ for aliases)",
+            "ru": "Порядок импортов через запятую (* — все остальные импорты, ^ — псевдонимы)"
+          },
+          "tab": "imports",
+          "group": {
+            "en": "Import layout",
+            "ru": "Порядок импортов"
+          },
+          "kind": {
+            "type": "text"
+          },
+          "default": "*,java.**,javax.**,kotlin.**,^",
+          "configKey": "ij_kotlin_imports_layout",
+          "editorConfig": "ij_kotlin_imports_layout"
+        }
+      ],
+      "notes": {
+        "tabsAndIndents": {
+          "en": "Kotlin LSP reads these options from the project's .editorconfig, section [*.{kt,kts}]: the Project scheme keeps them there, and with the Default (IDE) scheme Export → EditorConfig File writes them. The fwcd Kotlin Language Server formats with ktfmt and reads only the indent.",
+          "ru": "Kotlin LSP читает эти параметры из файла проекта .editorconfig, раздел [*.{kt,kts}]: схема «Проект» хранит их там, а со схемой «По умолчанию (IDE)» их записывает Экспорт → Файл EditorConfig. Kotlin Language Server от fwcd форматирует через ktfmt и читает только отступ."
+        },
+        "arrangement": {
+          "en": "Rearrange Code leaves Kotlin code as it is: Kotlin has no arrangement rules yet.",
+          "ru": "«Переупорядочить код» не меняет порядок кода на Kotlin: правил упорядочивания для Kotlin пока нет."
+        }
+      },
+      "configFile": {
+        "names": [
+          ".editorconfig"
+        ],
+        "format": "editorConfig",
+        "section": "*.{kt,kts}"
+      }
+    }
+  ],
+  "projectGenerators": [
+    {
+      "id": "kotlin",
+      "name": "Kotlin",
+      "icon": "Main.kt",
+      "language": true,
+      "fields": [
+        {
+          "id": "build",
+          "label": {
+            "en": "Build system:",
+            "ru": "Система сборки:"
+          },
+          "type": "choice",
+          "segmented": true,
+          "default": "gradle",
+          "options": [
+            {
+              "value": "maven",
+              "label": "Maven"
+            },
+            {
+              "value": "gradle",
+              "label": "Gradle"
+            }
+          ]
+        },
+        {
+          "id": "dsl",
+          "label": {
+            "en": "Gradle DSL:",
+            "ru": "DSL Gradle:"
+          },
+          "type": "choice",
+          "segmented": true,
+          "default": "kotlin",
+          "options": [
+            {
+              "value": "groovy",
+              "label": "Groovy"
+            },
+            {
+              "value": "kotlin",
+              "label": "Kotlin"
+            }
+          ],
+          "visibleWhen": {
+            "field": "build",
+            "anyOf": [
+              "gradle"
+            ]
+          }
+        },
+        {
+          "id": "jdk",
+          "label": "JDK:",
+          "type": "jdk",
+          "required": true
+        },
+        {
+          "id": "sample",
+          "label": {
+            "en": "Add sample code",
+            "ru": "Добавить пример кода"
+          },
+          "type": "check",
+          "default": true
+        },
+        {
+          "id": "compact",
+          "label": {
+            "en": "Use compact project structure",
+            "ru": "Использовать компактную структуру проекта"
+          },
+          "tooltip": {
+            "en": "Keep the sources directly in src, without main/kotlin.",
+            "ru": "Держать исходники прямо в src, без main/kotlin."
+          },
+          "type": "check",
+          "default": true
+        },
+        {
+          "id": "group",
+          "label": {
+            "en": "GroupId:",
+            "ru": "GroupId:"
+          },
+          "type": "text",
+          "default": "org.example",
+          "required": true,
+          "advanced": true,
+          "visibleWhen": {
+            "field": "build",
+            "anyOf": [
+              "maven",
+              "gradle"
+            ]
+          }
+        },
+        {
+          "id": "artifact",
+          "label": {
+            "en": "ArtifactId:",
+            "ru": "ArtifactId:"
+          },
+          "type": "text",
+          "default": "${name}",
+          "required": true,
+          "advanced": true,
+          "visibleWhen": {
+            "field": "build",
+            "anyOf": [
+              "maven",
+              "gradle"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

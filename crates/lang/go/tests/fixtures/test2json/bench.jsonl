@@ -1,0 +1,14 @@
+{"Time":"2026-10-18T18:06:10.645539+08:00","Action":"start","Package":"example.com/demo/bench"}
+{"Time":"2026-10-18T18:06:11.014718+08:00","Action":"output","Package":"example.com/demo/bench","Output":"goos: darwin\n"}
+{"Time":"2026-10-18T18:06:11.014893+08:00","Action":"output","Package":"example.com/demo/bench","Output":"goarch: arm64\n"}
+{"Time":"2026-10-18T18:06:11.014904+08:00","Action":"output","Package":"example.com/demo/bench","Output":"pkg: example.com/demo/bench\n"}
+{"Time":"2026-10-18T18:06:11.014924+08:00","Action":"output","Package":"example.com/demo/bench","Output":"cpu: Apple M5 Pro\n"}
+{"Time":"2026-10-18T18:06:11.014936+08:00","Action":"run","Package":"example.com/demo/bench","Test":"BenchmarkSum"}
+{"Time":"2026-10-18T18:06:11.014944+08:00","Action":"output","Package":"example.com/demo/bench","Test":"BenchmarkSum","Output":"=== RUN   BenchmarkSum\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:11.014963+08:00","Action":"output","Package":"example.com/demo/bench","Test":"BenchmarkSum","Output":"BenchmarkSum\n"}
+{"Time":"2026-10-18T18:06:11.015161+08:00","Action":"output","Package":"example.com/demo/bench","Test":"BenchmarkSum","Output":"    b_test.go:6: logging\n"}
+{"Time":"2026-10-18T18:06:11.015581+08:00","Action":"output","Package":"example.com/demo/bench","Test":"BenchmarkSum","Output":"    b_test.go:6: logging\n"}
+{"Time":"2026-10-18T18:06:11.015643+08:00","Action":"output","Package":"example.com/demo/bench","Test":"BenchmarkSum","Output":"BenchmarkSum-15    \t     100\t       495.8 ns/op\n"}
+{"Time":"2026-10-18T18:06:11.015668+08:00","Action":"output","Package":"example.com/demo/bench","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:11.016535+08:00","Action":"output","Package":"example.com/demo/bench","Output":"ok  \texample.com/demo/bench\t0.371s\n"}
+{"Time":"2026-10-18T18:06:11.016556+08:00","Action":"pass","Package":"example.com/demo/bench","Elapsed":0.371}

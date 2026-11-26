@@ -1,0 +1,39 @@
+// Synthetic test file written for Zen IDE from the public description of the format; no part is taken from a real theme.
+// A synthetic UI theme for the tests of zen-jb-import.
+{
+  "name": "Ember Test",
+  "dark": true,
+  "author": "Zen IDE tests",
+  "editorScheme": "/themes/Ember.xml",
+  "colors": {
+    "ember": "#C04020",
+    "emberLight": "ember2",
+    "ember2": "#E06040",
+    "ink": "#141414",
+  },
+  "ui": {
+    "*": {
+      "background": "ink",
+      "foreground": "#E0E0E0",
+      "selectionBackground": "#303A50",
+    },
+    "Button": {
+      "default": {
+        "startBackground": "ember",
+        "foreground": "#FFFFFF",
+      },
+      "startBorderColor": "#505050",
+      "arc": 6,
+    },
+    "Popup": { "background": "#202020", "borderColor": "#404040" },
+    "ToolWindow.background": "#181818",
+    "Link.activeForeground": "emberLight",
+    "List.hoverBackground": "#262626",
+    "TextField.background": "#1A1A1A",
+    "Label.errorForeground": "#FF5050",
+    "EditorTabs": { "underlineColor": "ember" },
+    "Tree.rowHeight": 24,
+    "Toolbar.noSuchColor": "#123456",
+  },
+  "icons": { "ColorPalette": {} },
+}

@@ -1,0 +1,24 @@
+pub mod accessibility;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod capture;
+pub mod components;
+pub mod diagram;
+pub mod file_icons;
+pub mod fonts;
+pub mod icons;
+pub mod ide;
+pub mod keymap;
+pub mod keypad;
+pub mod licences;
+pub mod markdown;
+mod mascot;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod offscreen;
+pub mod plugins;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod terminal;
+pub mod theme;
+pub mod theme_bridge;
+pub mod toolbox;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod tray;

@@ -1,0 +1,31 @@
+{
+  "name": "AI Agents in the Terminal",
+  "description": "Resumes the conversations of AI agents run in the Terminal after a restart of the computer: Claude Code, Codex and Qwen Code. Each agent reports its conversation id through a session-start hook you add to its settings (Settings → Tools → Terminal → AI Agents shows it); it downloads nothing.",
+  "extensions": [],
+  "terminalAgents": [
+    {
+      "id": "claude-code",
+      "name": "Claude Code",
+      "programs": ["claude"],
+      "resume": ["claude", "--resume", "{session}"],
+      "sessionField": "/session_id",
+      "docs": "https://code.claude.com/docs/en/cli-reference"
+    },
+    {
+      "id": "codex",
+      "name": "Codex",
+      "programs": ["codex"],
+      "resume": ["codex", "resume", "{session}"],
+      "sessionField": "/session_id",
+      "docs": "https://developers.openai.com/codex/cli/reference"
+    },
+    {
+      "id": "qwen-code",
+      "name": "Qwen Code",
+      "programs": ["qwen"],
+      "resume": ["qwen", "--resume", "{session}"],
+      "sessionField": "/session_id",
+      "docs": "https://qwenlm.github.io/qwen-code-docs/en/users/features/headless"
+    }
+  ]
+}

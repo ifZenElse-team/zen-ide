@@ -1,0 +1,142 @@
+#!/bin/sh
+if [ -n "$ZEN_FAKE_SQLCL_ARGS" ]; then
+  printf '%s\n' "$*" > "$ZEN_FAKE_SQLCL_ARGS"
+  printf 'cwd=%s\nsqlpath=%s\noracle_path=%s\nlisted=%s\n' "$PWD" "$SQLPATH" "$ORACLE_PATH" "$(ls -A)" >> "$ZEN_FAKE_SQLCL_ARGS"
+fi
+connected=0
+collecting=0
+buf=""
+rowlimit=1000000
+autocommit=OFF
+interrupted=0
+trap 'interrupted=1' INT
+
+people() {
+  printf '%s\n' '{"results":[{"columns":[{"name":"ID","type":"NUMBER"},{"name":"NAME","type":"VARCHAR2"},{"name":"BORN","type":"DATE"},{"name":"SALARY","type":"NUMBER"}],"items":'
+  printf '['
+  n=0
+  for item in '{"id":1,"name":"Ada","born":"1815-12-10 00:00:00","salary":1234567890123456789012.5}' \
+              '{"id":2,"name":"Bob","born":"","salary":.5}' \
+              '{"id":3,"name":"","born":"2026-10-31 12:00:00","salary":""}'; do
+    if [ "$n" -ge "$rowlimit" ]; then break; fi
+    if [ "$n" -gt 0 ]; then printf ','; fi
+    printf '%s' "$item"
+    n=$((n + 1))
+  done
+  printf ']}]}\n'
+  if [ "$n" = 1 ]; then echo "1 row selected."; else echo "$n rows selected."; fi
+}
+
+report() {
+  echo ""
+  echo "Error starting at line : 1 in command -"
+  printf '%s\n' "$buf"
+  echo "Error at Command Line : $1 Column : $2"
+  echo "Error report -"
+  echo "SQL Error: $3"
+  echo ""
+}
+
+run() {
+  if [ "$connected" = 0 ]; then
+    echo "SP2-0640: Not connected"
+    return
+  fi
+  case "$buf" in
+    *product_component_version*)
+      echo '{"results":[{"columns":[{"name":"VERSION","type":"VARCHAR2"}],"items":[{"version":"Oracle AI Database 26ai Free 23.26.0.0.0"}]}]}' ;;
+    "SELECT 1 FROM dual")
+      echo '{"results":[{"columns":[{"name":"1","type":"NUMBER"}],"items":[{"1":1}]}]}' ;;
+    *SYS_CONTEXT*CON_NAME*)
+      echo '{"results":[{"columns":[{"name":"A","type":"VARCHAR2"},{"name":"B","type":"VARCHAR2"}],"items":[{"a":"FREEPDB1","b":"ZEN"}]}]}' ;;
+    *all_users*)
+      echo '{"results":[{"columns":[{"name":"USERNAME","type":"VARCHAR2"},{"name":"ORACLE_MAINTAINED","type":"VARCHAR2"}],"items":[{"username":"SYS","oracle_maintained":"Y"},{"username":"ZEN","oracle_maintained":"N"}]}]}' ;;
+    *"COUNT(*)"*all_objects*)
+      echo '{"results":[{"columns":[{"name":"OWNER","type":"VARCHAR2"},{"name":"COUNT(*)","type":"NUMBER"},{"name":"T","type":"VARCHAR2"}],"items":[{"owner":"ZEN","count(*)":3,"t":"20261031120000"}]}]}' ;;
+    *"FROM all_objects o"*JOIN*all_tab_columns*)
+      echo '{"results":[{"columns":[{"name":"OBJECT_ID","type":"NUMBER"},{"name":"COLUMN_NAME","type":"VARCHAR2"}],"items":[{"object_id":73001,"column_name":"ID"},{"object_id":73001,"column_name":"NAME"},{"object_id":73001,"column_name":"BORN"},{"object_id":73001,"column_name":"SALARY"}]}]}' ;;
+    *"SELECT object_id, object_name, object_type FROM all_objects"*)
+      echo '{"results":[{"columns":[{"name":"OBJECT_ID","type":"NUMBER"},{"name":"OBJECT_NAME","type":"VARCHAR2"},{"name":"OBJECT_TYPE","type":"VARCHAR2"}],"items":[{"object_id":73001,"object_name":"PEOPLE","object_type":"TABLE"},{"object_id":73005,"object_name":"PAYROLL","object_type":"PACKAGE"},{"object_id":73007,"object_name":"PEOPLE_SEQ","object_type":"SEQUENCE"}]}]}' ;;
+    *"SELECT object_name, object_type FROM all_objects"*)
+      echo '{"results":[{"columns":[{"name":"OBJECT_NAME","type":"VARCHAR2"},{"name":"OBJECT_TYPE","type":"VARCHAR2"}],"items":[{"object_name":"PEOPLE","object_type":"TABLE"}]}]}' ;;
+    *"FROM all_tab_columns WHERE owner"*ORDER\ BY\ table_name*)
+      echo '{"results":[{"columns":[{"name":"TABLE_NAME","type":"VARCHAR2"},{"name":"COLUMN_ID","type":"NUMBER"},{"name":"COLUMN_NAME","type":"VARCHAR2"},{"name":"DATA_TYPE","type":"VARCHAR2"},{"name":"DATA_LENGTH","type":"NUMBER"},{"name":"CHAR_LENGTH","type":"NUMBER"},{"name":"CHAR_USED","type":"VARCHAR2"},{"name":"DATA_PRECISION","type":"NUMBER"},{"name":"DATA_SCALE","type":"NUMBER"},{"name":"NULLABLE","type":"VARCHAR2"},{"name":"DATA_DEFAULT","type":"LONG"},{"name":"IDENTITY_COLUMN","type":"VARCHAR2"}],"items":[{"table_name":"PEOPLE","column_id":1,"column_name":"ID","data_type":"NUMBER","data_length":22,"char_length":0,"char_used":"","data_precision":10,"data_scale":0,"nullable":"N","data_default":"","identity_column":"YES"},{"table_name":"PEOPLE","column_id":2,"column_name":"NAME","data_type":"VARCHAR2","data_length":400,"char_length":100,"char_used":"C","data_precision":"","data_scale":"","nullable":"Y","data_default":"","identity_column":"NO"}]}]}' ;;
+    *"FROM all_tab_columns WHERE owner"*)
+      echo '{"results":[{"columns":[{"name":"COLUMN_NAME","type":"VARCHAR2"},{"name":"DATA_TYPE","type":"VARCHAR2"},{"name":"NULLABLE","type":"VARCHAR2"}],"items":[{"column_name":"ID","data_type":"NUMBER","nullable":"N"}]}]}' ;;
+    *"constraint_type IN ('P', 'U', 'R')"*)
+      echo '{"results":[{"columns":[{"name":"TABLE_NAME","type":"VARCHAR2"},{"name":"CONSTRAINT_NAME","type":"VARCHAR2"},{"name":"CONSTRAINT_TYPE","type":"VARCHAR2"},{"name":"COLUMN_NAME","type":"VARCHAR2"},{"name":"OWNER","type":"VARCHAR2"},{"name":"TABLE_NAME","type":"VARCHAR2"},{"name":"COLUMN_NAME","type":"VARCHAR2"},{"name":"DELETE_RULE","type":"VARCHAR2"},{"name":"INDEX_NAME","type":"VARCHAR2"}],"items":[{"table_name":"PEOPLE","constraint_name":"PEOPLE_PK","constraint_type":"P","column_name":"ID","owner":"","table_name":"","column_name":"","delete_rule":"","index_name":"PEOPLE_PK"}]}]}' ;;
+    *"constraint_type = 'C'"*)
+      echo '{"results":[{"columns":[{"name":"TABLE_NAME","type":"VARCHAR2"},{"name":"CONSTRAINT_NAME","type":"VARCHAR2"},{"name":"SEARCH_CONDITION","type":"LONG"}],"items":[{"table_name":"PEOPLE","constraint_name":"SYS_C001","search_condition":"\"ID\" IS NOT NULL"}]}]}' ;;
+    *all_source*)
+      echo '{"results":[{"columns":[{"name":"NAME","type":"VARCHAR2"},{"name":"TYPE","type":"VARCHAR2"},{"name":"LINE","type":"NUMBER"},{"name":"TEXT","type":"VARCHAR2"}],"items":[{"name":"PAYROLL","type":"PACKAGE","line":1,"text":"PACKAGE payroll AS\n"},{"name":"PAYROLL","type":"PACKAGE","line":2,"text":"  PROCEDURE pay;\nEND;\n"}]}]}' ;;
+    *all_sequences*)
+      echo '{"results":[{"columns":[{"name":"SEQUENCE_NAME","type":"VARCHAR2"},{"name":"MIN_VALUE","type":"NUMBER"},{"name":"MAX_VALUE","type":"NUMBER"},{"name":"INCREMENT_BY","type":"NUMBER"},{"name":"CYCLE_FLAG","type":"VARCHAR2"},{"name":"CACHE_SIZE","type":"NUMBER"},{"name":"LAST_NUMBER","type":"NUMBER"}],"items":[{"sequence_name":"PEOPLE_SEQ","min_value":1,"max_value":9999999999999999999999999999,"increment_by":1,"cycle_flag":"N","cache_size":20,"last_number":21}]}]}' ;;
+    *"FROM people"*)
+      people ;;
+    *"FROM nope"*)
+      report 2 8 'ORA-00942: table or view "ZEN"."NOPE" does not exist' ;;
+    *DBMS_SESSION.SLEEP*)
+      sleep 30 &
+      pid=$!
+      interrupted=0
+      wait "$pid"
+      if [ "$interrupted" = 1 ]; then
+        kill "$pid" 2>/dev/null
+        report 1 1 'ORA-01013: User requested cancel of current operation.'
+      else
+        echo "PL/SQL procedure successfully completed."
+      fi ;;
+    *DBMS_APPLICATION_INFO*|BEGIN*)
+      echo "PL/SQL procedure successfully completed." ;;
+    SAVEPOINT*)
+      echo "Savepoint created." ;;
+    "ALTER SESSION"*)
+      echo "Session altered." ;;
+    INSERT*)
+      echo "1 row inserted." ;;
+    UPDATE*)
+      echo "2 rows updated." ;;
+    COMMIT*)
+      echo "Commit complete." ;;
+    ROLLBACK*)
+      echo "Rollback complete." ;;
+    CREATE*)
+      echo "Table T created." ;;
+    SELECT*|WITH*)
+      echo '{"results":[{"columns":[{"name":"X","type":"NUMBER"}],"items":[]}]}' ;;
+    *)
+      report 1 1 "ORA-00900: invalid SQL statement" ;;
+  esac
+}
+
+while IFS= read -r line || [ -n "$line" ]; do
+  if [ "$collecting" = 1 ]; then
+    if [ "$line" = "/" ]; then
+      run
+      collecting=0
+      buf=""
+    else
+      buf="$buf
+$line"
+    fi
+    continue
+  fi
+  case "$line" in
+    "PROMPT "*) printf '%s\n' "${line#PROMPT }" ;;
+    "SET ROWLIMIT OFF") rowlimit=1000000 ;;
+    "SET ROWLIMIT "*) rowlimit="${line#SET ROWLIMIT }" ;;
+    "SET AUTOCOMMIT "*) autocommit="${line#SET AUTOCOMMIT }" ;;
+    "SET "*) ;;
+    "CONNECT "*)
+      case "$line" in
+        *'/"secret"@'*) connected=1 ;;
+        *)
+          echo "  USER          = zen"
+          echo "  URL           = jdbc:oracle:thin:@//localhost:1521/FREEPDB1"
+          echo "  Error Message = ORA-01017: invalid credential or not authorized; logon denied" ;;
+      esac ;;
+    "EXIT"*) exit 0 ;;
+    "") ;;
+    *) collecting=1; buf="$line" ;;
+  esac
+done

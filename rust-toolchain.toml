@@ -1,0 +1,6 @@
+# Zen IDE builds with the latest stable Rust only (docs/adr/0013-msrv-latest-stable.md).
+[toolchain]
+channel = "stable"
+components = ["rustfmt", "clippy"]
+targets = ["wasm32-unknown-unknown"]
+profile = "minimal"

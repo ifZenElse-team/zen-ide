@@ -1,0 +1,43 @@
+{
+  "name": "Spring Boot",
+  "description": "Spring Boot projects: application.properties and application.yml highlighted and folded, their properties completed, documented and checked from the configuration metadata in the project's own jars, run configurations of kind Spring Boot for @SpringBootApplication classes with active profiles and property overrides, gutter navigation between beans and their injection points, the Endpoints tool window, Spring Boot versions past their open-source support marked in build files, new projects from Spring Initializr, and Edit Starters for an open project.",
+  "extensions": [],
+  "names": [
+    "application.properties",
+    "application-*.properties",
+    "application.yml",
+    "application-*.yml",
+    "application.yaml",
+    "application-*.yaml"
+  ],
+  "project": {
+    "markers": {
+      "files": [
+        "src/main/resources/application.properties",
+        "src/main/resources/application.yml",
+        "src/main/resources/application.yaml"
+      ]
+    }
+  },
+  "projectGenerators": [
+    {
+      "id": "initializr",
+      "name": { "en": "Spring Boot", "ru": "Spring Boot" },
+      "icon": "application.properties",
+      "dynamicForm": true,
+      "network": true,
+      "service": "serviceUrl",
+      "settings": [
+        {
+          "id": "serviceUrl",
+          "label": { "en": "service URL", "ru": "адрес сервиса" },
+          "help": {
+            "en": "The Spring Initializr service that lists the choices and builds the projects: your company's own instance, or the public one when empty.",
+            "ru": "Сервис Spring Initializr, который даёт варианты и собирает проекты: собственный сервис компании, если поле пусто — публичный."
+          },
+          "default": "https://start.spring.io"
+        }
+      ]
+    }
+  ]
+}

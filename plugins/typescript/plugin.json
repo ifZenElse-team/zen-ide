@@ -1,0 +1,58 @@
+{
+  "name": "TypeScript",
+  "description": "TypeScript and TSX: highlighting (types, interfaces, enums, generics, decorators, modifiers, JSX tags and everything JavaScript has), folding, the Structure view, completion of keywords, names and snippets, and JSX end tags as you type. Problems, completion, navigation, quick documentation, rename, formatting and imports come from the TypeScript Language Server.",
+  "extensions": ["ts", "mts", "cts", "tsx"],
+  "languageServers": [
+    {
+      "id": "typescript-language-server",
+      "name": "TypeScript Language Server",
+      "languages": [
+        "typescript",
+        "typescriptreact",
+        "javascript",
+        "javascriptreact"
+      ],
+      "languageIds": {
+        "ts": "typescript",
+        "mts": "typescript",
+        "cts": "typescript",
+        "tsx": "typescriptreact",
+        "js": "javascript",
+        "mjs": "javascript",
+        "cjs": "javascript",
+        "jsx": "javascriptreact"
+      },
+      "extensions": [
+        "ts",
+        "mts",
+        "cts",
+        "tsx",
+        "js",
+        "mjs",
+        "cjs",
+        "jsx"
+      ],
+      "command": "typescript-language-server",
+      "args": [
+        "--stdio"
+      ],
+      "versionArgs": [
+        "--version"
+      ],
+      "initializationOptions": {
+        "disableAutomaticTypingAcquisition": true,
+        "tsserver": {
+          "fallbackPath": "${nodeModules:typescript/lib/tsserver.js}"
+        }
+      },
+      "optimizeImports": [
+        "source.removeUnusedImports",
+        "source.organizeImports"
+      ],
+      "install": {
+        "kind": "npm",
+        "package": "typescript-language-server@5.3.0 typescript@5"
+      }
+    }
+  ]
+}

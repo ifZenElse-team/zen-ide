@@ -1,0 +1,37 @@
+[
+  {
+    "id": "rust-analyzer",
+    "name": "rust-analyzer",
+    "languages": ["rust"],
+    "extensions": ["rs"],
+    "command": "rust-analyzer",
+    "args": [],
+    "versionArgs": ["--version"],
+    "install": {
+      "kind": "rustup",
+      "package": "rust-analyzer"
+    },
+    "initializationOptions": {
+      "cargo": { "targetDir": true },
+      "checkOnSave": true,
+      "check": { "command": "check", "workspace": false },
+      "files": { "exclude": [".claude/worktrees"] },
+      "workspace": { "symbol": { "search": { "kind": "all_symbols", "limit": 2000 } } },
+      "diagnostics": { "experimental": { "enable": true } }
+    },
+    "inlayHints": {
+      "section": "rust-analyzer",
+      "kinds": {
+        "parameterNames": ["inlayHints.parameterHints.enable"],
+        "variableTypes": ["inlayHints.typeHints.enable", "inlayHints.chainingHints.enable"],
+        "typeArguments": ["inlayHints.genericParameterHints.type.enable"]
+      }
+    },
+    "suppression": {
+      "sources": ["rustc", "clippy"],
+      "separator": ", ",
+      "function": { "text": "#[allow({id})]" },
+      "file": { "text": "#![allow({id})]" }
+    }
+  }
+]

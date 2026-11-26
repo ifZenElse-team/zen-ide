@@ -1,0 +1,22 @@
+[package]
+name = "zen-jb-import"
+description = "Zen Platform, layer L5: import of JetBrains formats: colour schemes (.icls), UI themes (.theme.json), keymaps (.xml) and .idea project settings."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+roxmltree.workspace = true
+serde_json.workspace = true
+zen-core.workspace = true
+zen-project.workspace = true
+zen-theme.workspace = true
+zen-vfs.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[lints]
+workspace = true

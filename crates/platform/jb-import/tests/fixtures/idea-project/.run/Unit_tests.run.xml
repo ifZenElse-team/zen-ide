@@ -1,0 +1,14 @@
+<!-- Synthetic fixture written for the Zen IDE tests from the public format documentation; not taken from any JetBrains product. -->
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Unit tests" type="GoTestRunConfiguration" factoryName="Go Test">
+    <module name="orchard" />
+    <working_directory value="$PROJECT_DIR$" />
+    <envs>
+      <env name="ORCHARD_MODE" value="test" />
+    </envs>
+    <kind value="DIRECTORY" />
+    <directory value="$PROJECT_DIR$" />
+    <framework value="gotest" />
+    <method v="2" />
+  </configuration>
+</component>

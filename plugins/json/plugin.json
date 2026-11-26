@@ -1,0 +1,24 @@
+{
+  "name": "JSON",
+  "description": "Highlights JSON, JSON with comments and JSON5: keys, strings, escapes, numbers, true, false and null, punctuation and comments.",
+  "extensions": ["json", "jsonc", "json5", "jsonl", "ndjson", "geojson", "webmanifest", "har"],
+  "names": [".babelrc", ".eslintrc", ".prettierrc", "composer.lock", ".jshintrc"],
+  "languageServers": [
+    {
+      "id": "vscode-json-language-server",
+      "name": "JSON Language Server",
+      "languages": ["json", "jsonc"],
+      "extensions": ["json", "jsonc"],
+      "names": [".babelrc", ".eslintrc", ".prettierrc", ".jshintrc"],
+      "command": "vscode-json-language-server",
+      "workspaceSymbols": false,
+      "args": ["--stdio"],
+      "initializationOptions": { "handledSchemaProtocols": ["file"] },
+      "schemaSupport": { "setting": "" },
+      "install": {
+        "kind": "npm",
+        "package": "vscode-langservers-extracted"
+      }
+    }
+  ]
+}

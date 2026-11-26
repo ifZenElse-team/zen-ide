@@ -1,0 +1,7 @@
+// Synthetic test file written for Zen IDE from the public description of the format; no part is taken from a real theme.
+{
+  "name": "Chain Child",
+  "include": "./parts/middle.json",
+  "colors": { "editor.background": "#202020" },
+  "tokenColors": [{ "scope": "keyword", "settings": { "foreground": "#CC0000" } }],
+}

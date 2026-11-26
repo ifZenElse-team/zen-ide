@@ -1,0 +1,857 @@
+{
+  "name": "Kubernetes",
+  "description": "The Kubernetes tool window, through the kubectl you have installed: your kubeconfig's contexts, and the namespaces, pods, deployments, services, config maps, secrets (by name only) and events of the context and namespace you choose in its header; a pod's log and a shell in it, describe, restart a rollout and delete, each change asked in words that name the context. For a manifest file or folder it compares it with the cluster (kubectl diff, shown in the diff viewer) and applies it, which only you start and are asked every time. Its header names the kubeconfig files it reads, as kubectl in your terminal does (KUBECONFIG from your login shell, or ~/.kube/config). It never changes your kubeconfig and downloads nothing.",
+  "extensions": [],
+  "runs": [
+    "kubectl"
+  ],
+  "personOnly": [
+    {
+      "program": "kubectl",
+      "subcommands": [
+        "apply",
+        "create",
+        "replace",
+        "patch",
+        "delete",
+        "edit",
+        "scale",
+        "rollout",
+        "label",
+        "annotate",
+        "set",
+        "drain",
+        "cordon",
+        "uncordon",
+        "taint"
+      ]
+    }
+  ],
+  "targetFiles": [
+    "*.yaml",
+    "*.yml",
+    "*.json"
+  ],
+  "toolWindows": [
+    {
+      "id": "kubernetes",
+      "title": {
+        "en": "Kubernetes",
+        "ru": "Kubernetes"
+      },
+      "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\"><g fill=\"none\" stroke=\"black\" stroke-width=\"1.2\"><circle cx=\"8\" cy=\"8\" r=\"2.1\"/><circle cx=\"8\" cy=\"2.4\" r=\"1.3\"/><circle cx=\"12.85\" cy=\"5.2\" r=\"1.3\"/><circle cx=\"12.85\" cy=\"10.8\" r=\"1.3\"/><circle cx=\"8\" cy=\"13.6\" r=\"1.3\"/><circle cx=\"3.15\" cy=\"10.8\" r=\"1.3\"/><circle cx=\"3.15\" cy=\"5.2\" r=\"1.3\"/></g></svg>",
+      "side": "right",
+      "choices": [
+        {
+          "id": "context",
+          "title": {
+            "en": "Context",
+            "ru": "Контекст"
+          },
+          "columns": [
+            "name",
+            "cluster",
+            "user",
+            "namespace"
+          ],
+          "list": {
+            "program": "kubectl",
+            "args": [
+              "config",
+              "view",
+              "-o",
+              "json"
+            ]
+          },
+          "source": {
+            "variable": "KUBECONFIG",
+            "default": "~/.kube/config"
+          }
+        },
+        {
+          "id": "namespace",
+          "title": {
+            "en": "Namespace",
+            "ru": "Пространство имён"
+          },
+          "columns": [
+            "name",
+            "status",
+            "created"
+          ],
+          "list": {
+            "program": "kubectl",
+            "args": [
+              "--context",
+              "${window.context}",
+              "--request-timeout",
+              "10s",
+              "get",
+              "namespaces",
+              "-o",
+              "json"
+            ]
+          },
+          "initialFrom": "context.namespace"
+        }
+      ],
+      "sections": [
+        {
+          "id": "pods",
+          "title": {
+            "en": "Pods",
+            "ru": "Поды"
+          },
+          "columns": [
+            "name",
+            "ready",
+            "status",
+            "restarts",
+            "node",
+            "created"
+          ],
+          "columnTitles": {
+            "name": {
+              "en": "Name",
+              "ru": "Имя"
+            },
+            "ready": {
+              "en": "Ready",
+              "ru": "Готово"
+            },
+            "status": {
+              "en": "Status",
+              "ru": "Состояние"
+            },
+            "restarts": {
+              "en": "Restarts",
+              "ru": "Перезапуски"
+            },
+            "node": {
+              "en": "Node",
+              "ru": "Узел"
+            },
+            "created": {
+              "en": "Created",
+              "ru": "Создан"
+            }
+          },
+          "list": {
+            "program": "kubectl",
+            "args": [
+              "--context",
+              "${window.context}",
+              "--namespace",
+              "${window.namespace}",
+              "--request-timeout",
+              "10s",
+              "get",
+              "pods",
+              "-o",
+              "json"
+            ]
+          },
+          "actions": [
+            {
+              "id": "logs",
+              "title": {
+                "en": "Show Log",
+                "ru": "Показать журнал"
+              },
+              "kind": "stream",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "logs",
+                "--follow",
+                "--tail",
+                "200",
+                "--all-containers",
+                "${row.id}"
+              ]
+            },
+            {
+              "id": "shell",
+              "title": {
+                "en": "Open Shell",
+                "ru": "Открыть оболочку"
+              },
+              "kind": "terminal",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "exec",
+                "--stdin",
+                "--tty",
+                "${row.id}",
+                "--",
+                "sh"
+              ]
+            },
+            {
+              "id": "describe",
+              "title": {
+                "en": "Describe",
+                "ru": "Описать"
+              },
+              "kind": "stream",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "describe",
+                "${row.id}"
+              ]
+            },
+            {
+              "id": "forward",
+              "title": {
+                "en": "Port Forward…",
+                "ru": "Проброс порта…"
+              },
+              "kind": "stream",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "port-forward",
+                "--address",
+                "127.0.0.1",
+                "${row.id}",
+                "${input.ports}"
+              ],
+              "inputs": [
+                {
+                  "id": "ports",
+                  "title": {
+                    "en": "Ports",
+                    "ru": "Порты"
+                  },
+                  "kind": "forward"
+                }
+              ]
+            },
+            {
+              "id": "delete",
+              "title": {
+                "en": "Delete",
+                "ru": "Удалить"
+              },
+              "kind": "destroy",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "delete",
+                "${row.id}"
+              ],
+              "confirm": {
+                "en": "Delete ${rows} in the context ${window.context}, namespace ${window.namespace}? This cannot be undone.",
+                "ru": "Удалить ${rows} в контексте ${window.context}, пространство имён ${window.namespace}? Это нельзя отменить."
+              }
+            }
+          ]
+        },
+        {
+          "id": "deployments",
+          "title": {
+            "en": "Deployments",
+            "ru": "Развёртывания"
+          },
+          "columns": [
+            "name",
+            "ready",
+            "upToDate",
+            "available",
+            "created"
+          ],
+          "columnTitles": {
+            "name": {
+              "en": "Name",
+              "ru": "Имя"
+            },
+            "ready": {
+              "en": "Ready",
+              "ru": "Готово"
+            },
+            "upToDate": {
+              "en": "Up to date",
+              "ru": "Обновлено"
+            },
+            "available": {
+              "en": "Available",
+              "ru": "Доступно"
+            },
+            "created": {
+              "en": "Created",
+              "ru": "Создан"
+            }
+          },
+          "list": {
+            "program": "kubectl",
+            "args": [
+              "--context",
+              "${window.context}",
+              "--namespace",
+              "${window.namespace}",
+              "--request-timeout",
+              "10s",
+              "get",
+              "deployments",
+              "-o",
+              "json"
+            ]
+          },
+          "actions": [
+            {
+              "id": "describe",
+              "title": {
+                "en": "Describe",
+                "ru": "Описать"
+              },
+              "kind": "stream",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "describe",
+                "${row.id}"
+              ]
+            },
+            {
+              "id": "restart",
+              "title": {
+                "en": "Restart Rollout",
+                "ru": "Перезапустить развёртывание"
+              },
+              "kind": "change",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "rollout",
+                "restart",
+                "${row.id}"
+              ],
+              "confirm": {
+                "en": "Restart ${rows} in the context ${window.context}, namespace ${window.namespace}?",
+                "ru": "Перезапустить ${rows} в контексте ${window.context}, пространство имён ${window.namespace}?"
+              }
+            },
+            {
+              "id": "scale",
+              "title": {
+                "en": "Scale…",
+                "ru": "Масштабировать…"
+              },
+              "kind": "change",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "scale",
+                "${row.id}",
+                "--replicas",
+                "${input.replicas}"
+              ],
+              "confirm": {
+                "en": "Scale ${rows} in the context ${window.context}, namespace ${window.namespace}, to ${input.replicas} replicas?",
+                "ru": "Масштабировать ${rows} в контексте ${window.context}, пространство имён ${window.namespace}, до ${input.replicas} реплик?"
+              },
+              "inputs": [
+                {
+                  "id": "replicas",
+                  "title": {
+                    "en": "Replicas",
+                    "ru": "Реплики"
+                  },
+                  "kind": "count"
+                }
+              ]
+            },
+            {
+              "id": "delete",
+              "title": {
+                "en": "Delete",
+                "ru": "Удалить"
+              },
+              "kind": "destroy",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "delete",
+                "${row.id}"
+              ],
+              "confirm": {
+                "en": "Delete ${rows} in the context ${window.context}, namespace ${window.namespace}? This cannot be undone.",
+                "ru": "Удалить ${rows} в контексте ${window.context}, пространство имён ${window.namespace}? Это нельзя отменить."
+              }
+            }
+          ]
+        },
+        {
+          "id": "services",
+          "title": {
+            "en": "Services",
+            "ru": "Сервисы"
+          },
+          "columns": [
+            "name",
+            "type",
+            "clusterIp",
+            "ports",
+            "created"
+          ],
+          "columnTitles": {
+            "name": {
+              "en": "Name",
+              "ru": "Имя"
+            },
+            "type": {
+              "en": "Type",
+              "ru": "Тип"
+            },
+            "clusterIp": {
+              "en": "Cluster IP",
+              "ru": "IP в кластере"
+            },
+            "ports": {
+              "en": "Ports",
+              "ru": "Порты"
+            },
+            "created": {
+              "en": "Created",
+              "ru": "Создан"
+            }
+          },
+          "list": {
+            "program": "kubectl",
+            "args": [
+              "--context",
+              "${window.context}",
+              "--namespace",
+              "${window.namespace}",
+              "--request-timeout",
+              "10s",
+              "get",
+              "services",
+              "-o",
+              "json"
+            ]
+          },
+          "actions": [
+            {
+              "id": "describe",
+              "title": {
+                "en": "Describe",
+                "ru": "Описать"
+              },
+              "kind": "stream",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "describe",
+                "${row.id}"
+              ]
+            },
+            {
+              "id": "forward",
+              "title": {
+                "en": "Port Forward…",
+                "ru": "Проброс порта…"
+              },
+              "kind": "stream",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "port-forward",
+                "--address",
+                "127.0.0.1",
+                "${row.id}",
+                "${input.ports}"
+              ],
+              "inputs": [
+                {
+                  "id": "ports",
+                  "title": {
+                    "en": "Ports",
+                    "ru": "Порты"
+                  },
+                  "kind": "forward",
+                  "defaultFrom": "ports"
+                }
+              ]
+            },
+            {
+              "id": "delete",
+              "title": {
+                "en": "Delete",
+                "ru": "Удалить"
+              },
+              "kind": "destroy",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "delete",
+                "${row.id}"
+              ],
+              "confirm": {
+                "en": "Delete ${rows} in the context ${window.context}, namespace ${window.namespace}? This cannot be undone.",
+                "ru": "Удалить ${rows} в контексте ${window.context}, пространство имён ${window.namespace}? Это нельзя отменить."
+              }
+            }
+          ]
+        },
+        {
+          "id": "configmaps",
+          "title": {
+            "en": "ConfigMaps",
+            "ru": "ConfigMap"
+          },
+          "columns": [
+            "name",
+            "keys",
+            "created"
+          ],
+          "columnTitles": {
+            "name": {
+              "en": "Name",
+              "ru": "Имя"
+            },
+            "keys": {
+              "en": "Keys",
+              "ru": "Ключи"
+            },
+            "created": {
+              "en": "Created",
+              "ru": "Создан"
+            }
+          },
+          "list": {
+            "program": "kubectl",
+            "args": [
+              "--context",
+              "${window.context}",
+              "--namespace",
+              "${window.namespace}",
+              "--request-timeout",
+              "10s",
+              "get",
+              "configmaps",
+              "-o",
+              "json"
+            ]
+          },
+          "actions": [
+            {
+              "id": "describe",
+              "title": {
+                "en": "Describe",
+                "ru": "Описать"
+              },
+              "kind": "stream",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "describe",
+                "${row.id}"
+              ]
+            },
+            {
+              "id": "delete",
+              "title": {
+                "en": "Delete",
+                "ru": "Удалить"
+              },
+              "kind": "destroy",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "delete",
+                "${row.id}"
+              ],
+              "confirm": {
+                "en": "Delete ${rows} in the context ${window.context}, namespace ${window.namespace}? This cannot be undone.",
+                "ru": "Удалить ${rows} в контексте ${window.context}, пространство имён ${window.namespace}? Это нельзя отменить."
+              }
+            }
+          ]
+        },
+        {
+          "id": "secrets",
+          "title": {
+            "en": "Secrets",
+            "ru": "Секреты"
+          },
+          "columns": [
+            "name"
+          ],
+          "columnTitles": {
+            "name": {
+              "en": "Name",
+              "ru": "Имя"
+            }
+          },
+          "list": {
+            "program": "kubectl",
+            "args": [
+              "--context",
+              "${window.context}",
+              "--namespace",
+              "${window.namespace}",
+              "--request-timeout",
+              "10s",
+              "get",
+              "secrets",
+              "-o",
+              "name"
+            ]
+          },
+          "actions": [
+            {
+              "id": "describe",
+              "title": {
+                "en": "Describe",
+                "ru": "Описать"
+              },
+              "kind": "stream",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "describe",
+                "${row.id}"
+              ]
+            },
+            {
+              "id": "delete",
+              "title": {
+                "en": "Delete",
+                "ru": "Удалить"
+              },
+              "kind": "destroy",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "--namespace",
+                "${window.namespace}",
+                "delete",
+                "${row.id}"
+              ],
+              "confirm": {
+                "en": "Delete ${rows} in the context ${window.context}, namespace ${window.namespace}? This cannot be undone.",
+                "ru": "Удалить ${rows} в контексте ${window.context}, пространство имён ${window.namespace}? Это нельзя отменить."
+              }
+            }
+          ]
+        },
+        {
+          "id": "events",
+          "title": {
+            "en": "Events",
+            "ru": "События"
+          },
+          "columns": [
+            "lastSeen",
+            "type",
+            "reason",
+            "object",
+            "message"
+          ],
+          "columnTitles": {
+            "lastSeen": {
+              "en": "Last seen",
+              "ru": "Последний раз"
+            },
+            "type": {
+              "en": "Type",
+              "ru": "Тип"
+            },
+            "reason": {
+              "en": "Reason",
+              "ru": "Причина"
+            },
+            "object": {
+              "en": "Object",
+              "ru": "Объект"
+            },
+            "message": {
+              "en": "Message",
+              "ru": "Сообщение"
+            }
+          },
+          "list": {
+            "program": "kubectl",
+            "args": [
+              "--context",
+              "${window.context}",
+              "--namespace",
+              "${window.namespace}",
+              "--request-timeout",
+              "10s",
+              "get",
+              "events",
+              "-o",
+              "json"
+            ]
+          },
+          "actions": []
+        },
+        {
+          "id": "namespaces",
+          "title": {
+            "en": "Namespaces",
+            "ru": "Пространства имён"
+          },
+          "columns": [
+            "name",
+            "status",
+            "created"
+          ],
+          "columnTitles": {
+            "name": {
+              "en": "Name",
+              "ru": "Имя"
+            },
+            "status": {
+              "en": "Status",
+              "ru": "Состояние"
+            },
+            "created": {
+              "en": "Created",
+              "ru": "Создан"
+            }
+          },
+          "list": {
+            "program": "kubectl",
+            "args": [
+              "--context",
+              "${window.context}",
+              "--request-timeout",
+              "10s",
+              "get",
+              "namespaces",
+              "-o",
+              "json"
+            ]
+          },
+          "actions": [
+            {
+              "id": "describe",
+              "title": {
+                "en": "Describe",
+                "ru": "Описать"
+              },
+              "kind": "stream",
+              "rows": true,
+              "program": "kubectl",
+              "args": [
+                "--context",
+                "${window.context}",
+                "describe",
+                "namespace",
+                "${row.id}"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contexts",
+          "title": {
+            "en": "Contexts",
+            "ru": "Контексты"
+          },
+          "columns": [
+            "name",
+            "cluster",
+            "user",
+            "namespace"
+          ],
+          "columnTitles": {
+            "name": {
+              "en": "Name",
+              "ru": "Имя"
+            },
+            "cluster": {
+              "en": "Cluster",
+              "ru": "Кластер"
+            },
+            "user": {
+              "en": "User",
+              "ru": "Пользователь"
+            },
+            "namespace": {
+              "en": "Namespace",
+              "ru": "Пространство имён"
+            }
+          },
+          "list": {
+            "program": "kubectl",
+            "args": [
+              "config",
+              "view",
+              "-o",
+              "json"
+            ]
+          },
+          "actions": []
+        }
+      ]
+    }
+  ]
+}

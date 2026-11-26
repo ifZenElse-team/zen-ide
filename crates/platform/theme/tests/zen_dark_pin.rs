@@ -1,0 +1,220 @@
+use zen_theme::{EditorKey, Key, ResolvedTheme, SyntaxKey, TerminalKey, UiKey};
+
+const UI: &[(&str, &str, &str)] = &[
+    ("window.background", "#25282C", "IdePalette::DARK.frame"),
+    ("island.background", "#191A1D", "IdePalette::DARK.island"),
+    ("text.primary", "#DFE1E5", "IdePalette::DARK.text"),
+    ("text.secondary", "#868A91", "IdePalette::DARK.text_secondary"),
+    ("text.error", "#E56E6E", "ide/settings.rs: the gopls install failure"),
+    ("text.warning", "#E5A04B", "ide/keymap_page.rs: the shortcut conflict"),
+    ("link", "#6CA4F8", "IdePalette::DARK.link"),
+    ("accent", "#3574F0", "IdePalette::DARK.accent"),
+    (
+        "accent.foreground",
+        "#FFFFFF",
+        "Color32::WHITE on p.accent: primary buttons in ide/mod.rs, settings.rs, keymap_page.rs, find_in_files.rs",
+    ),
+    ("list.hover", "#2C2E33", "IdePalette::DARK.hover"),
+    ("list.selection", "#2E436E", "IdePalette::DARK.selection, in lists, trees and stripes"),
+    ("searchHighlight", "#2F4C3A", "IdePalette::DARK.search, as the Settings search marks labels"),
+    (
+        "popup.background",
+        "#2B2D30",
+        "IdePalette::apply window_fill; popup frames in ide/mod.rs, doc_popups.rs, editor_view.rs, targets_popup.rs",
+    ),
+    ("popup.border", "#43454A", "the popup frames' stroke"),
+    ("popup.hover", "#3A3D43", "IdePalette::DARK.popup_hover"),
+    ("popup.shadow", "#0000006E", "ide/mod.rs dialog_frame: Color32::from_black_alpha(110)"),
+    ("popup.code.background", "#80808030", "ide/doc_popups.rs: inline code"),
+    ("textField.background", "#1E1F22", "ide/mod.rs: the Go to Line and new-entry fields"),
+    ("textField.border", "#4E5157", "ide/mod.rs: the new-entry field without focus"),
+    ("textField.selection", "#214283", "IdePalette::apply selection.bg_fill"),
+    ("textField.caret", "#CED0D6", "IdePalette::apply text_cursor"),
+    ("button.secondary.border", "#4E5157", "secondary buttons in ide/mod.rs, settings.rs, welcome.rs"),
+    ("tab.border", "#4E5157", "IdePalette::DARK.tab_border"),
+    ("tab.active.background", "#273555", "IdePalette::DARK.active_tab"),
+    ("tab.active.border", "#354C85", "IdePalette::DARK.active_tab_border"),
+    ("tab.modified", "#6CA4F8", "ide/mod.rs: the name of a dirty editor tab"),
+    ("tree.excluded.text", "#D88A3C", "IdePalette::DARK.excluded"),
+    ("tree.excluded.background", "#291F1C", "ide/mod.rs: the excluded folder row"),
+    ("tree.testRow", "#1E261D", "IdePalette::DARK.test_row"),
+    ("vcs.modified", "#6CA4F8", "IdePalette::DARK.vcs_modified"),
+    ("vcs.added", "#73BD79", "IdePalette::DARK.vcs_added"),
+    ("vcs.deleted", "#6F737A", "IdePalette::DARK.vcs_deleted"),
+    ("vcs.unversioned", "#D1675A", "IdePalette::DARK.vcs_unversioned"),
+    ("vcs.ignored", "#A8A34F", "IdePalette::DARK.vcs_ignored"),
+    ("vcs.conflict", "#E55C5C", "IdePalette::DARK.vcs_conflict"),
+    ("vcs.incoming", "#6CA4F8", "IdePalette::DARK.vcs_incoming"),
+    ("vcs.outgoing", "#73BD79", "IdePalette::DARK.vcs_outgoing"),
+    ("vcs.currentBranch", "#E8B94F", "new with themes: the current branch in the branches popup"),
+    ("vcs.graph.0", "#5F9EE8", "IdePalette::DARK.graph[0]"),
+    ("vcs.graph.1", "#6AB86E", "IdePalette::DARK.graph[1]"),
+    ("vcs.graph.2", "#D98C4A", "IdePalette::DARK.graph[2]"),
+    ("vcs.graph.3", "#B07CD8", "IdePalette::DARK.graph[3]"),
+    ("vcs.graph.4", "#3FB8B0", "IdePalette::DARK.graph[4]"),
+    ("vcs.graph.5", "#D86F7E", "IdePalette::DARK.graph[5]"),
+    ("banner.background", "#25324D", "IdePalette::DARK.banner"),
+    ("icon.run", "#5FB865", "IdePalette::DARK.run"),
+    ("stripe.active.icon", "#FFFFFF", "ide/mod.rs: Color32::WHITE icon of the active stripe button"),
+    ("image.checker.light", "#4A4D52", "ide/image_view.rs: the chessboard"),
+    ("image.checker.dark", "#3A3C40", "ide/image_view.rs: the chessboard"),
+    ("project.0", "#4A7FD6", "ide/mod.rs project_color"),
+    ("project.1", "#3E8E7E", "ide/mod.rs project_color"),
+    ("project.2", "#C06E45", "ide/mod.rs project_color"),
+    ("project.3", "#965EC2", "ide/mod.rs project_color"),
+    ("project.4", "#3F9AB0", "ide/mod.rs project_color"),
+    ("project.5", "#B85A8A", "ide/mod.rs project_color"),
+    ("project.foreground", "#FFFFFF", "ide/mod.rs project_badge: Color32::WHITE initials"),
+];
+
+const EDITOR: &[(&str, &str, &str)] = &[
+    ("background", "#191A1D", "IdePalette::DARK.island, under the editor and the input method's preedit"),
+    ("foreground", "#BCBEC4", "IdePalette::DARK.code, for text drawn without highlighting"),
+    ("lineNumber", "#4B5059", "IdePalette::DARK.gutter_text"),
+    ("currentLine", "#1F2024", "IdePalette::DARK.current_line"),
+    ("caret", "#CED0D6", "IdePalette::DARK.caret"),
+    ("selection", "#2E436E", "IdePalette::DARK.selection, in ide/editor_view.rs"),
+    ("search.match", "#2F4C3A", "IdePalette::DARK.search"),
+    ("search.mark", "#5F8C63", "IdePalette::DARK.search_mark"),
+    ("fold.marker", "#3B3E44", "IdePalette::DARK.fold_mark"),
+    ("fold.arrow", "#707379", "IdePalette::DARK.fold_arrow"),
+    ("fold.text", "#868A91", "IdePalette::DARK.fold_text"),
+    ("inlayHint.background", "#2B2D31", "IdePalette::DARK.inlay_hint_background"),
+    ("inlayHint.foreground", "#8C9097", "IdePalette::DARK.inlay_hint_foreground"),
+    ("gutter.separator", "#323438", "IdePalette::DARK.gutter_separator"),
+    ("methodSeparator", "#43454A", "IdePalette::DARK.method_separator, as the popups' border"),
+    ("stickyLines.background", "#1D1E21", "IdePalette::DARK.sticky_background, a little lighter than the editor"),
+    ("stickyLines.border", "#323438", "IdePalette::DARK.sticky_border, as the gutter's separator"),
+    ("symbolHighlight", "#383B39", "IdePalette::DARK.occurrence"),
+    (
+        "symbolHighlight.write",
+        "#4A363A",
+        "the written usages of the symbol at the caret, reddish to tell writes from reads",
+    ),
+    ("bracket.matched.background", "#3B514D", "new with bracket matching: the reference's matched brace"),
+    ("bracket.matched.foreground", "#FFEF28", "new with bracket matching: the reference's matched brace"),
+    ("bracket.unmatched.background", "#5E3838", "new with bracket matching: a red tint for an unmatched brace"),
+    ("bracket.unmatched.foreground", "#BCBEC4", "new with bracket matching: the editor's foreground"),
+    ("diagnostic.error", "#F75464", "ide/editor_view.rs problem_color"),
+    ("diagnostic.warning", "#E0B04E", "ide/editor_view.rs problem_color"),
+    ("diagnostic.info", "#6F9FE8", "ide/editor_view.rs problem_color"),
+    ("diagnostic.hint", "#868A91", "ide/editor_view.rs problem_color, any other severity"),
+    ("diagnostic.typo", "#5FA36A", "a misspelt word, new with the spelling inspection (ADR-0113)"),
+    ("completion.function", "#C08BF5", "ide/editor_view.rs kind_mark"),
+    ("completion.variable", "#6FB3D9", "ide/editor_view.rs kind_mark"),
+    ("completion.field", "#E0B04E", "ide/editor_view.rs kind_mark"),
+    ("completion.constant", "#9AC67A", "ide/editor_view.rs kind_mark"),
+    ("completion.type", "#5FA8F0", "ide/editor_view.rs kind_mark"),
+    ("completion.interface", "#5FC8B0", "ide/editor_view.rs kind_mark"),
+    ("completion.module", "#D08C6A", "ide/editor_view.rs kind_mark"),
+    ("completion.keyword", "#CF8E6D", "ide/editor_view.rs kind_mark"),
+    ("completion.snippet", "#A0A4AC", "ide/editor_view.rs kind_mark"),
+    ("completion.other", "#A0A4AC", "ide/editor_view.rs kind_mark, any other kind"),
+    ("gutter.added", "#549159", "IdePalette::DARK.gutter_added"),
+    ("gutter.modified", "#375FAD", "IdePalette::DARK.gutter_modified"),
+    ("gutter.deleted", "#868A91", "IdePalette::DARK.gutter_deleted"),
+    ("diff.inserted", "#1F3526", "IdePalette::DARK.diff_inserted"),
+    ("diff.deleted", "#34363A", "IdePalette::DARK.diff_deleted"),
+    ("diff.modified", "#1E2E4B", "IdePalette::DARK.diff_modified"),
+    ("diff.insertedWord", "#2C5437", "IdePalette::DARK.diff_inserted_word"),
+    ("diff.deletedWord", "#4A4D52", "IdePalette::DARK.diff_deleted_word"),
+    ("diff.modifiedWord", "#2B4575", "IdePalette::DARK.diff_modified_word"),
+    ("diff.filler", "#222327", "IdePalette::DARK.diff_filler"),
+    ("breakpoint", "#E55C5C", "the red of vcs.conflict, so a breakpoint reads as a stop"),
+    ("breakpoint.disabled", "#E56E6E", "the red of text.error, for the outline of a disabled breakpoint"),
+    ("execution.line", "#273555", "the blue tint of tab.active.background for the execution line"),
+    ("execution.arrow", "#6CA4F8", "the blue of link, for the execution point's arrow"),
+    ("annotation.recent", "#E8B94F", "new: the amber of vcs.currentBranch, for the newest blame annotations"),
+    ("annotation.old", "#5A5E66", "new: fainter than text.secondary, for the oldest blame annotations"),
+    ("coverage.covered", "#4E8A52", "new: a green a step under gutter.added, for lines the tests ran"),
+    ("coverage.partly", "#B08A2E", "new: an amber, for lines the tests ran partly"),
+    ("coverage.notCovered", "#A84A48", "new: a muted red, for lines the tests did not run"),
+    ("unused", "#6F737A", "new: a grey a little fainter than comments, for unused code"),
+    ("whitespace", "#4B4E54", "new: faint dots and tab marks, well under the code"),
+    ("indentGuide", "#2E3035", "new: a thin line just above the background"),
+    ("indentGuide.selected", "#50535A", "new: the caret's block, brighter than indentGuide"),
+    ("rightMargin", "#393B40", "new: the right margin and the visual guides"),
+];
+
+const SYNTAX: &[(&str, &str, &str)] = &[
+    ("keyword", "#CF8E6D", "IdePalette::syntax Keyword: keyword"),
+    ("string", "#6AAB73", "IdePalette::syntax String: string"),
+    ("number", "#2AACB8", "IdePalette::syntax Number: number"),
+    ("comment", "#7A7E85", "IdePalette::syntax Comment: comment"),
+    ("docComment", "#5F826B italic", "IdePalette::syntax DocComment: doc_comment, italic"),
+    ("docComment.name", "#A1A1A1", "IdePalette::DARK.doc_name, the colour of SemanticKind::DocName"),
+    ("macro", "#56A8F5", "IdePalette::syntax Macro: macro_call"),
+    ("type", "#BCBEC4", "IdePalette::syntax Type: type_name"),
+    ("function", "#56A8F5", "IdePalette::syntax Function: function"),
+    ("lifetime", "#20999D", "IdePalette::syntax Lifetime: lifetime"),
+    ("constant", "#C77DBB italic", "IdePalette::syntax Constant: constant, italic"),
+    ("attribute", "#B3AE60", "IdePalette::syntax Attribute: attribute"),
+    ("punctuation", "#BCBEC4", "IdePalette::syntax Punctuation: code"),
+    ("heading", "#C87DBB italic", "IdePalette::syntax Heading: heading, italic"),
+    ("strong", "#DFE1E5", "IdePalette::syntax Strong: text"),
+    ("emphasis", "#BCBEC4 italic", "IdePalette::syntax Emphasis: code, italic"),
+    ("link", "#56A8F5", "IdePalette::syntax Link: function"),
+    ("code", "#6AAB73", "IdePalette::syntax Code: string"),
+    ("todo", "#8FB8E8", "IdePalette::DARK.todo"),
+    ("semantic.package", "#B2BF85", "IdePalette::DARK.package"),
+    ("semantic.type", "#7EADBB", "IdePalette::DARK.semantic_type"),
+    ("semantic.builtinType", "#CF8E6D", "ide/editor_view.rs: SemanticKind::BuiltinType as keyword"),
+    ("semantic.call", "#AD9E7D", "IdePalette::DARK.call"),
+    ("property", "#C77DBB", "ide/editor_view.rs: a declared property in TypeScript and JavaScript (ADR-0184)"),
+    (
+        "globalVariable",
+        "#C77DBB italic",
+        "ide/editor_view.rs: a global or module variable in TypeScript and JavaScript (ADR-0184)",
+    ),
+    ("navigationLink", "#6CA4F8 underline", "ide/editor_view.rs: SemanticKind::Link as link, underlined"),
+    ("default", "#BCBEC4", "ide/editor_view.rs: unhighlighted code in a highlighted line, code"),
+];
+
+const TERMINAL: &[(&str, &str, &str)] = &[
+    ("background", "#1F2023", "TerminalPalette::DARK.background"),
+    ("foreground", "#DFE1E5", "TerminalPalette::DARK.foreground"),
+    ("cursor", "#CED0D6", "TerminalPalette::DARK.cursor"),
+    ("selection", "#2E436E", "TerminalPalette::DARK.selection"),
+    ("ansi.0", "#45484D", "TerminalPalette::DARK.ansi[0]"),
+    ("ansi.1", "#E58A86", "TerminalPalette::DARK.ansi[1]"),
+    ("ansi.2", "#93C49A", "TerminalPalette::DARK.ansi[2]"),
+    ("ansi.3", "#E3C47E", "TerminalPalette::DARK.ansi[3]"),
+    ("ansi.4", "#8AAFE6", "TerminalPalette::DARK.ansi[4]"),
+    ("ansi.5", "#CDA2DC", "TerminalPalette::DARK.ansi[5]"),
+    ("ansi.6", "#86C7C8", "TerminalPalette::DARK.ansi[6]"),
+    ("ansi.7", "#C4C6CC", "TerminalPalette::DARK.ansi[7]"),
+    ("ansi.8", "#6F737A", "TerminalPalette::DARK.ansi[8]"),
+    ("ansi.9", "#F2A7A3", "TerminalPalette::DARK.ansi[9]"),
+    ("ansi.10", "#ADD5B2", "TerminalPalette::DARK.ansi[10]"),
+    ("ansi.11", "#EED69C", "TerminalPalette::DARK.ansi[11]"),
+    ("ansi.12", "#A9C6F2", "TerminalPalette::DARK.ansi[12]"),
+    ("ansi.13", "#DDBCE8", "TerminalPalette::DARK.ansi[13]"),
+    ("ansi.14", "#A6DADB", "TerminalPalette::DARK.ansi[14]"),
+    ("ansi.15", "#F2F3F5", "TerminalPalette::DARK.ansi[15]"),
+];
+
+fn check<K: Key>(pins: &[(&str, &str, &str)], value: impl Fn(K) -> String) {
+    let ids: Vec<&str> = pins.iter().map(|(id, _, _)| *id).collect();
+    let keys: Vec<&str> = K::ALL.iter().map(|key| key.id()).collect();
+    assert_eq!(ids, keys, "the pins of `{}` list every key once, in order", K::SECTION);
+    for (id, expected, origin) in pins {
+        let key = K::from_id(id).unwrap_or_else(|| panic!("{id}"));
+        assert_eq!(value(key), *expected, "{}.{id}, from {origin}", K::SECTION);
+    }
+}
+
+#[test]
+fn zen_dark_is_the_colours_of_the_ide_before_themes() {
+    let zen = ResolvedTheme::zen_dark();
+    check::<UiKey>(UI, |key| zen.ui(key).to_string());
+    check::<EditorKey>(EDITOR, |key| zen.editor(key).to_string());
+    check::<SyntaxKey>(SYNTAX, |key| zen.syntax(key).to_string());
+    check::<TerminalKey>(TERMINAL, |key| zen.terminal(key).to_string());
+}
+
+#[test]
+fn the_built_in_theme_resolves_to_the_pins() {
+    let resolved = zen_theme::zen_dark().resolve(|_| None);
+    assert!(resolved.warnings.is_empty());
+    assert_eq!(resolved.theme, ResolvedTheme::zen_dark());
+}

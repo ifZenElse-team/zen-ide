@@ -1,0 +1,36 @@
+# Zen UI: the Plan tab of the Database workspace.
+
+ide-dbplan-explain-plan = Explain Plan
+ide-dbplan-explain = Explain
+ide-dbplan-cancel = Cancel
+ide-dbplan-analyze = ANALYZE
+ide-dbplan-verbose = VERBOSE
+ide-dbplan-costs = COSTS
+ide-dbplan-buffers = BUFFERS
+ide-dbplan-settings = SETTINGS
+ide-dbplan-analyze-warning = ANALYZE runs the statement. It runs inside a transaction that is rolled back afterwards, but what a transaction cannot undo (sequences, notifications, calls to other systems) stays.
+ide-dbplan-tree = Tree
+ide-dbplan-raw = Text
+ide-dbplan-running = Explaining…
+ide-dbplan-failed = The plan could not be read.
+ide-dbplan-not-run = Not explained since the IDE started. Explain to read the plan again.
+ide-dbplan-ignored = Not available for this database, left out: { $options }
+ide-dbplan-inlined = Written into the statement as quoted literals, as this driver has no bind parameters: { $values }
+ide-dbplan-empty = The plan has no nodes.
+ide-dbplan-total-cost = Cost { $cost }
+ide-dbplan-planning = Planning { $time }
+ide-dbplan-execution = Execution { $time }
+ide-dbplan-rolled-back = Rolled back
+ide-dbplan-ms = { $ms } ms
+ide-dbplan-column-node = Node
+ide-dbplan-column-entity = Entity
+ide-dbplan-column-cost = Cost
+ide-dbplan-column-rows = Rows
+ide-dbplan-column-time = Time
+ide-dbplan-column-condition = Condition
+ide-dbplan-share = Share
+ide-dbplan-self-time = Self time
+ide-dbplan-self-cost = Self cost
+ide-dbplan-startup-cost = Startup cost
+ide-dbplan-loops = Loops
+ide-dbplan-whole = Whole plan

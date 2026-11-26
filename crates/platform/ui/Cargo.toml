@@ -1,0 +1,87 @@
+[package]
+name = "zen-ui"
+description = "Zen Platform, layer L6: the egui shell, theme, icons and views."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+zen-env.workspace = true
+egui.workspace = true
+egui_extras.workspace = true
+flate2.workspace = true
+log.workspace = true
+pulldown-cmark.workspace = true
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+ttf-parser.workspace = true
+zen-automation.workspace = true
+zen-core.workspace = true
+zen-db.workspace = true
+zen-i18n.workspace = true
+zen-plugins.workspace = true
+zen-project.workspace = true
+zen-run.workspace = true
+zen-syntax.workspace = true
+zen-text.workspace = true
+zen-theme.workspace = true
+zen-toolbox.workspace = true
+zen-update.workspace = true
+zen-vfs.workspace = true
+zen-editor.workspace = true
+zen-http.workspace = true
+zen-net.workspace = true
+zen-secrets.workspace = true
+zen-image.workspace = true
+zen-index.workspace = true
+zen-jb-import.workspace = true
+zen-modules.workspace = true
+zen-vcs.workspace = true
+zen-workbench.workspace = true
+zen-macos.workspace = true
+zen-mascot.workspace = true
+
+# The system tray, on desktop platforms only.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+arboard.workspace = true
+eframe.workspace = true
+winit.workspace = true
+fontdb.workspace = true
+png.workspace = true
+rfd.workspace = true
+tray-icon.workspace = true
+zen-terminal.workspace = true
+
+# The examples: `cargo run -p zen-ui --example terminal` and `--example file_icons`.
+[dev-dependencies]
+# Each test thread has its own interface language (zen-i18n's docs).
+zen-i18n = { workspace = true, features = ["thread-languages"] }
+tempfile.workspace = true
+zen-dap = { workspace = true, features = ["fake"] }
+zen-db = { workspace = true, features = ["fake"] }
+zen-secrets.workspace = true
+zen-http = { workspace = true, features = ["test-server"] }
+zen-lsp = { workspace = true, features = ["fake"] }
+zen-run = { workspace = true, features = ["fake"] }
+zen-workbench = { workspace = true, features = ["fake"] }
+zen-plugins = { workspace = true, features = ["native"] }
+zen-plugin-css = { path = "../../../plugins/css" }
+zen-plugin-html = { path = "../../../plugins/html" }
+zen-plugin-javascript = { path = "../../../plugins/javascript" }
+zen-plugin-scss = { path = "../../../plugins/scss" }
+zen-plugin-typescript = { path = "../../../plugins/typescript" }
+zen-plugin-vue = { path = "../../../plugins/vue" }
+zen-plugin-svelte = { path = "../../../plugins/svelte" }
+zen-plugin-xml = { path = "../../../plugins/xml" }
+zen-plugin-java = { path = "../../../plugins/java" }
+zen-plugin-properties = { path = "../../../plugins/properties" }
+zen-plugin-dockerfile = { path = "../../../plugins/dockerfile" }
+zen-plugin-shell = { path = "../../../plugins/shell" }
+zen-plugin-kubernetes = { path = "../../../plugins/kubernetes" }
+zen-plugin-gitops = { path = "../../../plugins/gitops" }
+
+[lints]
+workspace = true

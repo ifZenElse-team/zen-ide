@@ -1,0 +1,2257 @@
+{
+  "name": "Java",
+  "description": "Java: highlighting, folding, Structure and completion in pure Rust; problems, navigation, refactoring, formatting and Maven and Gradle import through Eclipse JDT Language Server.",
+  "extensions": [
+    "java"
+  ],
+  "liveTemplates": {
+    "templates": [
+      {"language": "java", "abbreviation": "psvm", "description": {"en": "main() method declaration", "ru": "Объявление метода main()"}, "text": "public static void main(String[] args) {\n\t$END$\n}"},
+      {"language": "java", "abbreviation": "main", "description": {"en": "main() method declaration", "ru": "Объявление метода main()"}, "text": "public static void main(String[] args) {\n\t$END$\n}"},
+      {"language": "java", "abbreviation": "sout", "description": {"en": "Prints a string to System.out", "ru": "Печатает строку в System.out"}, "text": "System.out.println($END$);"},
+      {"language": "java", "abbreviation": "souf", "description": {"en": "Prints a formatted string to System.out", "ru": "Печатает форматированную строку в System.out"}, "text": "System.out.printf(\"$FORMAT$%n\", $ARGUMENTS$);$END$", "variables": [{"name": "FORMAT"}, {"name": "ARGUMENTS"}]},
+      {"language": "java", "abbreviation": "soutv", "description": {"en": "Prints a value to System.out with its name", "ru": "Печатает в System.out значение с его именем"}, "text": "System.out.println(\"$VALUE$ = \" + $VALUE$);$END$", "variables": [{"name": "VALUE", "default": "value"}]},
+      {"language": "java", "abbreviation": "serr", "description": {"en": "Prints a string to System.err", "ru": "Печатает строку в System.err"}, "text": "System.err.println($END$);"},
+      {"language": "java", "abbreviation": "fori", "description": {"en": "Creates an iteration loop", "ru": "Цикл со счётчиком"}, "text": "for (int $INDEX$ = 0; $INDEX$ < $LIMIT$; $INDEX$++) {\n\t$END$\n}", "variables": [{"name": "INDEX", "default": "i"}, {"name": "LIMIT"}]},
+      {"language": "java", "abbreviation": "iter", "description": {"en": "Iterates over an Iterable or array", "ru": "Цикл по Iterable или массиву"}, "text": "for ($TYPE$ $ITEM$ : $ITERABLE$) {\n\t$END$\n}", "variables": [{"name": "ITERABLE"}, {"name": "TYPE", "default": "var"}, {"name": "ITEM", "default": "item"}]},
+      {"language": "java", "abbreviation": "itar", "description": {"en": "Iterates over the elements of an array", "ru": "Цикл по элементам массива"}, "text": "for (int $INDEX$ = 0; $INDEX$ < $ARRAY$.length; $INDEX$++) {\n\t$TYPE$ $ITEM$ = $ARRAY$[$INDEX$];\n\t$END$\n}", "variables": [{"name": "ARRAY", "default": "array"}, {"name": "INDEX", "default": "i"}, {"name": "TYPE", "default": "var"}, {"name": "ITEM", "default": "item"}]},
+      {"language": "java", "abbreviation": "itli", "description": {"en": "Iterates over the elements of a List", "ru": "Цикл по элементам List"}, "text": "for (int $INDEX$ = 0; $INDEX$ < $LIST$.size(); $INDEX$++) {\n\t$TYPE$ $ITEM$ = $LIST$.get($INDEX$);\n\t$END$\n}", "variables": [{"name": "LIST", "default": "list"}, {"name": "INDEX", "default": "i"}, {"name": "TYPE", "default": "var"}, {"name": "ITEM", "default": "item"}]},
+      {"language": "java", "abbreviation": "ifn", "description": {"en": "Inserts an 'if null' check", "ru": "Проверка на null"}, "text": "if ($VALUE$ == null) {\n\t$END$\n}", "variables": [{"name": "VALUE"}]},
+      {"language": "java", "abbreviation": "inn", "description": {"en": "Inserts an 'if not null' check", "ru": "Проверка, что не null"}, "text": "if ($VALUE$ != null) {\n\t$END$\n}", "variables": [{"name": "VALUE"}]},
+      {"language": "java", "abbreviation": "psf", "description": {"en": "public static final", "ru": "public static final"}, "text": "public static final $END$"},
+      {"language": "java", "abbreviation": "psfs", "description": {"en": "public static final String", "ru": "public static final String"}, "text": "public static final String $END$"},
+      {"language": "java", "abbreviation": "psfi", "description": {"en": "public static final int", "ru": "public static final int"}, "text": "public static final int $END$"},
+      {"language": "java", "abbreviation": "prsf", "description": {"en": "private static final", "ru": "private static final"}, "text": "private static final $END$"},
+      {"language": "java", "abbreviation": "thr", "description": {"en": "throw new", "ru": "throw new"}, "text": "throw new $END$"},
+      {"language": "java", "abbreviation": "lambda", "description": {"en": "A lambda without parameters", "ru": "Лямбда без параметров"}, "text": "() -> $END$"},
+      {"language": "java", "abbreviation": "sw", "description": {"en": "A switch with arrow cases", "ru": "switch со стрелочными ветками"}, "text": "switch ($VALUE$) {\n\tcase $CASE$ -> $END$\n\tdefault -> {\n\t}\n}", "variables": [{"name": "VALUE"}, {"name": "CASE"}]}
+    ],
+    "postfix": [
+      {"language": "java", "key": "var", "description": {"en": "Declares a local variable", "ru": "Объявляет локальную переменную"}, "text": "$TYPE$ $NAME$ = $EXPR$;$END$", "variables": [{"name": "NAME", "default": "value"}, {"name": "TYPE", "default": "var"}]},
+      {"language": "java", "key": "val", "description": {"en": "Declares a final local variable", "ru": "Объявляет final-переменную"}, "text": "final var $NAME$ = $EXPR$;$END$", "variables": [{"name": "NAME", "default": "value"}]},
+      {"language": "java", "key": "if", "description": {"en": "Checks a boolean expression", "ru": "Проверяет логическое выражение"}, "text": "if ($EXPR$) {\n\t$END$\n}"},
+      {"language": "java", "key": "else", "description": {"en": "Checks that a boolean expression is false", "ru": "Проверяет, что логическое выражение ложно"}, "text": "if (!$EXPR$) {\n\t$END$\n}"},
+      {"language": "java", "key": "not", "description": {"en": "Negates a boolean expression", "ru": "Отрицает логическое выражение"}, "text": "!$EXPR$$END$"},
+      {"language": "java", "key": "nn", "description": {"en": "Checks that the expression is not null", "ru": "Проверяет, что выражение не null"}, "text": "if ($EXPR$ != null) {\n\t$END$\n}"},
+      {"language": "java", "key": "notnull", "description": {"en": "Checks that the expression is not null", "ru": "Проверяет, что выражение не null"}, "text": "if ($EXPR$ != null) {\n\t$END$\n}"},
+      {"language": "java", "key": "null", "description": {"en": "Checks that the expression is null", "ru": "Проверяет, что выражение равно null"}, "text": "if ($EXPR$ == null) {\n\t$END$\n}"},
+      {"language": "java", "key": "for", "description": {"en": "Iterates over an Iterable or array", "ru": "Цикл по Iterable или массиву"}, "text": "for ($TYPE$ $ITEM$ : $EXPR$) {\n\t$END$\n}", "variables": [{"name": "ITEM", "default": "item"}, {"name": "TYPE", "default": "var"}]},
+      {"language": "java", "key": "iter", "description": {"en": "Iterates over an Iterable or array", "ru": "Цикл по Iterable или массиву"}, "text": "for ($TYPE$ $ITEM$ : $EXPR$) {\n\t$END$\n}", "variables": [{"name": "ITEM", "default": "item"}, {"name": "TYPE", "default": "var"}]},
+      {"language": "java", "key": "fori", "description": {"en": "Counts from zero up to the number", "ru": "Цикл от нуля до числа"}, "text": "for (int $INDEX$ = 0; $INDEX$ < $EXPR$; $INDEX$++) {\n\t$END$\n}", "variables": [{"name": "INDEX", "default": "i"}]},
+      {"language": "java", "key": "forr", "description": {"en": "Counts down from the number to one", "ru": "Цикл от числа вниз до единицы"}, "text": "for (int $INDEX$ = $EXPR$; $INDEX$ > 0; $INDEX$--) {\n\t$END$\n}", "variables": [{"name": "INDEX", "default": "i"}]},
+      {"language": "java", "key": "while", "description": {"en": "Loops while the expression is true", "ru": "Цикл, пока выражение истинно"}, "text": "while ($EXPR$) {\n\t$END$\n}"},
+      {"language": "java", "key": "return", "description": {"en": "Returns the value", "ru": "Возвращает значение"}, "text": "return $EXPR$;$END$"},
+      {"language": "java", "key": "throw", "description": {"en": "Throws the exception", "ru": "Бросает исключение"}, "text": "throw $EXPR$;$END$"},
+      {"language": "java", "key": "sout", "description": {"en": "Prints the value to System.out", "ru": "Печатает значение в System.out"}, "text": "System.out.println($EXPR$);$END$"},
+      {"language": "java", "key": "serr", "description": {"en": "Prints the value to System.err", "ru": "Печатает значение в System.err"}, "text": "System.err.println($EXPR$);$END$"},
+      {"language": "java", "key": "try", "description": {"en": "Puts the statement into try/catch", "ru": "Оборачивает оператор в try/catch"}, "text": "try {\n\t$EXPR$;\n} catch ($EXCEPTION$ $NAME$) {\n\t$END$\n}", "variables": [{"name": "EXCEPTION", "default": "Exception"}, {"name": "NAME", "default": "e"}]},
+      {"language": "java", "key": "cast", "description": {"en": "Casts the expression to a type", "ru": "Приводит выражение к типу"}, "text": "(($TYPE$) $EXPR$)$END$", "variables": [{"name": "TYPE"}]},
+      {"language": "java", "key": "new", "description": {"en": "Creates an object of the type", "ru": "Создаёт объект этого типа"}, "text": "new $EXPR$($END$)"},
+      {"language": "java", "key": "par", "description": {"en": "Puts the expression in parentheses", "ru": "Заключает выражение в скобки"}, "text": "($EXPR$)$END$"},
+      {"language": "java", "key": "lambda", "description": {"en": "Makes a lambda that gives the expression", "ru": "Лямбда, которая возвращает выражение"}, "text": "() -> $EXPR$$END$"},
+      {"language": "java", "key": "arg", "description": {"en": "Passes the expression to a call", "ru": "Передаёт выражение в вызов"}, "text": "$CALL$($EXPR$)$END$", "variables": [{"name": "CALL"}]},
+      {"language": "java", "key": "switch", "description": {"en": "Switches on the value", "ru": "switch по значению"}, "text": "switch ($EXPR$) {\n\t$END$\n}"},
+      {"language": "java", "key": "synchronized", "description": {"en": "Synchronizes on the object", "ru": "Синхронизирует по объекту"}, "text": "synchronized ($EXPR$) {\n\t$END$\n}"},
+      {"language": "java", "key": "assert", "description": {"en": "Asserts the condition", "ru": "Проверяет условие через assert"}, "text": "assert $EXPR$;$END$"}
+    ],
+    "surrounders": [
+      {"language": "java", "id": "if", "title": {"en": "if", "ru": "if"}, "text": "if ($CONDITION$) {\n\t$SELECTION$\n}"},
+      {"language": "java", "id": "ifElse", "title": {"en": "if / else", "ru": "if / else"}, "text": "if ($CONDITION$) {\n\t$SELECTION$\n} else {\n\t$END$\n}"},
+      {"language": "java", "id": "while", "title": {"en": "while", "ru": "while"}, "text": "while ($CONDITION$) {\n\t$SELECTION$\n}"},
+      {"language": "java", "id": "doWhile", "title": {"en": "do / while", "ru": "do / while"}, "text": "do {\n\t$SELECTION$\n} while ($CONDITION$);"},
+      {"language": "java", "id": "for", "title": {"en": "for", "ru": "for"}, "text": "for ($LOOP$) {\n\t$SELECTION$\n}"},
+      {"language": "java", "id": "tryCatch", "title": {"en": "try / catch", "ru": "try / catch"}, "text": "try {\n\t$SELECTION$\n} catch ($EXCEPTION$ $NAME$) {\n\t$END$\n}", "variables": [{"name": "EXCEPTION", "default": "Exception"}, {"name": "NAME", "default": "e"}]},
+      {"language": "java", "id": "tryFinally", "title": {"en": "try / finally", "ru": "try / finally"}, "text": "try {\n\t$SELECTION$\n} finally {\n\t$END$\n}"},
+      {"language": "java", "id": "tryCatchFinally", "title": {"en": "try / catch / finally", "ru": "try / catch / finally"}, "text": "try {\n\t$SELECTION$\n} catch ($EXCEPTION$ $NAME$) {\n\t$CATCH$\n} finally {\n\t$END$\n}", "variables": [{"name": "EXCEPTION", "default": "Exception"}, {"name": "NAME", "default": "e"}, {"name": "CATCH"}]},
+      {"language": "java", "id": "synchronized", "title": {"en": "synchronized", "ru": "synchronized"}, "text": "synchronized ($LOCK$) {\n\t$SELECTION$\n}", "variables": [{"name": "LOCK", "default": "this"}]},
+      {"language": "java", "id": "runnable", "title": {"en": "Runnable", "ru": "Runnable"}, "text": "Runnable $NAME$ = () -> {\n\t$SELECTION$\n};", "variables": [{"name": "NAME", "default": "runnable"}]},
+      {"language": "java", "id": "block", "title": {"en": "{ }", "ru": "{ }"}, "text": "{\n\t$SELECTION$\n}"},
+      {"language": "java", "id": "parentheses", "title": {"en": "(expr)", "ru": "(выражение)"}, "text": "($SELECTION$)", "expression": true},
+      {"language": "java", "id": "not", "title": {"en": "!(expr)", "ru": "!(выражение)"}, "text": "!($SELECTION$)", "expression": true},
+      {"language": "java", "id": "cast", "title": {"en": "((Type) expr)", "ru": "((Тип) выражение)"}, "text": "(($TYPE$) $SELECTION$)", "variables": [{"name": "TYPE"}], "expression": true}
+    ],
+    "docComments": [
+      {"language": "java", "opening": "/**", "onEnter": true, "keywords": ["class", "interface", "enum", "record"], "calls": true, "fields": true, "skip": ["@"], "resultBefore": true, "noResult": ["void", "public", "private", "protected", "static", "final", "abstract", "synchronized", "native", "default"], "throws": "throws", "text": "/**\n * $END$\n$PARAMETERS$\n$RESULT$\n$THROWS$\n */", "parameter": " * @param $PARAMETER$", "result": " * @return", "thrown": " * @throws $EXCEPTION$"}
+    ],
+    "statements": [
+      {"language": "java", "terminator": ";", "blocks": ["if", "else", "for", "while", "do", "switch", "try", "catch", "finally", "synchronized", "class", "interface", "enum", "record"], "parenthesized": ["if", "for", "while", "switch", "synchronized", "catch"], "methods": true, "notDeclarations": ["return", "throw", "new", "yield", "assert", "case", "else"]}
+    ]
+  },
+  "tests": [
+    {
+      "id": "java",
+      "extensions": [
+        "java"
+      ],
+      "pairs": [
+        {
+          "subject": "src/main/java/{path}{name}.java",
+          "test": "src/test/java/{path}{name}Test.java"
+        },
+        {
+          "subject": "src/main/java/{path}{name}.java",
+          "test": "src/test/java/{path}{name}Tests.java"
+        },
+        {
+          "subject": "src/main/java/{path}{name}.java",
+          "test": "src/test/java/{path}{name}IT.java"
+        },
+        {
+          "subject": "src/main/java/{path}{name}.java",
+          "test": "src/test/java/{path}Test{name}.java"
+        }
+      ],
+      "members": "^[ \\t]*(?:@[\\w.]+(?:\\([^)\\n]*\\))?\\s+)*(?:(?:public|protected|private|static|final|abstract|synchronized|native|default|strictfp)\\s+)*(?:<(?:[^<>\\n]|<(?:[^<>\\n]|<[^<>\\n]*>)*>)*>\\s*)?(?P<type>[\\w.$]+(?:<(?:[^<>\\n]|<(?:[^<>\\n]|<[^<>\\n]*>)*>)*>)?(?:\\[\\])*)\\s+(?P<name>[\\w$]+)\\s*\\(",
+      "keywords": [
+        "return",
+        "new",
+        "throw",
+        "throws",
+        "else",
+        "case",
+        "yield",
+        "assert",
+        "do",
+        "public",
+        "protected",
+        "private",
+        "static",
+        "final",
+        "abstract",
+        "native",
+        "default",
+        "strictfp",
+        "record",
+        "class",
+        "interface",
+        "enum",
+        "extends",
+        "implements",
+        "package",
+        "import",
+        "var",
+        "goto",
+        "const",
+        "instanceof"
+      ],
+      "tests": [
+        "{name}",
+        "test{Name}"
+      ],
+      "packageLine": "package ${PACKAGE};\n\n",
+      "insert": "beforeLastBrace",
+      "frameworks": [
+        {
+          "id": "junit5",
+          "name": "JUnit 5",
+          "detect": [
+            {
+              "file": "pom.xml",
+              "contains": "junit-jupiter"
+            },
+            {
+              "file": "build.gradle",
+              "contains": "junit-jupiter"
+            },
+            {
+              "file": "build.gradle.kts",
+              "contains": "junit-jupiter"
+            },
+            {
+              "file": "gradle/libs.versions.toml",
+              "contains": "junit-jupiter"
+            },
+            {
+              "file": "pom.xml",
+              "contains": "junit-bom"
+            },
+            {
+              "file": "build.gradle",
+              "contains": "junit-bom"
+            },
+            {
+              "file": "build.gradle.kts",
+              "contains": "junit-bom"
+            },
+            {
+              "file": "gradle/libs.versions.toml",
+              "contains": "junit-bom"
+            }
+          ],
+          "file": "${PACKAGE_LINE}import org.junit.jupiter.api.AfterEach;\nimport org.junit.jupiter.api.BeforeEach;\nimport org.junit.jupiter.api.Test;\n\nimport static org.junit.jupiter.api.Assertions.*;\n\nclass ${NAME} {\n\n    @BeforeEach\n    void setUp() {\n    }\n\n    @AfterEach\n    void tearDown() {\n    }\n${METHODS}}\n",
+          "method": "\n    @Test\n    void ${TEST}() {\n    }\n"
+        },
+        {
+          "id": "junit4",
+          "name": "JUnit 4",
+          "detect": [
+            {
+              "file": "pom.xml",
+              "contains": "<artifactId>junit</artifactId>"
+            },
+            {
+              "file": "build.gradle",
+              "contains": "junit:junit"
+            },
+            {
+              "file": "build.gradle.kts",
+              "contains": "junit:junit"
+            },
+            {
+              "file": "gradle/libs.versions.toml",
+              "contains": "junit:junit"
+            }
+          ],
+          "file": "${PACKAGE_LINE}import org.junit.After;\nimport org.junit.Before;\nimport org.junit.Test;\n\nimport static org.junit.Assert.*;\n\npublic class ${NAME} {\n\n    @Before\n    public void setUp() {\n    }\n\n    @After\n    public void tearDown() {\n    }\n${METHODS}}\n",
+          "method": "\n    @Test\n    public void ${TEST}() {\n    }\n"
+        },
+        {
+          "id": "testng",
+          "name": "TestNG",
+          "detect": [
+            {
+              "file": "pom.xml",
+              "contains": "org.testng"
+            },
+            {
+              "file": "build.gradle",
+              "contains": "org.testng"
+            },
+            {
+              "file": "build.gradle.kts",
+              "contains": "org.testng"
+            },
+            {
+              "file": "gradle/libs.versions.toml",
+              "contains": "org.testng"
+            }
+          ],
+          "file": "${PACKAGE_LINE}import org.testng.annotations.AfterMethod;\nimport org.testng.annotations.BeforeMethod;\nimport org.testng.annotations.Test;\n\nimport static org.testng.Assert.*;\n\npublic class ${NAME} {\n\n    @BeforeMethod\n    public void setUp() {\n    }\n\n    @AfterMethod\n    public void tearDown() {\n    }\n${METHODS}}\n",
+          "method": "\n    @Test\n    public void ${TEST}() {\n    }\n"
+        }
+      ]
+    }
+  ],
+  "languageServers": [
+    {
+      "id": "jdtls",
+      "name": "Eclipse JDT Language Server",
+      "languages": [
+        "java"
+      ],
+      "extensions": [
+        "java"
+      ],
+      "watches": [
+        "pom.xml",
+        "build.gradle",
+        "build.gradle.kts",
+        "settings.gradle",
+        "settings.gradle.kts",
+        "gradle.properties"
+      ],
+      "command": "${javaHome}/bin/java",
+      "java": 25,
+      "args": [
+        "-Declipse.application=org.eclipse.jdt.ls.core.id1",
+        "-Dosgi.bundles.defaultStartLevel=4",
+        "-Declipse.product=org.eclipse.jdt.ls.core.product",
+        "-Dosgi.sharedConfiguration.area=${serverFolder}/config_${os}${archSuffix}",
+        "-Dosgi.sharedConfiguration.area.readOnly=true",
+        "-Dosgi.configuration.cascaded=true",
+        "-Djava.import.generatesMetadataFilesAtProjectRoot=false",
+        "-Xmx1G",
+        "--add-modules=ALL-SYSTEM",
+        "--add-opens",
+        "java.base/java.util=ALL-UNNAMED",
+        "--add-opens",
+        "java.base/java.lang=ALL-UNNAMED",
+        "${javaAgents}",
+        "-jar",
+        "${glob:plugins/org.eclipse.equinox.launcher_*.jar}",
+        "-configuration",
+        "${workspaceData}/config",
+        "-data",
+        "${workspaceData}/workspace"
+      ],
+      "install": {
+        "kind": "archive",
+        "url": "https://download.eclipse.org/jdtls/milestones/1.63.0/jdt-language-server-1.63.0-202610191322.tar.gz",
+        "sha256": "b1f2abe0b3cccb462cf64fb4a5587c7d09df60cf8be7748b152cbd89d018bdc4",
+        "hint": "Eclipse JDT Language Server 1.63.0 from download.eclipse.org, with the java-debug 0.53.1 bundle from Maven Central; it runs on Java 25 or newer.",
+        "files": [
+          {
+            "url": "https://repo1.maven.org/maven2/com/microsoft/java/com.microsoft.java.debug.plugin/0.53.1/com.microsoft.java.debug.plugin-0.53.1.jar",
+            "sha256": "4f4778d452a6a0665536f43ce4e32403a24be6593336b80dc85a322912859e24",
+            "path": "bundles/com.microsoft.java.debug.plugin-0.53.1.jar"
+          }
+        ]
+      },
+      "virtualDocuments": {
+        "schemes": [
+          "jdt"
+        ],
+        "request": "java/classFileContents",
+        "extension": "java"
+      },
+      "generate": {
+        "prompts": [
+          {
+            "command": "java.action.generateConstructorsPrompt",
+            "name": {
+              "en": "Constructor",
+              "ru": "Конструктор"
+            },
+            "title": {
+              "en": "Choose Fields to Initialize by Constructor",
+              "ru": "Выберите поля, которые инициализирует конструктор"
+            },
+            "members": "java/checkConstructorsStatus",
+            "lists": [
+              {
+                "id": "constructors",
+                "items": "/constructors/*",
+                "label": "{/name}({/parameters})",
+                "group": "{/name}",
+                "selected": true
+              },
+              {
+                "id": "fields",
+                "items": "/fields/*",
+                "label": "{/name}",
+                "detail": "{/type}",
+                "selected": "/isSelected"
+              }
+            ],
+            "generate": "java/generateConstructors",
+            "params": {
+              "context": "${context}",
+              "constructors": "${members:constructors}",
+              "fields": "${members:fields}"
+            }
+          },
+          {
+            "command": "java.action.generateAccessorsPrompt",
+            "match": {
+              "/kind": 0
+            },
+            "name": {
+              "en": "Getter",
+              "ru": "Геттер"
+            },
+            "title": {
+              "en": "Select Fields to Generate Getters",
+              "ru": "Выберите поля для геттеров"
+            },
+            "members": "java/resolveUnimplementedAccessors",
+            "lists": [
+              {
+                "id": "fields",
+                "items": "/*",
+                "label": "{/fieldName}",
+                "detail": "{/typeName}",
+                "selected": true
+              }
+            ],
+            "generate": "java/generateAccessors",
+            "params": {
+              "context": "${context}",
+              "accessors": "${members:fields}"
+            }
+          },
+          {
+            "command": "java.action.generateAccessorsPrompt",
+            "match": {
+              "/kind": 1
+            },
+            "name": {
+              "en": "Setter",
+              "ru": "Сеттер"
+            },
+            "title": {
+              "en": "Select Fields to Generate Setters",
+              "ru": "Выберите поля для сеттеров"
+            },
+            "members": "java/resolveUnimplementedAccessors",
+            "lists": [
+              {
+                "id": "fields",
+                "items": "/*",
+                "label": "{/fieldName}",
+                "detail": "{/typeName}",
+                "selected": true
+              }
+            ],
+            "generate": "java/generateAccessors",
+            "params": {
+              "context": "${context}",
+              "accessors": "${members:fields}"
+            }
+          },
+          {
+            "command": "java.action.generateAccessorsPrompt",
+            "match": {
+              "/kind": 2
+            },
+            "name": {
+              "en": "Getter and Setter",
+              "ru": "Геттер и сеттер"
+            },
+            "title": {
+              "en": "Select Fields to Generate Getters and Setters",
+              "ru": "Выберите поля для геттеров и сеттеров"
+            },
+            "members": "java/resolveUnimplementedAccessors",
+            "lists": [
+              {
+                "id": "fields",
+                "items": "/*",
+                "label": "{/fieldName}",
+                "detail": "{/typeName}",
+                "selected": true
+              }
+            ],
+            "generate": "java/generateAccessors",
+            "params": {
+              "context": "${context}",
+              "accessors": "${members:fields}"
+            }
+          },
+          {
+            "command": "java.action.hashCodeEqualsPrompt",
+            "name": {
+              "en": "equals() and hashCode()",
+              "ru": "equals() и hashCode()"
+            },
+            "title": {
+              "en": "Generate equals() and hashCode()",
+              "ru": "Создать equals() и hashCode()"
+            },
+            "members": "java/checkHashCodeEqualsStatus",
+            "lists": [
+              {
+                "id": "fields",
+                "items": "/fields/*",
+                "label": "{/name}",
+                "detail": "{/type}",
+                "group": "{parent/type}",
+                "selected": "/isSelected"
+              }
+            ],
+            "options": [
+              {
+                "id": "regenerate",
+                "label": {
+                  "en": "Replace the existing equals() and hashCode()",
+                  "ru": "Заменить имеющиеся equals() и hashCode()"
+                },
+                "default": true,
+                "when": "/existingMethods"
+              }
+            ],
+            "generate": "java/generateHashCodeEquals",
+            "params": {
+              "context": "${context}",
+              "fields": "${members:fields}",
+              "regenerate": "${option:regenerate}"
+            }
+          },
+          {
+            "command": "java.action.generateToStringPrompt",
+            "name": {
+              "en": "toString()",
+              "ru": "toString()"
+            },
+            "title": {
+              "en": "Generate toString()",
+              "ru": "Создать toString()"
+            },
+            "members": "java/checkToStringStatus",
+            "lists": [
+              {
+                "id": "fields",
+                "items": "/fields/*",
+                "label": "{/name}",
+                "detail": "{/type}",
+                "group": "{parent/type}",
+                "selected": "/isSelected",
+                "when": "/isField"
+              }
+            ],
+            "allowEmpty": true,
+            "generate": "java/generateToString",
+            "params": {
+              "context": "${context}",
+              "fields": "${members:fields}"
+            }
+          },
+          {
+            "command": "java.action.overrideMethodsPrompt",
+            "action": "override",
+            "name": {
+              "en": "Override Methods",
+              "ru": "Переопределить методы"
+            },
+            "title": {
+              "en": "Select Methods to Override",
+              "ru": "Выберите методы для переопределения"
+            },
+            "members": "java/listOverridableMethods",
+            "lists": [
+              {
+                "id": "methods",
+                "items": "/methods/*",
+                "label": "{/name}({/parameters})",
+                "group": "{/declaringClass}",
+                "selected": false,
+                "when": "!/unimplemented"
+              }
+            ],
+            "generate": "java/addOverridableMethods",
+            "params": {
+              "context": "${context}",
+              "overridableMethods": "${members:methods}"
+            }
+          },
+          {
+            "command": "java.action.overrideMethodsPrompt",
+            "action": "implement",
+            "name": {
+              "en": "Implement Methods",
+              "ru": "Реализовать методы"
+            },
+            "title": {
+              "en": "Select Methods to Implement",
+              "ru": "Выберите методы для реализации"
+            },
+            "members": "java/listOverridableMethods",
+            "lists": [
+              {
+                "id": "methods",
+                "items": "/methods/*",
+                "label": "{/name}({/parameters})",
+                "group": "{/declaringClass}",
+                "selected": true,
+                "when": "/unimplemented"
+              }
+            ],
+            "generate": "java/addOverridableMethods",
+            "params": {
+              "context": "${context}",
+              "overridableMethods": "${members:methods}"
+            }
+          },
+          {
+            "command": "java.action.generateDelegateMethodsPrompt",
+            "name": {
+              "en": "Delegate Methods",
+              "ru": "Делегирующие методы"
+            },
+            "title": {
+              "en": "Select Methods to Generate Delegates for",
+              "ru": "Выберите методы для делегирования"
+            },
+            "members": "java/checkDelegateMethodsStatus",
+            "lists": [
+              {
+                "id": "methods",
+                "items": "/delegateFields/*/delegateMethods/*",
+                "label": "{/name}({/parameters})",
+                "group": "{parent/field/name}: {parent/field/type}",
+                "selected": false,
+                "value": {
+                  "field": "${parent:/field}",
+                  "delegateMethod": "${item}"
+                }
+              }
+            ],
+            "generate": "java/generateDelegateMethods",
+            "params": {
+              "context": "${context}",
+              "delegateEntries": "${members:methods}"
+            }
+          }
+        ]
+      },
+      "initializationOptions": {
+        "settings": {
+          "java": {
+            "import": {
+              "generatesMetadataFilesAtProjectRoot": false,
+              "maven": {
+                "enabled": true
+              },
+              "gradle": {
+                "enabled": true,
+                "wrapper": {
+                  "enabled": true
+                },
+                "annotationProcessing": {
+                  "enabled": "${annotationProcessingEnabled}"
+                }
+              }
+            },
+            "format": {
+              "enabled": true
+            },
+            "signatureHelp": {
+              "enabled": true
+            },
+            "referencesCodeLens": {
+              "enabled": false
+            },
+            "implementationsCodeLens": {
+              "enabled": false
+            },
+            "autobuild": {
+              "enabled": true
+            },
+            "configuration": {
+              "updateBuildConfiguration": "automatic",
+              "runtimes": "${javaRuntimes}"
+            }
+          }
+        },
+        "extendedClientCapabilities": {
+          "classFileContentsSupport": true,
+          "generateToStringPromptSupport": true,
+          "hashCodeEqualsPromptSupport": true,
+          "generateConstructorsPromptSupport": true,
+          "generateDelegateMethodsPromptSupport": true,
+          "advancedGenerateAccessorsSupport": true,
+          "overrideMethodsPromptSupport": true
+        },
+        "bundles": [
+          "${serverFolder}/bundles/com.microsoft.java.debug.plugin-0.53.1.jar"
+        ]
+      }
+    }
+  ],
+  "fileTemplates": {
+    "templates": [
+      {
+        "name": "Java Class",
+        "sourceFolder": true,
+        "group": "Java Class",
+        "extension": "java",
+        "reformat": false,
+        "text": "#if($PACKAGE_NAME)package ${PACKAGE_NAME};\n\n#endpublic class ${NAME} {\n}\n"
+      },
+      {
+        "name": "Java Interface",
+        "sourceFolder": true,
+        "group": "Java Class",
+        "extension": "java",
+        "reformat": false,
+        "text": "#if($PACKAGE_NAME)package ${PACKAGE_NAME};\n\n#endpublic interface ${NAME} {\n}\n"
+      },
+      {
+        "name": "Java Enum",
+        "sourceFolder": true,
+        "group": "Java Class",
+        "extension": "java",
+        "reformat": false,
+        "text": "#if($PACKAGE_NAME)package ${PACKAGE_NAME};\n\n#endpublic enum ${NAME} {\n}\n"
+      },
+      {
+        "name": "Java Record",
+        "sourceFolder": true,
+        "group": "Java Class",
+        "extension": "java",
+        "reformat": false,
+        "text": "#if($PACKAGE_NAME)package ${PACKAGE_NAME};\n\n#endpublic record ${NAME}() {\n}\n"
+      },
+      {
+        "name": "Java Annotation",
+        "sourceFolder": true,
+        "group": "Java Class",
+        "extension": "java",
+        "reformat": false,
+        "text": "#if($PACKAGE_NAME)package ${PACKAGE_NAME};\n\n#endpublic @interface ${NAME} {\n}\n"
+      },
+      {
+        "name": "package-info.java",
+        "sourceFolder": true,
+        "extension": "java",
+        "fileName": "package-info",
+        "reformat": false,
+        "text": "/**\n * \n */\npackage ${PACKAGE_NAME};\n"
+      },
+      {
+        "name": "module-info.java",
+        "sourceFolder": true,
+        "extension": "java",
+        "fileName": "module-info",
+        "reformat": false,
+        "text": "module ${MODULE_NAME} {\n}\n"
+      }
+    ]
+  },
+  "codeStyles": [
+    {
+      "language": "java",
+      "title": {
+        "en": "Java",
+        "ru": "Java"
+      },
+      "preview": "package com.example.shop;\n\nimport static java.util.Objects.requireNonNull;\n\nimport java.util.ArrayList;\nimport java.util.List;\n\nimport org.example.money.Price;\n\npublic class Basket implements Iterable<Item>, AutoCloseable {\n    private static final int LIMIT = 10;\n    private final List<Item> items = new ArrayList<>();\n\n    public Basket(Item first) {\n        add(requireNonNull(first));\n    }\n\n    public void add(Item item) {\n        if (items.size() >= LIMIT && !item.isFree()) {\n            throw new IllegalStateException(\"The basket is full: \" + items.size() + \" items\");\n        } else {\n            items.add(item);\n        }\n    }\n\n    public Price total(int discountPercent, boolean roundToWholeUnits) throws InvalidPriceException {\n        int sum = 0;\n        for (Item item : items) {\n            sum += item.price() * (100 - discountPercent) / 100;\n        }\n        try {\n            return Price.of(sum).rounded(roundToWholeUnits).withCurrency(\"EUR\")\n                    .withNote(\"The total after the discount of \" + discountPercent + \"%\").checked();\n        } catch (IllegalArgumentException e) {\n            throw new InvalidPriceException(e);\n        } finally {\n            switch (items.size()) {\n                case 0:\n                    break;\n                default:\n                    synchronized (this) {\n                        items.trimToSize();\n                    }\n            }\n        }\n    }\n\n    @Override\n    public void close() {\n        items.clear();\n    }\n}\n",
+      "options": [
+        {
+          "id": "continuationIndent",
+          "label": {
+            "en": "Continuation indent, in indents",
+            "ru": "Отступ продолжения, в отступах"
+          },
+          "tab": "tabsAndIndents",
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 8
+          },
+          "default": 2,
+          "configKey": "org.eclipse.jdt.core.formatter.continuation_indentation",
+          "moreConfigKeys": [
+            "org.eclipse.jdt.core.formatter.continuation_indentation_for_array_initializer"
+          ]
+        },
+        {
+          "id": "indentCaseBranches",
+          "label": {
+            "en": "Indent 'case' branches",
+            "ru": "Отступ для веток case"
+          },
+          "tab": "tabsAndIndents",
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.indent_switchstatements_compare_to_switch"
+        },
+        {
+          "id": "keepIndentsOnEmptyLines",
+          "label": {
+            "en": "Keep indents on empty lines",
+            "ru": "Сохранять отступы в пустых строках"
+          },
+          "tab": "tabsAndIndents",
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "org.eclipse.jdt.core.formatter.indent_empty_lines"
+        },
+        {
+          "id": "spaceBeforeMethodDeclarationParentheses",
+          "label": {
+            "en": "Method declaration parentheses",
+            "ru": "Скобки объявления метода"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before parentheses",
+            "ru": "Перед круглыми скобками"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_method_declaration",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceBeforeMethodCallParentheses",
+          "label": {
+            "en": "Method call parentheses",
+            "ru": "Скобки вызова метода"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before parentheses",
+            "ru": "Перед круглыми скобками"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_method_invocation",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceBeforeIfParentheses",
+          "label": {
+            "en": "'if' parentheses",
+            "ru": "Скобки if"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before parentheses",
+            "ru": "Перед круглыми скобками"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_if",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceBeforeForParentheses",
+          "label": {
+            "en": "'for' parentheses",
+            "ru": "Скобки for"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before parentheses",
+            "ru": "Перед круглыми скобками"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_for",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceBeforeWhileParentheses",
+          "label": {
+            "en": "'while' parentheses",
+            "ru": "Скобки while"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before parentheses",
+            "ru": "Перед круглыми скобками"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_while",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceBeforeSwitchParentheses",
+          "label": {
+            "en": "'switch' parentheses",
+            "ru": "Скобки switch"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before parentheses",
+            "ru": "Перед круглыми скобками"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_switch",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceBeforeTryParentheses",
+          "label": {
+            "en": "'try' parentheses",
+            "ru": "Скобки try"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before parentheses",
+            "ru": "Перед круглыми скобками"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_try",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceBeforeCatchParentheses",
+          "label": {
+            "en": "'catch' parentheses",
+            "ru": "Скобки catch"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before parentheses",
+            "ru": "Перед круглыми скобками"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_catch",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceBeforeSynchronizedParentheses",
+          "label": {
+            "en": "'synchronized' parentheses",
+            "ru": "Скобки synchronized"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before parentheses",
+            "ru": "Перед круглыми скобками"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_synchronized",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceAroundAssignment",
+          "label": {
+            "en": "Assignment operators (=, +=, ...)",
+            "ru": "Операторы присваивания (=, +=, ...)"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Around operators",
+            "ru": "Вокруг операторов"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_assignment_operator",
+          "moreConfigKeys": [
+            "org.eclipse.jdt.core.formatter.insert_space_after_assignment_operator"
+          ],
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceAroundLogical",
+          "label": {
+            "en": "Logical operators (&&, ||)",
+            "ru": "Логические операторы (&&, ||)"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Around operators",
+            "ru": "Вокруг операторов"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_logical_operator",
+          "moreConfigKeys": [
+            "org.eclipse.jdt.core.formatter.insert_space_after_logical_operator"
+          ],
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceAroundRelational",
+          "label": {
+            "en": "Equality and relational operators (==, <, ...)",
+            "ru": "Операторы сравнения (==, <, ...)"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Around operators",
+            "ru": "Вокруг операторов"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_relational_operator",
+          "moreConfigKeys": [
+            "org.eclipse.jdt.core.formatter.insert_space_after_relational_operator"
+          ],
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceAroundBitwise",
+          "label": {
+            "en": "Bitwise operators (&, |, ^)",
+            "ru": "Побитовые операторы (&, |, ^)"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Around operators",
+            "ru": "Вокруг операторов"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_bitwise_operator",
+          "moreConfigKeys": [
+            "org.eclipse.jdt.core.formatter.insert_space_after_bitwise_operator"
+          ],
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceAroundAdditive",
+          "label": {
+            "en": "Additive operators (+, -)",
+            "ru": "Аддитивные операторы (+, -)"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Around operators",
+            "ru": "Вокруг операторов"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_additive_operator",
+          "moreConfigKeys": [
+            "org.eclipse.jdt.core.formatter.insert_space_after_additive_operator",
+            "org.eclipse.jdt.core.formatter.insert_space_before_string_concatenation",
+            "org.eclipse.jdt.core.formatter.insert_space_after_string_concatenation"
+          ],
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceAroundMultiplicative",
+          "label": {
+            "en": "Multiplicative operators (*, /, %)",
+            "ru": "Мультипликативные операторы (*, /, %)"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Around operators",
+            "ru": "Вокруг операторов"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_multiplicative_operator",
+          "moreConfigKeys": [
+            "org.eclipse.jdt.core.formatter.insert_space_after_multiplicative_operator"
+          ],
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceAroundShift",
+          "label": {
+            "en": "Shift operators (<<, >>, >>>)",
+            "ru": "Операторы сдвига (<<, >>, >>>)"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Around operators",
+            "ru": "Вокруг операторов"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_shift_operator",
+          "moreConfigKeys": [
+            "org.eclipse.jdt.core.formatter.insert_space_after_shift_operator"
+          ],
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceBeforeClassBrace",
+          "label": {
+            "en": "Class left brace",
+            "ru": "Фигурная скобка класса"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before left brace",
+            "ru": "Перед открывающей фигурной скобкой"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_type_declaration",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceBeforeMethodBrace",
+          "label": {
+            "en": "Method left brace",
+            "ru": "Фигурная скобка метода"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before left brace",
+            "ru": "Перед открывающей фигурной скобкой"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_method_declaration",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceBeforeBlockBrace",
+          "label": {
+            "en": "Other left braces",
+            "ru": "Остальные фигурные скобки"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Before left brace",
+            "ru": "Перед открывающей фигурной скобкой"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_before_opening_brace_in_block",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceAfterComma",
+          "label": {
+            "en": "After comma",
+            "ru": "После запятой"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Other",
+            "ru": "Прочее"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_after_comma_in_method_invocation_arguments",
+          "moreConfigKeys": [
+            "org.eclipse.jdt.core.formatter.insert_space_after_comma_in_method_declaration_parameters"
+          ],
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "spaceWithinMethodCallParentheses",
+          "label": {
+            "en": "Within method call parentheses",
+            "ru": "Внутри скобок вызова метода"
+          },
+          "tab": "spaces",
+          "group": {
+            "en": "Other",
+            "ru": "Прочее"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_space_after_opening_paren_in_method_invocation",
+          "moreConfigKeys": [
+            "org.eclipse.jdt.core.formatter.insert_space_before_closing_paren_in_method_invocation"
+          ],
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "lineLength",
+          "label": {
+            "en": "Hard wrap at",
+            "ru": "Жёсткий перенос на"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Hard wrap",
+            "ru": "Жёсткий перенос"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 40,
+            "max": 1000
+          },
+          "default": 120,
+          "configKey": "org.eclipse.jdt.core.formatter.lineSplit"
+        },
+        {
+          "id": "commentLineLength",
+          "label": {
+            "en": "Comment line length",
+            "ru": "Длина строки комментария"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Hard wrap",
+            "ru": "Жёсткий перенос"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 40,
+            "max": 1000
+          },
+          "default": 80,
+          "configKey": "org.eclipse.jdt.core.formatter.comment.line_length"
+        },
+        {
+          "id": "joinWrappedLines",
+          "label": {
+            "en": "Join already wrapped lines",
+            "ru": "Объединять уже перенесённые строки"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Hard wrap",
+            "ru": "Жёсткий перенос"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": true,
+          "configKey": "org.eclipse.jdt.core.formatter.join_wrapped_lines"
+        },
+        {
+          "id": "bracesClass",
+          "label": {
+            "en": "In class declaration",
+            "ru": "В объявлении класса"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Braces placement",
+            "ru": "Расстановка фигурных скобок"
+          },
+          "kind": {
+            "type": "choice",
+            "choices": [
+              {
+                "value": "end_of_line",
+                "label": {
+                  "en": "End of line",
+                  "ru": "В конце строки"
+                }
+              },
+              {
+                "value": "next_line",
+                "label": {
+                  "en": "Next line",
+                  "ru": "На следующей строке"
+                }
+              },
+              {
+                "value": "next_line_shifted",
+                "label": {
+                  "en": "Next line shifted",
+                  "ru": "На следующей строке со сдвигом"
+                }
+              },
+              {
+                "value": "next_line_on_wrap",
+                "label": {
+                  "en": "Next line if wrapped",
+                  "ru": "На следующей строке, если перенесено"
+                }
+              }
+            ]
+          },
+          "default": "end_of_line",
+          "configKey": "org.eclipse.jdt.core.formatter.brace_position_for_type_declaration",
+          "moreConfigKeys": [
+            "org.eclipse.jdt.core.formatter.brace_position_for_enum_declaration",
+            "org.eclipse.jdt.core.formatter.brace_position_for_record_declaration",
+            "org.eclipse.jdt.core.formatter.brace_position_for_annotation_type_declaration",
+            "org.eclipse.jdt.core.formatter.brace_position_for_anonymous_type_declaration"
+          ]
+        },
+        {
+          "id": "bracesMethod",
+          "label": {
+            "en": "In method declaration",
+            "ru": "В объявлении метода"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Braces placement",
+            "ru": "Расстановка фигурных скобок"
+          },
+          "kind": {
+            "type": "choice",
+            "choices": [
+              {
+                "value": "end_of_line",
+                "label": {
+                  "en": "End of line",
+                  "ru": "В конце строки"
+                }
+              },
+              {
+                "value": "next_line",
+                "label": {
+                  "en": "Next line",
+                  "ru": "На следующей строке"
+                }
+              },
+              {
+                "value": "next_line_shifted",
+                "label": {
+                  "en": "Next line shifted",
+                  "ru": "На следующей строке со сдвигом"
+                }
+              },
+              {
+                "value": "next_line_on_wrap",
+                "label": {
+                  "en": "Next line if wrapped",
+                  "ru": "На следующей строке, если перенесено"
+                }
+              }
+            ]
+          },
+          "default": "end_of_line",
+          "configKey": "org.eclipse.jdt.core.formatter.brace_position_for_method_declaration",
+          "moreConfigKeys": [
+            "org.eclipse.jdt.core.formatter.brace_position_for_constructor_declaration",
+            "org.eclipse.jdt.core.formatter.brace_position_for_record_constructor"
+          ]
+        },
+        {
+          "id": "bracesOther",
+          "label": {
+            "en": "Other",
+            "ru": "Остальные"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Braces placement",
+            "ru": "Расстановка фигурных скобок"
+          },
+          "kind": {
+            "type": "choice",
+            "choices": [
+              {
+                "value": "end_of_line",
+                "label": {
+                  "en": "End of line",
+                  "ru": "В конце строки"
+                }
+              },
+              {
+                "value": "next_line",
+                "label": {
+                  "en": "Next line",
+                  "ru": "На следующей строке"
+                }
+              },
+              {
+                "value": "next_line_shifted",
+                "label": {
+                  "en": "Next line shifted",
+                  "ru": "На следующей строке со сдвигом"
+                }
+              },
+              {
+                "value": "next_line_on_wrap",
+                "label": {
+                  "en": "Next line if wrapped",
+                  "ru": "На следующей строке, если перенесено"
+                }
+              }
+            ]
+          },
+          "default": "end_of_line",
+          "configKey": "org.eclipse.jdt.core.formatter.brace_position_for_block",
+          "moreConfigKeys": [
+            "org.eclipse.jdt.core.formatter.brace_position_for_block_in_case",
+            "org.eclipse.jdt.core.formatter.brace_position_for_switch",
+            "org.eclipse.jdt.core.formatter.brace_position_for_lambda_body",
+            "org.eclipse.jdt.core.formatter.brace_position_for_array_initializer",
+            "org.eclipse.jdt.core.formatter.brace_position_for_enum_constant"
+          ]
+        },
+        {
+          "id": "wrapMethodParameters",
+          "label": {
+            "en": "Method declaration parameters",
+            "ru": "Параметры объявления метода"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Wrapping",
+            "ru": "Перенос"
+          },
+          "kind": {
+            "type": "choice",
+            "choices": [
+              {
+                "value": "0",
+                "label": {
+                  "en": "Do not wrap",
+                  "ru": "Не переносить"
+                }
+              },
+              {
+                "value": "16",
+                "label": {
+                  "en": "Wrap if long",
+                  "ru": "Переносить, если длинно"
+                }
+              },
+              {
+                "value": "48",
+                "label": {
+                  "en": "Chop down if long",
+                  "ru": "Разбивать по одному, если длинно"
+                }
+              },
+              {
+                "value": "49",
+                "label": {
+                  "en": "Wrap always",
+                  "ru": "Переносить всегда"
+                }
+              }
+            ]
+          },
+          "default": "16",
+          "configKey": "org.eclipse.jdt.core.formatter.alignment_for_parameters_in_method_declaration"
+        },
+        {
+          "id": "wrapMethodArguments",
+          "label": {
+            "en": "Method call arguments",
+            "ru": "Аргументы вызова метода"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Wrapping",
+            "ru": "Перенос"
+          },
+          "kind": {
+            "type": "choice",
+            "choices": [
+              {
+                "value": "0",
+                "label": {
+                  "en": "Do not wrap",
+                  "ru": "Не переносить"
+                }
+              },
+              {
+                "value": "16",
+                "label": {
+                  "en": "Wrap if long",
+                  "ru": "Переносить, если длинно"
+                }
+              },
+              {
+                "value": "48",
+                "label": {
+                  "en": "Chop down if long",
+                  "ru": "Разбивать по одному, если длинно"
+                }
+              },
+              {
+                "value": "49",
+                "label": {
+                  "en": "Wrap always",
+                  "ru": "Переносить всегда"
+                }
+              }
+            ]
+          },
+          "default": "16",
+          "configKey": "org.eclipse.jdt.core.formatter.alignment_for_arguments_in_method_invocation"
+        },
+        {
+          "id": "wrapChainedCalls",
+          "label": {
+            "en": "Chained method calls",
+            "ru": "Цепочки вызовов"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Wrapping",
+            "ru": "Перенос"
+          },
+          "kind": {
+            "type": "choice",
+            "choices": [
+              {
+                "value": "0",
+                "label": {
+                  "en": "Do not wrap",
+                  "ru": "Не переносить"
+                }
+              },
+              {
+                "value": "16",
+                "label": {
+                  "en": "Wrap if long",
+                  "ru": "Переносить, если длинно"
+                }
+              },
+              {
+                "value": "48",
+                "label": {
+                  "en": "Chop down if long",
+                  "ru": "Разбивать по одному, если длинно"
+                }
+              },
+              {
+                "value": "49",
+                "label": {
+                  "en": "Wrap always",
+                  "ru": "Переносить всегда"
+                }
+              }
+            ]
+          },
+          "default": "16",
+          "configKey": "org.eclipse.jdt.core.formatter.alignment_for_selector_in_method_invocation"
+        },
+        {
+          "id": "wrapExtendsList",
+          "label": {
+            "en": "'extends' and 'implements' lists",
+            "ru": "Списки extends и implements"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Wrapping",
+            "ru": "Перенос"
+          },
+          "kind": {
+            "type": "choice",
+            "choices": [
+              {
+                "value": "0",
+                "label": {
+                  "en": "Do not wrap",
+                  "ru": "Не переносить"
+                }
+              },
+              {
+                "value": "16",
+                "label": {
+                  "en": "Wrap if long",
+                  "ru": "Переносить, если длинно"
+                }
+              },
+              {
+                "value": "48",
+                "label": {
+                  "en": "Chop down if long",
+                  "ru": "Разбивать по одному, если длинно"
+                }
+              },
+              {
+                "value": "49",
+                "label": {
+                  "en": "Wrap always",
+                  "ru": "Переносить всегда"
+                }
+              }
+            ]
+          },
+          "default": "16",
+          "configKey": "org.eclipse.jdt.core.formatter.alignment_for_superinterfaces_in_type_declaration"
+        },
+        {
+          "id": "wrapThrowsList",
+          "label": {
+            "en": "'throws' list",
+            "ru": "Список throws"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Wrapping",
+            "ru": "Перенос"
+          },
+          "kind": {
+            "type": "choice",
+            "choices": [
+              {
+                "value": "0",
+                "label": {
+                  "en": "Do not wrap",
+                  "ru": "Не переносить"
+                }
+              },
+              {
+                "value": "16",
+                "label": {
+                  "en": "Wrap if long",
+                  "ru": "Переносить, если длинно"
+                }
+              },
+              {
+                "value": "48",
+                "label": {
+                  "en": "Chop down if long",
+                  "ru": "Разбивать по одному, если длинно"
+                }
+              },
+              {
+                "value": "49",
+                "label": {
+                  "en": "Wrap always",
+                  "ru": "Переносить всегда"
+                }
+              }
+            ]
+          },
+          "default": "16",
+          "configKey": "org.eclipse.jdt.core.formatter.alignment_for_throws_clause_in_method_declaration"
+        },
+        {
+          "id": "wrapBinaryOperations",
+          "label": {
+            "en": "Binary expressions",
+            "ru": "Бинарные выражения"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Wrapping",
+            "ru": "Перенос"
+          },
+          "kind": {
+            "type": "choice",
+            "choices": [
+              {
+                "value": "0",
+                "label": {
+                  "en": "Do not wrap",
+                  "ru": "Не переносить"
+                }
+              },
+              {
+                "value": "16",
+                "label": {
+                  "en": "Wrap if long",
+                  "ru": "Переносить, если длинно"
+                }
+              },
+              {
+                "value": "48",
+                "label": {
+                  "en": "Chop down if long",
+                  "ru": "Разбивать по одному, если длинно"
+                }
+              },
+              {
+                "value": "49",
+                "label": {
+                  "en": "Wrap always",
+                  "ru": "Переносить всегда"
+                }
+              }
+            ]
+          },
+          "default": "16",
+          "configKey": "org.eclipse.jdt.core.formatter.alignment_for_additive_operator",
+          "moreConfigKeys": [
+            "org.eclipse.jdt.core.formatter.alignment_for_logical_operator",
+            "org.eclipse.jdt.core.formatter.alignment_for_multiplicative_operator",
+            "org.eclipse.jdt.core.formatter.alignment_for_relational_operator",
+            "org.eclipse.jdt.core.formatter.alignment_for_string_concatenation"
+          ]
+        },
+        {
+          "id": "wrapEnumConstants",
+          "label": {
+            "en": "Enum constants",
+            "ru": "Константы перечисления"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "Wrapping",
+            "ru": "Перенос"
+          },
+          "kind": {
+            "type": "choice",
+            "choices": [
+              {
+                "value": "0",
+                "label": {
+                  "en": "Do not wrap",
+                  "ru": "Не переносить"
+                }
+              },
+              {
+                "value": "16",
+                "label": {
+                  "en": "Wrap if long",
+                  "ru": "Переносить, если длинно"
+                }
+              },
+              {
+                "value": "48",
+                "label": {
+                  "en": "Chop down if long",
+                  "ru": "Разбивать по одному, если длинно"
+                }
+              },
+              {
+                "value": "49",
+                "label": {
+                  "en": "Wrap always",
+                  "ru": "Переносить всегда"
+                }
+              }
+            ]
+          },
+          "default": "16",
+          "configKey": "org.eclipse.jdt.core.formatter.alignment_for_enum_constants"
+        },
+        {
+          "id": "elseOnNewLine",
+          "label": {
+            "en": "'else' on new line",
+            "ru": "else на новой строке"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "New lines",
+            "ru": "Новые строки"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_new_line_before_else_in_if_statement",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "catchOnNewLine",
+          "label": {
+            "en": "'catch' on new line",
+            "ru": "catch на новой строке"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "New lines",
+            "ru": "Новые строки"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_new_line_before_catch_in_try_statement",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "finallyOnNewLine",
+          "label": {
+            "en": "'finally' on new line",
+            "ru": "finally на новой строке"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "New lines",
+            "ru": "Новые строки"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_new_line_before_finally_in_try_statement",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "whileOnNewLine",
+          "label": {
+            "en": "'while' of do-while on new line",
+            "ru": "while цикла do-while на новой строке"
+          },
+          "tab": "wrappingAndBraces",
+          "group": {
+            "en": "New lines",
+            "ru": "Новые строки"
+          },
+          "kind": {
+            "type": "boolean"
+          },
+          "default": false,
+          "configKey": "org.eclipse.jdt.core.formatter.insert_new_line_before_while_in_do_statement",
+          "configValues": {
+            "true": "insert",
+            "false": "do not insert"
+          }
+        },
+        {
+          "id": "keepBlankLines",
+          "label": {
+            "en": "In code",
+            "ru": "В коде"
+          },
+          "tab": "blankLines",
+          "group": {
+            "en": "Keep maximum blank lines",
+            "ru": "Сохранять не больше пустых строк"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 99
+          },
+          "default": 1,
+          "configKey": "org.eclipse.jdt.core.formatter.number_of_empty_lines_to_preserve"
+        },
+        {
+          "id": "blankLinesBeforePackage",
+          "label": {
+            "en": "Before package statement",
+            "ru": "Перед объявлением пакета"
+          },
+          "tab": "blankLines",
+          "group": {
+            "en": "Minimum blank lines",
+            "ru": "Не меньше пустых строк"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 99
+          },
+          "default": 0,
+          "configKey": "org.eclipse.jdt.core.formatter.blank_lines_before_package"
+        },
+        {
+          "id": "blankLinesAfterPackage",
+          "label": {
+            "en": "After package statement",
+            "ru": "После объявления пакета"
+          },
+          "tab": "blankLines",
+          "group": {
+            "en": "Minimum blank lines",
+            "ru": "Не меньше пустых строк"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 99
+          },
+          "default": 1,
+          "configKey": "org.eclipse.jdt.core.formatter.blank_lines_after_package"
+        },
+        {
+          "id": "blankLinesBeforeImports",
+          "label": {
+            "en": "Before imports",
+            "ru": "Перед импортами"
+          },
+          "tab": "blankLines",
+          "group": {
+            "en": "Minimum blank lines",
+            "ru": "Не меньше пустых строк"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 99
+          },
+          "default": 1,
+          "configKey": "org.eclipse.jdt.core.formatter.blank_lines_before_imports"
+        },
+        {
+          "id": "blankLinesAfterImports",
+          "label": {
+            "en": "After imports",
+            "ru": "После импортов"
+          },
+          "tab": "blankLines",
+          "group": {
+            "en": "Minimum blank lines",
+            "ru": "Не меньше пустых строк"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 99
+          },
+          "default": 1,
+          "configKey": "org.eclipse.jdt.core.formatter.blank_lines_after_imports"
+        },
+        {
+          "id": "blankLinesAroundClass",
+          "label": {
+            "en": "Around class",
+            "ru": "Вокруг класса"
+          },
+          "tab": "blankLines",
+          "group": {
+            "en": "Minimum blank lines",
+            "ru": "Не меньше пустых строк"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 99
+          },
+          "default": 1,
+          "configKey": "org.eclipse.jdt.core.formatter.blank_lines_between_type_declarations"
+        },
+        {
+          "id": "blankLinesBeforeFirstDeclaration",
+          "label": {
+            "en": "Before the first declaration in a class",
+            "ru": "Перед первым объявлением в классе"
+          },
+          "tab": "blankLines",
+          "group": {
+            "en": "Minimum blank lines",
+            "ru": "Не меньше пустых строк"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 99
+          },
+          "default": 0,
+          "configKey": "org.eclipse.jdt.core.formatter.blank_lines_before_first_class_body_declaration"
+        },
+        {
+          "id": "blankLinesBeforeField",
+          "label": {
+            "en": "Before field",
+            "ru": "Перед полем"
+          },
+          "tab": "blankLines",
+          "group": {
+            "en": "Minimum blank lines",
+            "ru": "Не меньше пустых строк"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 99
+          },
+          "default": 0,
+          "configKey": "org.eclipse.jdt.core.formatter.blank_lines_before_field"
+        },
+        {
+          "id": "blankLinesBeforeMethod",
+          "label": {
+            "en": "Before method",
+            "ru": "Перед методом"
+          },
+          "tab": "blankLines",
+          "group": {
+            "en": "Minimum blank lines",
+            "ru": "Не меньше пустых строк"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 99
+          },
+          "default": 1,
+          "configKey": "org.eclipse.jdt.core.formatter.blank_lines_before_method"
+        },
+        {
+          "id": "blankLinesBeforeMemberType",
+          "label": {
+            "en": "Before nested class",
+            "ru": "Перед вложенным классом"
+          },
+          "tab": "blankLines",
+          "group": {
+            "en": "Minimum blank lines",
+            "ru": "Не меньше пустых строк"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 99
+          },
+          "default": 1,
+          "configKey": "org.eclipse.jdt.core.formatter.blank_lines_before_member_type"
+        },
+        {
+          "id": "importOrder",
+          "label": {
+            "en": "Import order, groups separated by ';' (# for static imports, an empty group for all others)",
+            "ru": "Порядок импортов, группы через «;» (# — статические импорты, пустая группа — все остальные)"
+          },
+          "tab": "imports",
+          "group": {
+            "en": "Import layout",
+            "ru": "Порядок импортов"
+          },
+          "kind": {
+            "type": "text"
+          },
+          "default": "#;java;javax;org;com;",
+          "serverSetting": {
+            "section": "java",
+            "path": "completion.importOrder",
+            "separator": ";"
+          }
+        },
+        {
+          "id": "blankLinesBetweenImportGroups",
+          "label": {
+            "en": "Blank lines between import groups",
+            "ru": "Пустых строк между группами импортов"
+          },
+          "tab": "imports",
+          "group": {
+            "en": "Import layout",
+            "ru": "Порядок импортов"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 0,
+            "max": 99
+          },
+          "default": 1,
+          "configKey": "org.eclipse.jdt.core.formatter.blank_lines_between_import_groups"
+        },
+        {
+          "id": "classCountToUseStar",
+          "label": {
+            "en": "Class count to use import with '*'",
+            "ru": "Число классов для импорта со «*»"
+          },
+          "tab": "imports",
+          "group": {
+            "en": "Star imports",
+            "ru": "Импорты со звёздочкой"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 1,
+            "max": 999
+          },
+          "default": 99,
+          "serverSetting": {
+            "section": "java",
+            "path": "sources.organizeImports.starThreshold"
+          }
+        },
+        {
+          "id": "staticCountToUseStar",
+          "label": {
+            "en": "Names count to use static import with '*'",
+            "ru": "Число имён для статического импорта со «*»"
+          },
+          "tab": "imports",
+          "group": {
+            "en": "Star imports",
+            "ru": "Импорты со звёздочкой"
+          },
+          "kind": {
+            "type": "integer",
+            "min": 1,
+            "max": 999
+          },
+          "default": 99,
+          "serverSetting": {
+            "section": "java",
+            "path": "sources.organizeImports.staticStarThreshold"
+          }
+        }
+      ],
+      "notes": {
+        "imports": {
+          "en": "The import order and the star thresholds apply when imports are added and when Optimize Imports runs.",
+          "ru": "Порядок импортов и пороги «*» действуют, когда импорты добавляются и когда работает «Оптимизировать импорты»."
+        },
+        "arrangement": {
+          "en": "Rearrange Code leaves Java code as it is: Java has no arrangement rules yet.",
+          "ru": "«Переупорядочить код» не меняет порядок кода на Java: правил упорядочивания для Java пока нет."
+        },
+        "tabsAndIndents": {
+          "en": "The Eclipse JDT Language Server formats Java with the Eclipse formatter: changed values go into a formatter profile, kept in the IDE's folder with the Default (IDE) scheme and in the project's .zen/java-formatter.xml with the Project scheme.",
+          "ru": "Eclipse JDT Language Server форматирует Java форматировщиком Eclipse: изменённые значения записываются в профиль форматировщика — в папке IDE со схемой «По умолчанию (IDE)» и в файле проекта .zen/java-formatter.xml со схемой «Проект»."
+        }
+      },
+      "configFile": {
+        "names": [
+          ".zen/java-formatter.xml"
+        ],
+        "format": "eclipseProfile",
+        "location": {
+          "section": "java",
+          "path": "format.settings.url"
+        }
+      }
+    }
+  ],
+  "projectGenerators": [
+    {
+      "id": "java",
+      "name": "Java",
+      "icon": "Main.java",
+      "language": true,
+      "fields": [
+        {
+          "id": "build",
+          "label": {
+            "en": "Build system:",
+            "ru": "Система сборки:"
+          },
+          "type": "choice",
+          "segmented": true,
+          "default": "maven",
+          "options": [
+            {
+              "value": "ide",
+              "label": "IDE"
+            },
+            {
+              "value": "maven",
+              "label": "Maven"
+            },
+            {
+              "value": "gradle",
+              "label": "Gradle"
+            }
+          ]
+        },
+        {
+          "id": "dsl",
+          "label": {
+            "en": "Gradle DSL:",
+            "ru": "DSL Gradle:"
+          },
+          "type": "choice",
+          "segmented": true,
+          "default": "groovy",
+          "options": [
+            {
+              "value": "groovy",
+              "label": "Groovy"
+            },
+            {
+              "value": "kotlin",
+              "label": "Kotlin"
+            }
+          ],
+          "visibleWhen": {
+            "field": "build",
+            "anyOf": [
+              "gradle"
+            ]
+          }
+        },
+        {
+          "id": "jdk",
+          "label": "JDK:",
+          "type": "jdk",
+          "required": true
+        },
+        {
+          "id": "sample",
+          "label": {
+            "en": "Add sample code",
+            "ru": "Добавить пример кода"
+          },
+          "type": "check",
+          "default": true
+        },
+        {
+          "id": "group",
+          "label": {
+            "en": "GroupId:",
+            "ru": "GroupId:"
+          },
+          "type": "text",
+          "default": "org.example",
+          "required": true,
+          "advanced": true,
+          "visibleWhen": {
+            "field": "build",
+            "anyOf": [
+              "maven",
+              "gradle"
+            ]
+          }
+        },
+        {
+          "id": "artifact",
+          "label": {
+            "en": "ArtifactId:",
+            "ru": "ArtifactId:"
+          },
+          "type": "text",
+          "default": "${name}",
+          "required": true,
+          "advanced": true,
+          "visibleWhen": {
+            "field": "build",
+            "anyOf": [
+              "maven",
+              "gradle"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

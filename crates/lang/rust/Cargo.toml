@@ -1,0 +1,29 @@
+[package]
+name = "zen-lang-rust"
+description = "The Rust plug-in of Zen IDE, a built-in module: highlighting, the Cargo project model, rust-analyzer, the Rust toolchain and its settings."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+schemars.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+zen-core.workspace = true
+zen-i18n.workspace = true
+zen-lsp.workspace = true
+zen-modules.workspace = true
+zen-project.workspace = true
+zen-run.workspace = true
+zen-syntax.workspace = true
+
+[dev-dependencies]
+# Each test thread has its own interface language (zen-i18n's docs).
+zen-i18n = { workspace = true, features = ["thread-languages"] }
+tempfile.workspace = true
+zen-editor.workspace = true
+
+[lints]
+workspace = true

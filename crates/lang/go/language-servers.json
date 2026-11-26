@@ -1,0 +1,80 @@
+[
+  {
+    "id": "gopls",
+    "name": "gopls",
+    "languages": ["go"],
+    "extensions": ["go"],
+    "watches": ["go.mod", "go.sum", "go.work", "go.work.sum"],
+    "command": "gopls",
+    "args": [],
+    "versionArgs": ["version"],
+    "install": {
+      "kind": "go",
+      "package": "golang.org/x/tools/gopls@latest"
+    },
+    "initializationOptions": { "semanticTokens": true },
+    "inlayHints": {
+      "section": "gopls",
+      "kinds": {
+        "parameterNames": ["hints.parameterNames"],
+        "fieldNames": ["hints.compositeLiteralFields"],
+        "variableTypes": ["hints.assignVariableTypes", "hints.rangeVariableTypes"],
+        "literalTypes": ["hints.compositeLiteralTypes"],
+        "typeArguments": ["hints.functionTypeParameters"],
+        "constantValues": ["hints.constantValues"]
+      }
+    },
+    "powerSave": {
+      "section": "gopls",
+      "settings": { "diagnosticsTrigger": "Save" }
+    },
+    "generate": { "kinds": ["source.addTest"] },
+    "diagnosticsSettleMs": 2000,
+    "inspectionSettings": { "section": "gopls", "path": "analyses" },
+    "suppression": {
+      "separator": ",",
+      "statement": { "text": "//nolint:{id}", "lineEnd": true },
+      "function": { "text": "//nolint:{id}" },
+      "file": { "text": "//nolint:{id}", "before": "package " }
+    },
+    "inspections": [
+      {"id": "appends", "description": {"en": "Calls of append with no value to add.", "ru": "Вызовы append без добавляемых значений."}},
+      {"id": "assign", "description": {"en": "Assignments of a variable to itself.", "ru": "Присваивания переменной самой себе."}},
+      {"id": "atomic", "description": {"en": "Assigning the result of a sync/atomic call back to its own variable.", "ru": "Присваивание результата вызова sync/atomic той же переменной."}},
+      {"id": "bools", "description": {"en": "Boolean operators with an operand repeated or a result always the same.", "ru": "Логические выражения с повторённым операндом или постоянным результатом."}},
+      {"id": "composites", "description": {"en": "Struct literals of imported types with unnamed fields.", "ru": "Литералы структур импортированных типов без имён полей."}},
+      {"id": "copylocks", "description": {"en": "Locks copied by value.", "ru": "Блокировки, скопированные по значению."}},
+      {"id": "deepequalerrors", "description": {"en": "reflect.DeepEqual used to compare errors.", "ru": "Сравнение ошибок через reflect.DeepEqual."}},
+      {"id": "defers", "description": {"en": "Deferred calls whose arguments are evaluated too early, such as time.Since.", "ru": "Отложенные вызовы, аргументы которых вычисляются слишком рано, например time.Since."}},
+      {"id": "deprecated", "description": {"en": "Uses of deprecated declarations.", "ru": "Использование устаревших объявлений."}},
+      {"id": "errorsas", "description": {"en": "Second argument of errors.As that is not a pointer to an error type.", "ru": "Второй аргумент errors.As не является указателем на тип ошибки."}},
+      {"id": "fillreturns", "description": {"en": "Return statements with the wrong number of values.", "ru": "Операторы return с неверным числом значений."}},
+      {"id": "httpresponse", "description": {"en": "An HTTP response used before its error is checked.", "ru": "Использование HTTP-ответа до проверки ошибки."}},
+      {"id": "ifaceassert", "description": {"en": "Impossible interface-to-interface type assertions.", "ru": "Невозможные приведения одного интерфейса к другому."}},
+      {"id": "infertypeargs", "description": {"en": "Type arguments that can be inferred and left out.", "ru": "Аргументы типа, которые можно вывести и не писать."}, "cleanup": true},
+      {"id": "loopclosure", "description": {"en": "Loop variables captured by closures that outlive the iteration.", "ru": "Переменные цикла, захваченные замыканиями, которые переживают итерацию."}},
+      {"id": "lostcancel", "description": {"en": "A cancel function from context.WithCancel that is never called.", "ru": "Функция отмены из context.WithCancel, которая не вызывается."}},
+      {"id": "nilfunc", "description": {"en": "Comparisons of a function with nil.", "ru": "Сравнение функции с nil."}},
+      {"id": "nilness", "description": {"en": "Nil dereferences and redundant nil checks.", "ru": "Разыменование nil и лишние проверки на nil."}},
+      {"id": "nonewvars", "description": {"en": "Short variable declarations with no new variables.", "ru": "Короткие объявления без новых переменных."}},
+      {"id": "printf", "description": {"en": "Format strings that do not match their arguments.", "ru": "Строки формата, не соответствующие аргументам."}},
+      {"id": "shadow", "description": {"en": "Variables that shadow another one and may be meant to be the same.", "ru": "Переменные, скрывающие другую переменную, возможно, по ошибке."}, "off": true},
+      {"id": "shift", "description": {"en": "Shifts as wide as the integer or wider.", "ru": "Сдвиги на ширину целого числа или больше."}},
+      {"id": "simplifycompositelit", "description": {"en": "Composite literals that can be written shorter.", "ru": "Составные литералы, которые можно записать короче."}, "cleanup": true},
+      {"id": "simplifyrange", "description": {"en": "Range loops that can be written shorter.", "ru": "Циклы range, которые можно записать короче."}, "cleanup": true},
+      {"id": "simplifyslice", "description": {"en": "Slice expressions that can be written shorter.", "ru": "Выражения срезов, которые можно записать короче."}, "cleanup": true},
+      {"id": "stdmethods", "description": {"en": "Methods named as well-known interfaces' methods but with another signature.", "ru": "Методы с именами методов известных интерфейсов, но с другой сигнатурой."}},
+      {"id": "stringintconv", "description": {"en": "Conversions of an integer to a string with string(x).", "ru": "Преобразование целого числа в строку через string(x)."}},
+      {"id": "structtag", "description": {"en": "Struct tags that do not follow the convention.", "ru": "Теги структур, не соответствующие соглашению."}},
+      {"id": "tests", "description": {"en": "Test, benchmark and example functions with mistakes in their names or signatures.", "ru": "Ошибки в именах и сигнатурах функций тестов, бенчмарков и примеров."}},
+      {"id": "unmarshal", "description": {"en": "Non-pointer values passed to Unmarshal and Decode.", "ru": "Значения не по указателю в Unmarshal и Decode."}},
+      {"id": "unreachable", "description": {"en": "Code that can never run.", "ru": "Код, который никогда не выполнится."}},
+      {"id": "unusedfunc", "description": {"en": "Functions and methods nothing uses.", "ru": "Функции и методы, которые нигде не используются."}},
+      {"id": "unusedparams", "description": {"en": "Function parameters nothing uses.", "ru": "Параметры функций, которые нигде не используются."}},
+      {"id": "unusedresult", "description": {"en": "Ignored results of functions such as fmt.Sprintf.", "ru": "Игнорируемые результаты функций вроде fmt.Sprintf."}},
+      {"id": "unusedvariable", "description": {"en": "Variables declared and not used.", "ru": "Объявленные и неиспользуемые переменные."}},
+      {"id": "unusedwrite", "description": {"en": "Writes to a struct field that nothing reads.", "ru": "Записи в поле структуры, которое никто не читает."}},
+      {"id": "waitgroup", "description": {"en": "sync.WaitGroup.Add called inside the goroutine.", "ru": "Вызов sync.WaitGroup.Add внутри горутины."}}
+    ]
+  }
+]

@@ -1,0 +1,131 @@
+{
+  "name": "SvelteKit",
+  "description": "SvelteKit projects: offered when a project depends on @sveltejs/kit, installed with the Svelte plug-in whose language server serves it; the run configurations vite dev, build and preview, svelte-kit sync offered while .svelte-kit/ is missing, and templates for the route files (+page, +layout, +server, +error) and hooks.server.ts.",
+  "extensions": [],
+  "requires": [
+    "svelte"
+  ],
+  "project": {
+    "markers": {
+      "packages": [
+        "@sveltejs/kit"
+      ]
+    },
+    "runConfigurations": [
+      {
+        "name": "vite dev",
+        "kind": "npm",
+        "options": {
+          "command": "exec",
+          "script": "vite"
+        },
+        "common": {
+          "programArguments": "dev"
+        }
+      },
+      {
+        "name": "vite build",
+        "kind": "npm",
+        "options": {
+          "command": "exec",
+          "script": "vite"
+        },
+        "common": {
+          "programArguments": "build"
+        }
+      },
+      {
+        "name": "vite preview",
+        "kind": "npm",
+        "options": {
+          "command": "exec",
+          "script": "vite"
+        },
+        "common": {
+          "programArguments": "preview"
+        }
+      }
+    ],
+    "setup": {
+      "creates": ".svelte-kit",
+      "configuration": {
+        "name": "svelte-kit sync",
+        "kind": "npm",
+        "options": {
+          "command": "exec",
+          "script": "svelte-kit"
+        },
+        "common": {
+          "programArguments": "sync"
+        }
+      }
+    }
+  },
+  "fileTemplates": {
+    "templates": [
+      {
+        "name": "SvelteKit Page",
+        "extension": "svelte",
+        "fileName": "+page",
+        "reformat": false,
+        "text": "#[[<script lang=\"ts\">\n  import type { PageProps } from './$types'\n\n  let { data }: PageProps = $props()\n</script>\n\n<h1>Page</h1>\n]]#"
+      },
+      {
+        "name": "SvelteKit Layout",
+        "extension": "svelte",
+        "fileName": "+layout",
+        "reformat": false,
+        "text": "#[[<script lang=\"ts\">\n  import type { LayoutProps } from './$types'\n\n  let { children }: LayoutProps = $props()\n</script>\n\n{@render children()}\n]]#"
+      },
+      {
+        "name": "SvelteKit Page Load",
+        "extension": "ts",
+        "fileName": "+page",
+        "reformat": false,
+        "text": "#[[import type { PageLoad } from './$types'\n\nexport const load: PageLoad = async () => {\n  return {}\n}\n]]#"
+      },
+      {
+        "name": "SvelteKit Page Server Load",
+        "extension": "ts",
+        "fileName": "+page.server",
+        "reformat": false,
+        "text": "#[[import type { PageServerLoad } from './$types'\n\nexport const load: PageServerLoad = async () => {\n  return {}\n}\n]]#"
+      },
+      {
+        "name": "SvelteKit Layout Load",
+        "extension": "ts",
+        "fileName": "+layout",
+        "reformat": false,
+        "text": "#[[import type { LayoutLoad } from './$types'\n\nexport const load: LayoutLoad = async () => {\n  return {}\n}\n]]#"
+      },
+      {
+        "name": "SvelteKit Layout Server Load",
+        "extension": "ts",
+        "fileName": "+layout.server",
+        "reformat": false,
+        "text": "#[[import type { LayoutServerLoad } from './$types'\n\nexport const load: LayoutServerLoad = async () => {\n  return {}\n}\n]]#"
+      },
+      {
+        "name": "SvelteKit Server Route",
+        "extension": "ts",
+        "fileName": "+server",
+        "reformat": false,
+        "text": "#[[import { json } from '@sveltejs/kit'\nimport type { RequestHandler } from './$types'\n\nexport const GET: RequestHandler = async () => {\n  return json({})\n}\n]]#"
+      },
+      {
+        "name": "SvelteKit Error Page",
+        "extension": "svelte",
+        "fileName": "+error",
+        "reformat": false,
+        "text": "#[[<script lang=\"ts\">\n  import { page } from '$app/state'\n</script>\n\n<h1>{page.status}</h1>\n<p>{page.error?.message}</p>\n]]#"
+      },
+      {
+        "name": "SvelteKit Server Hooks",
+        "extension": "ts",
+        "fileName": "hooks.server",
+        "reformat": false,
+        "text": "import type { Handle } from '@sveltejs/kit'\n\nexport const handle: Handle = async ({ event, resolve }) => {\n  return resolve(event)\n}\n"
+      }
+    ]
+  }
+}

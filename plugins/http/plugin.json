@@ -1,0 +1,5 @@
+{
+  "name": "HTTP Client",
+  "description": "HTTP request files (.http, .rest): highlighting of methods, URLs, headers, bodies, {{variables}}, comments and ### separators; folding and the structure of the requests. The IDE runs the requests.",
+  "extensions": ["http", "rest"]
+}

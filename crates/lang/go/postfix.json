@@ -1,0 +1,15 @@
+[
+  { "language": "go", "key": "var", "description": "go-postfix-var", "text": "$NAME$ := $EXPR$$END$", "variables": [{ "name": "NAME", "default": "v" }] },
+  { "language": "go", "key": "if", "description": "go-postfix-if", "text": "if $EXPR$ {\n\t$END$\n}" },
+  { "language": "go", "key": "else", "description": "go-postfix-else", "text": "if !$EXPR$ {\n\t$END$\n}" },
+  { "language": "go", "key": "not", "description": "go-postfix-not", "text": "!$EXPR$$END$" },
+  { "language": "go", "key": "nn", "description": "go-postfix-nn", "text": "if $EXPR$ != nil {\n\t$END$\n}" },
+  { "language": "go", "key": "nil", "description": "go-postfix-nil", "text": "if $EXPR$ == nil {\n\t$END$\n}" },
+  { "language": "go", "key": "for", "description": "go-postfix-for", "text": "for _, $VALUE$ := range $EXPR$ {\n\t$END$\n}", "variables": [{ "name": "VALUE", "default": "v" }] },
+  { "language": "go", "key": "fori", "description": "go-postfix-fori", "text": "for $INDEX$ := 0; $INDEX$ < $EXPR$; $INDEX$++ {\n\t$END$\n}", "variables": [{ "name": "INDEX", "default": "i" }] },
+  { "language": "go", "key": "switch", "description": "go-postfix-switch", "text": "switch $EXPR$ {\ncase $CASE$:\n\t$END$\n}" },
+  { "language": "go", "key": "return", "description": "go-postfix-return", "text": "return $EXPR$$END$" },
+  { "language": "go", "key": "print", "description": "go-postfix-print", "text": "fmt.Println($EXPR$)$END$", "imports": ["fmt"] },
+  { "language": "go", "key": "par", "description": "go-postfix-par", "text": "($EXPR$)$END$" },
+  { "language": "go", "key": "len", "description": "go-postfix-len", "text": "len($EXPR$)$END$" }
+]

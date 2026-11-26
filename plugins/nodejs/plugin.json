@@ -1,0 +1,10 @@
+{
+  "name": "Node.js",
+  "description": "Node.js projects: offered when a project has a package.json; run and debug JavaScript and TypeScript files with Node.js through the IDE's own debugger, and run Jest and Vitest tests with the test tree, run icons in test files and Rerun Failed. It needs Node.js on this computer and the project's own test runner; it downloads nothing.",
+  "extensions": [],
+  "project": {
+    "markers": {
+      "files": ["package.json"]
+    }
+  }
+}

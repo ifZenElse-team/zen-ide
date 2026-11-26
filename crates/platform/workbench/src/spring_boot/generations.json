@@ -1,0 +1,105 @@
+{
+  "_embedded": {
+    "generations": [
+      {
+        "_links": {
+          "self": {
+            "href": "https://api.spring.io/projects/spring-boot/generations/2.7.x"
+          },
+          "project": {
+            "href": "https://api.spring.io/projects/spring-boot"
+          }
+        },
+        "name": "2.7.x",
+        "initialReleaseDate": "2022-05-31",
+        "support": "extended",
+        "ossSupportEndDate": "2023-06-30",
+        "commercialSupportEndDate": "2029-06-30",
+        "linkedGenerations": {
+          "spring-boot": [
+            "2.7.x"
+          ]
+        },
+        "latestPatch": {
+          "enterprise": "2.7.35"
+        }
+      },
+      {
+        "_links": {
+          "self": {
+            "href": "https://api.spring.io/projects/spring-boot/generations/3.3.x"
+          },
+          "project": {
+            "href": "https://api.spring.io/projects/spring-boot"
+          }
+        },
+        "name": "3.3.x",
+        "initialReleaseDate": "2024-05-31",
+        "support": "default",
+        "ossSupportEndDate": "2025-06-30",
+        "commercialSupportEndDate": "2026-06-30",
+        "linkedGenerations": {
+          "spring-boot": [
+            "3.3.x"
+          ]
+        },
+        "latestPatch": {
+          "enterprise": "3.3.20.1"
+        }
+      },
+      {
+        "_links": {
+          "self": {
+            "href": "https://api.spring.io/projects/spring-boot/generations/3.5.x"
+          },
+          "project": {
+            "href": "https://api.spring.io/projects/spring-boot"
+          }
+        },
+        "name": "3.5.x",
+        "initialReleaseDate": "2025-05-31",
+        "support": "extended",
+        "ossSupportEndDate": "2026-06-30",
+        "commercialSupportEndDate": "2032-06-30",
+        "linkedGenerations": {
+          "spring-boot": [
+            "3.5.x"
+          ]
+        },
+        "latestPatch": {
+          "oss": "3.5.16",
+          "enterprise": "3.5.17"
+        }
+      },
+      {
+        "_links": {
+          "self": {
+            "href": "https://api.spring.io/projects/spring-boot/generations/4.1.x"
+          },
+          "project": {
+            "href": "https://api.spring.io/projects/spring-boot"
+          }
+        },
+        "name": "4.1.x",
+        "initialReleaseDate": "2026-06-30",
+        "support": "default",
+        "ossSupportEndDate": "2027-07-31",
+        "commercialSupportEndDate": "2028-07-31",
+        "linkedGenerations": {
+          "spring-boot": [
+            "4.1.x"
+          ]
+        },
+        "latestPatch": {
+          "oss": "4.1.2",
+          "enterprise": "4.1.0.1"
+        }
+      }
+    ]
+  },
+  "_links": {
+    "project": {
+      "href": "https://api.spring.io/projects/spring-boot"
+    }
+  }
+}

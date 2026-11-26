@@ -1,0 +1,29 @@
+[package]
+name = "zen-cli"
+description = "zen-cli: lists and runs Zen Platform commands from the terminal (ADR-0007)."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "zen-cli"
+path = "src/main.rs"
+
+[dependencies]
+clap = { workspace = true, features = ["string"] }
+serde_json.workspace = true
+zen-automation.workspace = true
+zen-core.workspace = true
+zen-i18n.workspace = true
+zen-toolbox.workspace = true
+zen-workbench.workspace = true
+
+[dev-dependencies]
+# Each test thread has its own interface language (zen-i18n's docs).
+zen-i18n = { workspace = true, features = ["thread-languages"] }
+tempfile.workspace = true
+
+[lints]
+workspace = true

@@ -1,0 +1,256 @@
+{
+  "language": "rust",
+  "title": "settings-section-code-style-rust",
+  "preview": "use std::collections::HashMap;\nuse std::fmt;\n\npub struct Point {\n    pub x: i32,\n    pub y: i32,\n}\n\nimpl fmt::Display for Point {\n    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {\n        write!(f, \"({}, {})\", self.x, self.y)\n    }\n}\n\nfn count(words: &[&str]) -> HashMap<String, usize> {\n    let mut counts = HashMap::new();\n    for word in words {\n        *counts.entry(word.to_string()).or_insert(0) += 1;\n    }\n    counts\n}\n\nfn main() {\n    let point = Point { x: 1, y: 2 };\n    match point.x {\n        0 => println!(\"origin {point}\"),\n        _ => println!(\"{:?}\", count(&[\"a\", \"b\", \"a\"])),\n    }\n}\n",
+  "options": [
+    {
+      "id": "hard_tabs",
+      "label": "rust-code-style-hard-tabs",
+      "group": "rust-code-style-rustfmt",
+      "tab": "tabsAndIndents",
+      "kind": {
+        "type": "boolean"
+      },
+      "default": false,
+      "configKey": "hard_tabs"
+    },
+    {
+      "id": "tab_spaces",
+      "label": "rust-code-style-tab-spaces",
+      "group": "rust-code-style-rustfmt",
+      "tab": "tabsAndIndents",
+      "kind": {
+        "type": "integer",
+        "min": 1,
+        "max": 32
+      },
+      "default": 4,
+      "configKey": "tab_spaces"
+    },
+    {
+      "id": "max_width",
+      "label": "rust-code-style-max-width",
+      "group": "rust-code-style-rustfmt",
+      "tab": "wrappingAndBraces",
+      "kind": {
+        "type": "integer",
+        "min": 1,
+        "max": 1000
+      },
+      "default": 100,
+      "configKey": "max_width",
+      "editorConfig": "max_line_length"
+    },
+    {
+      "id": "use_small_heuristics",
+      "label": "rust-code-style-use-small-heuristics",
+      "group": "rust-code-style-rustfmt",
+      "tab": "wrappingAndBraces",
+      "kind": {
+        "type": "choice",
+        "choices": [
+          {
+            "value": "Default",
+            "label": "rust-code-style-value-default"
+          },
+          {
+            "value": "Off",
+            "label": "rust-code-style-value-off"
+          },
+          {
+            "value": "Max",
+            "label": "rust-code-style-value-max"
+          }
+        ]
+      },
+      "default": "Default",
+      "configKey": "use_small_heuristics"
+    },
+    {
+      "id": "fn_params_layout",
+      "label": "rust-code-style-fn-params-layout",
+      "group": "rust-code-style-rustfmt",
+      "tab": "wrappingAndBraces",
+      "kind": {
+        "type": "choice",
+        "choices": [
+          {
+            "value": "Tall",
+            "label": "rust-code-style-value-tall"
+          },
+          {
+            "value": "Compressed",
+            "label": "rust-code-style-value-compressed"
+          },
+          {
+            "value": "Vertical",
+            "label": "rust-code-style-value-vertical"
+          }
+        ]
+      },
+      "default": "Tall",
+      "configKey": "fn_params_layout"
+    },
+    {
+      "id": "match_arm_leading_pipes",
+      "label": "rust-code-style-match-arm-leading-pipes",
+      "group": "rust-code-style-rustfmt",
+      "tab": "wrappingAndBraces",
+      "kind": {
+        "type": "choice",
+        "choices": [
+          {
+            "value": "Never",
+            "label": "rust-code-style-value-never"
+          },
+          {
+            "value": "Always",
+            "label": "rust-code-style-value-always"
+          },
+          {
+            "value": "Preserve",
+            "label": "rust-code-style-value-preserve"
+          }
+        ]
+      },
+      "default": "Never",
+      "configKey": "match_arm_leading_pipes"
+    },
+    {
+      "id": "match_block_trailing_comma",
+      "label": "rust-code-style-match-block-trailing-comma",
+      "group": "rust-code-style-rustfmt",
+      "tab": "wrappingAndBraces",
+      "kind": {
+        "type": "boolean"
+      },
+      "default": false,
+      "configKey": "match_block_trailing_comma"
+    },
+    {
+      "id": "newline_style",
+      "label": "rust-code-style-newline-style",
+      "group": "rust-code-style-rustfmt",
+      "tab": "wrappingAndBraces",
+      "kind": {
+        "type": "choice",
+        "choices": [
+          {
+            "value": "Auto",
+            "label": "rust-code-style-value-auto"
+          },
+          {
+            "value": "Native",
+            "label": "rust-code-style-value-native"
+          },
+          {
+            "value": "Unix",
+            "label": "rust-code-style-value-unix"
+          },
+          {
+            "value": "Windows",
+            "label": "rust-code-style-value-windows"
+          }
+        ]
+      },
+      "default": "Auto",
+      "configKey": "newline_style"
+    },
+    {
+      "id": "use_field_init_shorthand",
+      "label": "rust-code-style-use-field-init-shorthand",
+      "group": "rust-code-style-rewrites",
+      "tab": "wrappingAndBraces",
+      "kind": {
+        "type": "boolean"
+      },
+      "default": false,
+      "configKey": "use_field_init_shorthand"
+    },
+    {
+      "id": "use_try_shorthand",
+      "label": "rust-code-style-use-try-shorthand",
+      "group": "rust-code-style-rewrites",
+      "tab": "wrappingAndBraces",
+      "kind": {
+        "type": "boolean"
+      },
+      "default": false,
+      "configKey": "use_try_shorthand"
+    },
+    {
+      "id": "remove_nested_parens",
+      "label": "rust-code-style-remove-nested-parens",
+      "group": "rust-code-style-rewrites",
+      "tab": "wrappingAndBraces",
+      "kind": {
+        "type": "boolean"
+      },
+      "default": true,
+      "configKey": "remove_nested_parens"
+    },
+    {
+      "id": "merge_derives",
+      "label": "rust-code-style-merge-derives",
+      "group": "rust-code-style-rewrites",
+      "tab": "wrappingAndBraces",
+      "kind": {
+        "type": "boolean"
+      },
+      "default": true,
+      "configKey": "merge_derives"
+    },
+    {
+      "id": "force_explicit_abi",
+      "label": "rust-code-style-force-explicit-abi",
+      "group": "rust-code-style-rewrites",
+      "tab": "wrappingAndBraces",
+      "kind": {
+        "type": "boolean"
+      },
+      "default": true,
+      "configKey": "force_explicit_abi"
+    },
+    {
+      "id": "reorder_imports",
+      "label": "rust-code-style-reorder-imports",
+      "group": "rust-code-style-rustfmt",
+      "tab": "imports",
+      "kind": {
+        "type": "boolean"
+      },
+      "default": true,
+      "configKey": "reorder_imports"
+    },
+    {
+      "id": "reorder_modules",
+      "label": "rust-code-style-reorder-modules",
+      "group": "rust-code-style-rustfmt",
+      "tab": "imports",
+      "kind": {
+        "type": "boolean"
+      },
+      "default": true,
+      "configKey": "reorder_modules"
+    }
+  ],
+  "notes": {
+    "tabsAndIndents": "rust-code-style-note-tabs",
+    "spaces": "rust-code-style-note-spaces",
+    "wrappingAndBraces": "rust-code-style-note-wrapping",
+    "blankLines": "rust-code-style-note-blank-lines",
+    "imports": "rust-code-style-note-imports",
+    "arrangement": "rust-code-style-note-arrangement"
+  },
+  "configFile": {
+    "names": [
+      "rustfmt.toml",
+      ".rustfmt.toml"
+    ],
+    "arguments": {
+      "section": "rust-analyzer",
+      "path": "rustfmt.extraArgs",
+      "flag": "--config"
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "TOML",
+  "description": "Highlights TOML, including Cargo.toml, Cargo.lock, Pipfile and pyproject.toml: table headers, keys, strings, numbers, dates, booleans and comments.",
+  "extensions": ["toml"],
+  "names": ["Cargo.lock", "Pipfile", "poetry.lock", "uv.lock"],
+  "languageServers": [
+    {
+      "id": "taplo",
+      "name": "Taplo",
+      "languages": ["toml"],
+      "extensions": ["toml"],
+      "command": "taplo",
+      "workspaceSymbols": false,
+      "args": ["lsp", "stdio"],
+      "versionArgs": ["--version"],
+      "settings": {
+        "evenBetterToml": { "schema": { "enabled": false } }
+      },
+      "install": {
+        "kind": "manual",
+        "package": "",
+        "hint": "Install Taplo with its language server: cargo install taplo-cli --locked --features lsp, or brew install taplo."
+      }
+    }
+  ]
+}

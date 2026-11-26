@@ -1,0 +1,37 @@
+{
+  "name": "MongoDB",
+  "description": "MongoDB in the Database workspace: databases, collections, views and indexes in the navigator, consoles in the MongoDB shell's syntax, documents as rows read page by page or as JSON, edited in the grid, Cancel and export, through the zen-db-mongodb driver program. SCRAM and X.509 logins, replica sets, mongodb+srv:// addresses, and TLS through rustls with RustCrypto.",
+  "extensions": [],
+  "databaseDrivers": [
+    {
+      "id": "mongodb",
+      "name": "MongoDB",
+      "icon": "database",
+      "protocol": 1,
+      "process": "perConnection",
+      "defaultPort": 27017,
+      "capabilities": {
+        "models": ["document"],
+        "language": "mongo",
+        "transactions": true,
+        "catalogs": true,
+        "nodeKinds": ["catalog", "collection", "view", "index"],
+        "serverCancel": true,
+        "rowIdentity": "_id",
+        "serverPaging": true,
+        "readOnlySessions": true,
+        "uriSchemes": ["mongodb", "mongodb+srv"],
+        "password": true,
+        "settings": [
+          { "key": "authSource", "kind": "text", "default": "admin" },
+          { "key": "authMechanism", "kind": "choice", "choices": ["DEFAULT", "SCRAM-SHA-256", "SCRAM-SHA-1", "MONGODB-X509"], "default": "DEFAULT" },
+          { "key": "replicaSet", "kind": "text" },
+          { "key": "directConnection", "kind": "bool", "default": "false" }
+        ]
+      },
+      "readVerbs": ["find", "findOne", "countDocuments", "estimatedDocumentCount", "count", "distinct", "getIndexes", "getCollectionNames", "getCollectionInfos", "stats", "show", "use"],
+      "guardsReadOnly": true,
+      "platforms": {}
+    }
+  ]
+}

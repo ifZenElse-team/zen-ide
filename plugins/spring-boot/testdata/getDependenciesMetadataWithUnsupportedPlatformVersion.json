@@ -1,0 +1,15 @@
+{
+  "id" : "4550f442-139a-45dc-93c6-8fd17338fe86",
+  "request" : {
+    "urlPath" : "/error",
+    "method" : "GET"
+  },
+  "response" : {
+    "status" : 400,
+    "body" : "{\n  \"timestamp\" : \"2026-03-20T08:07:09.783Z\",\n  \"status\" : 400,\n  \"error\" : \"Bad Request\",\n  \"message\" : \"Invalid Spring Boot version '1.5.12.RELEASE', Spring Boot compatibility range is >=2.0.0.RELEASE\",\n  \"path\" : \"/dependencies?bootVersion=1.5.12.RELEASE\"\n}",
+    "headers" : {
+      "Content-Type" : "application/json"
+    }
+  },
+  "uuid" : "4550f442-139a-45dc-93c6-8fd17338fe86"
+}

@@ -1,0 +1,42 @@
+# Build output, including the separate target directories of agents' worktrees (target-wt)
+/target*/
+**/*.rs.bk
+*.pdb
+
+# Packaging and web build output
+/dist/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+# The synthetic project of the .idea reader's tests is part of the repository.
+!/crates/platform/jb-import/tests/fixtures/idea-project/.idea/
+!/crates/platform/jb-import/tests/fixtures/idea-edge/.idea/
+.vscode/
+*.swp
+*~
+
+# Local environment and machine-specific agent settings
+.env
+.env.*
+!.env.example
+.claude/settings.local.json
+
+# CI caches
+/.cargo-home/
+
+# Screenshots dropped into the repository root while discussing the UI.
+/img*.png
+/image*.png
+
+# The website's documentation, built from docs/guide by `cargo xtask site-docs`.
+/deploy/releases/site/docs/
+
+# Working copies of AI agents.
+/.claude/worktrees/
+
+# A release pipeline's work (cargo xtask release-build and release-ci, ADR-0142, ADR-0171).
+/release-build/
+/release-stage.json
+/release-verify/
+/release-verify.json

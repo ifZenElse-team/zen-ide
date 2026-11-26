@@ -1,0 +1,6 @@
+Schemas shipped in the GitLab CI plug-in
+
+ci.json: the JSON Schema of GitLab CI/CD configuration
+Source: https://gitlab.com/gitlab-org/gitlab/-/blob/7da6365f27d974ae585bc2d14f77cc35c0d4d397/app/assets/javascripts/editor/schema/ci.json
+Licence: MIT
+Copyright (c) 2011-present GitLab Inc.

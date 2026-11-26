@@ -1,0 +1,28 @@
+[package]
+name = "zen-terminal"
+description = "Zen Platform, layer L2: shell sessions in a pseudo-terminal and their VT/xterm screen."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+zen-env.workspace = true
+serde_json.workspace = true
+
+# The PTY and the emulator: desktop only. In WebAssembly builds the crate keeps its screen types and
+# key encoding, and `Session::spawn` reports that terminals are unsupported.
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+alacritty_terminal.workspace = true
+serde.workspace = true
+
+[target.'cfg(unix)'.dependencies]
+rustix = { workspace = true, features = ["fs", "process", "termios"] }
+sha2.workspace = true
+
+[dev-dependencies]
+tempfile.workspace = true
+
+[lints]
+workspace = true

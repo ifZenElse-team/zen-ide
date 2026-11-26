@@ -1,0 +1,5 @@
+{
+  "name": "Properties",
+  "description": "Edits .properties files as java.util.Properties reads them: keys, separators, values, escapes and comments highlighted; continued values and comment blocks folded; the keys in the Structure view; duplicate keys and malformed \\u escapes reported; the unescaped value shown after a value with escapes; message bundles edited together in the Resource Bundle editor; keys completed and found from ResourceBundle calls in Java and Kotlin.",
+  "extensions": ["properties"]
+}

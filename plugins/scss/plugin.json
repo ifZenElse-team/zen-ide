@@ -1,0 +1,5 @@
+{
+  "name": "SCSS",
+  "description": "SCSS support: highlighting of selectors, properties, values, variables, interpolation, mixins and at-rules; folding of blocks and comments; the structure of rules, variables, mixins and functions; completion of properties, values, at-rules, variables and mixins; colour previews.",
+  "extensions": ["scss"]
+}

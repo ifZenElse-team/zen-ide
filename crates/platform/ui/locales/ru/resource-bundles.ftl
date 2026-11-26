@@ -1,0 +1,17 @@
+bundle-default-locale = По умолчанию
+bundle-tab-title = Набор ресурсов «{ $name }»
+bundle-tree-label = Набор ресурсов «{ $name }»
+bundle-add-key = Новое свойство
+bundle-rename-key = Переименовать свойство
+bundle-remove-key = Удалить свойство
+bundle-undo = Отменить
+bundle-filter = Фильтр по ключам и значениям
+bundle-missing-only = Только без перевода
+bundle-summary = Ключей: { $keys }, неполных: { $incomplete }
+bundle-new-key = Новый ключ:
+bundle-rename-to = Новое имя для { $key }:
+bundle-key = Ключ
+bundle-empty = В наборе пока нет ключей: добавьте ключ кнопкой «Новое свойство».
+bundle-nothing-shown = Ни один ключ не подходит под фильтр.
+bundle-empty-value = пусто
+bundle-missing = нет перевода

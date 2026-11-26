@@ -1,0 +1,13 @@
+def zenPort = System.getProperty('zen.debug.port')
+
+allprojects { p ->
+    if (zenPort != null) {
+        p.tasks.withType(org.gradle.process.JavaForkOptions).configureEach { task ->
+            task.jvmArgs "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=localhost:${zenPort}"
+            if (task instanceof org.gradle.api.tasks.testing.Test) {
+                task.maxParallelForks = 1
+                task.forkEvery = 0
+            }
+        }
+    }
+}

@@ -1,0 +1,23 @@
+[package]
+name = "zen-db-oracle"
+description = "Zen IDE database driver program for Oracle Database through SQLcl, the command-line program the user installs, speaking the external driver protocol v1 (ADR-0174, ADR-0175, ADR-0190)."
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "zen-db-oracle"
+path = "src/main.rs"
+
+[dependencies]
+zen-db-driver-kit.workspace = true
+serde_json.workspace = true
+tokio = { workspace = true, features = ["io-util", "process", "sync", "time"] }
+
+[target.'cfg(unix)'.dependencies]
+rustix.workspace = true
+
+[lints]
+workspace = true

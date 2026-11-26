@@ -1,0 +1,64 @@
+# Zen UI: the Query History tab of the Database workspace.
+
+ide-dbhistory-open = Query History
+ide-dbhistory-search = Search statements
+ide-dbhistory-all-connections = All connections
+ide-dbhistory-all-types = All types
+ide-dbhistory-type-statement = Statements
+ide-dbhistory-type-script = Scripts
+ide-dbhistory-type-filter = Filters
+ide-dbhistory-type-data = Data reads
+ide-dbhistory-type-save = Saved edits
+ide-dbhistory-type-transaction = Commits and rollbacks
+ide-dbhistory-type-export = Exports
+ide-dbhistory-type-import = Imports
+ide-dbhistory-type-structure = Structure changes
+ide-dbhistory-type-search = Find in Database
+ide-dbhistory-type-agent = By agents
+ide-dbhistory-source-statement = Statement
+ide-dbhistory-source-script = Script
+ide-dbhistory-source-filter = Filter
+ide-dbhistory-source-data = Data
+ide-dbhistory-source-save = Save
+ide-dbhistory-source-transaction = Transaction
+ide-dbhistory-source-export = Export
+ide-dbhistory-source-import = Import from CSV
+ide-dbhistory-source-structure = Structure
+ide-dbhistory-source-connections = Several Connections
+ide-dbhistory-source-search = Find
+ide-dbhistory-source-query = Run SQL
+ide-dbhistory-agent = Agent
+ide-dbhistory-any-outcome = Any result
+ide-dbhistory-outcome-done = Succeeded
+ide-dbhistory-outcome-failed = Failed
+ide-dbhistory-outcome-cancelled = Cancelled
+ide-dbhistory-outcome-refused = Refused
+ide-dbhistory-confirmed = Confirmed
+ide-dbhistory-any-time = Any time
+ide-dbhistory-today = Today
+ide-dbhistory-week = Last 7 days
+ide-dbhistory-month = Last 30 days
+ide-dbhistory-count = { $shown } of { $total }
+ide-dbhistory-empty = No statements yet. What you run in consoles, filters, data tabs and saves, and what agents run, appears here.
+ide-dbhistory-no-match = No statements match the search and filters.
+ide-dbhistory-off = The query history is off. Turn on Record Statements in its settings (⚙).
+ide-dbhistory-loading = Reading the history…
+ide-dbhistory-open-console = Open in Console
+ide-dbhistory-run-again = Run Again
+ide-dbhistory-copy = Copy
+ide-dbhistory-settings = History Settings
+ide-dbhistory-record = Record statements
+ide-dbhistory-keep-days = Keep for (days):
+ide-dbhistory-keep-most = Keep at most:
+ide-dbhistory-clear = Clear History…
+ide-dbhistory-clear-question = Clear the whole query history? This cannot be undone.
+ide-dbhistory-clear-confirm = Clear
+ide-dbhistory-cancel = Cancel
+ide-dbhistory-ms = { $ms } ms
+ide-dbhistory-rows = { $rows ->
+    [one] { $rows } row
+   *[other] { $rows } rows
+}
+ide-dbhistory-changed = { $rows } changed
+ide-dbhistory-cut = The statement was longer than 64 KiB and was kept cut.
+ide-dbhistory-redacted = A password in it was masked.

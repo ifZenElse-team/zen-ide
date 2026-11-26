@@ -1,0 +1,10 @@
+{
+  "name": "npm",
+  "description": "npm, pnpm, Yarn and Bun projects: offered when a project has a package.json; the npm tool window (the package.json files of the project with their scripts, run a script, install dependencies, offline mode). Run icons in package.json and External Libraries work in every IDE without it.",
+  "extensions": [],
+  "project": {
+    "markers": {
+      "files": ["package.json"]
+    }
+  }
+}

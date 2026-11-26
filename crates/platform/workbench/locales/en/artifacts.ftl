@@ -1,0 +1,16 @@
+artifacts-built = Built { $name }: { $path } ({ $count } files)
+artifacts-copied = Copied next to it: { $path }
+artifacts-run-all = Build Artifacts
+artifacts-error-entry = Cannot put { $name } into the jar: { $error }
+artifacts-error-library = Cannot read the library { $path }: { $error }
+artifacts-error-write = Cannot save the artifacts: { $error }
+artifacts-error-no-module = The project has no module { $module }.
+artifacts-error-no-build = { $module } has no Maven or Gradle build to package it.
+artifacts-error-none = The project has no artifacts to build: add one in Project Structure → Artifacts.
+artifacts-error-unknown = The project has no artifact { $name }.
+artifacts-error-cannot-build = Cannot build the artifacts: { $error }
+artifacts-error-no-name = An artifact needs a name.
+artifacts-error-taken = An artifact named { $name } is there already.
+artifacts-before-launch = Build Artifacts
+artifacts-before-launch-field = Artifacts:
+artifacts-before-launch-none = Choose the artifacts to build.

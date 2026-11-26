@@ -1,0 +1,30 @@
+# Zen IDE: вкладка «Миграции» рабочей области «База данных».
+
+ide-database-migrations = Миграции
+ide-dbmigrations-refresh = Обновить
+ide-dbmigrations-up = Применить
+ide-dbmigrations-down = Откатить
+ide-dbmigrations-connect = Подключиться
+ide-dbmigrations-offline = Нет подключения: состояние миграций читается, только пока подключение открыто.
+ide-dbmigrations-scanning = Поиск миграций…
+ide-dbmigrations-no-sets = Нет миграций
+ide-dbmigrations-no-connection = Выберите подключение
+ide-dbmigrations-choose-connection = выберите подключение, чтобы увидеть применённые
+ide-dbmigrations-empty = В проекте не найдено папок миграций.
+ide-dbmigrations-no-migrations = В этой папке нет миграций.
+ide-dbmigrations-counts = применено: { $applied }, ожидают: { $pending }, с ошибкой или без файла: { $failed }
+ide-dbmigrations-files = миграций: { $count }
+ide-dbmigrations-no-table = таблицы { $table } ещё нет
+ide-dbmigrations-run-waiting = чтение пароля
+ide-dbmigrations-run-running = выполняется в окне Run
+ide-dbmigrations-run-ended = последний запуск завершился с кодом { $code }
+ide-dbmigrations-state-applied = Применена
+ide-dbmigrations-state-pending = Ожидает
+ide-dbmigrations-state-failed = Ошибка
+ide-dbmigrations-state-unknown = Неизвестно
+ide-dbmigrations-state-missing = Нет файла
+ide-dbmigrations-col-state = Состояние
+ide-dbmigrations-col-version = Версия
+ide-dbmigrations-col-name = Имя
+ide-dbmigrations-col-file = Файл
+ide-dbmigrations-read-only = Подключение { $name } только для чтения: миграции на нём не запускаются.

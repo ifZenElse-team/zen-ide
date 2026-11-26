@@ -1,0 +1,9 @@
+workbench-macro-exists = Макрос с именем «{ $name }» уже есть.
+workbench-macro-unknown = Макроса с именем «{ $name }» нет.
+workbench-macro-no-last = Ещё не записано ни одного макроса.
+workbench-macro-empty-name = У макроса должно быть имя.
+workbench-macro-no-step = В макросе «{ $name }» нет действия { $step }.
+workbench-macro-save-failed = Не удалось сохранить макросы: { $detail }
+workbench-macro-unreadable = Не удалось прочитать сохранённые макросы: { $detail }
+workbench-macro-corrupt = Файл макросов повреждён ({ $detail }); он сохранён как { $file }.
+workbench-macro-step-refused = Действие { $step } макроса ({ $command }) нельзя воспроизводить в макросе.

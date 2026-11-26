@@ -1,0 +1,56 @@
+{
+  "name": "Nuxt",
+  "description": "Nuxt projects: offered when a project has nuxt.config.* or depends on nuxt, installed with the Vue plug-in whose language server serves it; the run configurations nuxi dev, build, generate and preview, nuxi prepare offered while .nuxt/ is missing, and templates for a page, a layout, a component, a composable and a server route.",
+  "extensions": [],
+  "requires": ["vue"],
+  "project": {
+    "markers": {
+      "files": ["nuxt.config.ts", "nuxt.config.js", "nuxt.config.mjs"],
+      "packages": ["nuxt"]
+    },
+    "runConfigurations": [
+      { "name": "nuxi dev", "kind": "npm", "options": { "command": "exec", "script": "nuxi" }, "common": { "programArguments": "dev" } },
+      { "name": "nuxi build", "kind": "npm", "options": { "command": "exec", "script": "nuxi" }, "common": { "programArguments": "build" } },
+      { "name": "nuxi generate", "kind": "npm", "options": { "command": "exec", "script": "nuxi" }, "common": { "programArguments": "generate" } },
+      { "name": "nuxi preview", "kind": "npm", "options": { "command": "exec", "script": "nuxi" }, "common": { "programArguments": "preview" } }
+    ],
+    "setup": {
+      "creates": ".nuxt",
+      "configuration": { "name": "nuxi prepare", "kind": "npm", "options": { "command": "exec", "script": "nuxi" }, "common": { "programArguments": "prepare" } }
+    }
+  },
+  "fileTemplates": {
+    "templates": [
+      {
+        "name": "Nuxt Page",
+        "extension": "vue",
+        "reformat": false,
+        "text": "<script setup lang=\"ts\">\n\n</script>\n\n<template>\n  <main>\n    <h1>${NAME}</h1>\n  </main>\n</template>\n"
+      },
+      {
+        "name": "Nuxt Layout",
+        "extension": "vue",
+        "reformat": false,
+        "text": "<script setup lang=\"ts\">\n\n</script>\n\n<template>\n  <div class=\"${NAME}-layout\">\n    <slot />\n  </div>\n</template>\n"
+      },
+      {
+        "name": "Nuxt Component",
+        "extension": "vue",
+        "reformat": false,
+        "text": "<script setup lang=\"ts\">\ndefineProps<{}>()\n</script>\n\n<template>\n  <div class=\"${NAME}\"></div>\n</template>\n\n<style scoped>\n\n</style>\n"
+      },
+      {
+        "name": "Nuxt Composable",
+        "extension": "ts",
+        "reformat": false,
+        "text": "export function ${NAME}() {\n  return {}\n}\n"
+      },
+      {
+        "name": "Nuxt Server Route",
+        "extension": "ts",
+        "reformat": false,
+        "text": "export default defineEventHandler(async (event) => {\n  return {}\n})\n"
+      }
+    ]
+  }
+}

@@ -1,0 +1,7 @@
+<!-- Synthetic fixture written for the Zen IDE tests from the public format documentation; not taken from any JetBrains product. -->
+<component name="InspectionProjectProfileManager">
+  <settings>
+    <option name="PROJECT_PROFILE" value="Team Strict" />
+    <option name="USE_PROJECT_PROFILE" value="false" />
+  </settings>
+</component>

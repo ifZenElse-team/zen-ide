@@ -1,0 +1,6 @@
+<!-- A synthetic keymap written for the tests of zen-jb-import; not exported from any product. -->
+<keymap version="1" name="Fixture Other" parent="Fixture Base">
+  <action id="ShowSettings">
+    <keyboard-shortcut first-keystroke="control alt S" />
+  </action>
+</keymap>

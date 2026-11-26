@@ -1,0 +1,24 @@
+{
+  "name": "Shell Script",
+  "description": "Highlights shell scripts (sh, Bash, Zsh, ksh): keywords, builtins, function definitions, variables, strings, heredocs, numbers, comments, operators and options, and runs a script with the shell its hashbang or extension names.",
+  "runs": ["sh", "bash", "zsh", "ksh"],
+  "extensions": ["sh", "bash", "zsh", "ksh", "command"],
+  "names": [".bashrc", ".bash_profile", ".zshrc", ".zprofile", ".profile", ".bash_aliases", "*.bashrc"],
+  "hashbangs": ["sh", "bash", "zsh", "ksh"],
+  "languageServers": [
+    {
+      "id": "bash-language-server",
+      "name": "Bash Language Server",
+      "languages": ["shellscript"],
+      "extensions": ["sh", "bash", "zsh", "ksh", "command"],
+      "names": [".bashrc", ".bash_profile", ".zshrc", ".zprofile", ".profile", ".bash_aliases", "*.bashrc"],
+      "command": "bash-language-server",
+      "args": ["start"],
+      "versionArgs": ["--version"],
+      "install": {
+        "kind": "npm",
+        "package": "bash-language-server"
+      }
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "name": "Dotenv",
+  "description": "Highlights .env files: comments, export, variable names, quoted and unquoted values and ${VAR} references.",
+  "extensions": ["env"],
+  "names": [".env", ".env.*", "*.env", ".envrc", ".flaskenv"]
+}

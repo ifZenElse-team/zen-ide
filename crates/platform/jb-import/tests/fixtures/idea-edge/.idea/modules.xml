@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic fixture written for the Zen IDE tests from the public format documentation; not taken from any JetBrains product. -->
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/svc/svc.iml" filepath="$PROJECT_DIR$/svc/svc.iml" />
+      <module fileurl="file://$PROJECT_DIR$/broken/broken.iml" filepath="$PROJECT_DIR$/broken/broken.iml" />
+    </modules>
+  </component>
+</project>

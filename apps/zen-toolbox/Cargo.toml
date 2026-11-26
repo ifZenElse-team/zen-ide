@@ -1,0 +1,32 @@
+[package]
+# The package is `zen-toolbox-app` because the feature crate owns the name `zen-toolbox`;
+# the binary keeps the product name (docs/naming.md).
+name = "zen-toolbox-app"
+description = "Zen Toolbox: installs, updates and launches Zen IDEs."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "zen-toolbox"
+path = "src/main.rs"
+
+[dependencies]
+eframe.workspace = true
+zen-core.workspace = true
+zen-i18n.workspace = true
+zen-toolbox.workspace = true
+zen-ui.workspace = true
+zen-update.workspace = true
+serde_json.workspace = true
+
+# For the macOS activation policy (no Dock icon). The same winit version eframe uses.
+[target.'cfg(target_os = "macos")'.dependencies]
+winit.workspace = true
+# Whether a mouse button or ⌘ is down when the window loses focus.
+objc2-app-kit.workspace = true
+
+[lints]
+workspace = true

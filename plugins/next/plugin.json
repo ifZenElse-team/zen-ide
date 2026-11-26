@@ -1,0 +1,124 @@
+{
+  "name": "Next.js",
+  "description": "Next.js projects: offered when a project has next.config.* or depends on next, installed with the React plug-in; the run configurations next dev, build, start and lint, and templates for the App Router (page, layout, route handler, loading, error, not found) and the Pages Router (page, API route).",
+  "extensions": [],
+  "requires": [
+    "react"
+  ],
+  "project": {
+    "markers": {
+      "files": [
+        "next.config.js",
+        "next.config.mjs",
+        "next.config.ts"
+      ],
+      "packages": [
+        "next"
+      ]
+    },
+    "runConfigurations": [
+      {
+        "name": "next dev",
+        "kind": "npm",
+        "options": {
+          "command": "exec",
+          "script": "next"
+        },
+        "common": {
+          "programArguments": "dev"
+        }
+      },
+      {
+        "name": "next build",
+        "kind": "npm",
+        "options": {
+          "command": "exec",
+          "script": "next"
+        },
+        "common": {
+          "programArguments": "build"
+        }
+      },
+      {
+        "name": "next start",
+        "kind": "npm",
+        "options": {
+          "command": "exec",
+          "script": "next"
+        },
+        "common": {
+          "programArguments": "start"
+        }
+      },
+      {
+        "name": "next lint",
+        "kind": "npm",
+        "options": {
+          "command": "exec",
+          "script": "next"
+        },
+        "common": {
+          "programArguments": "lint"
+        }
+      }
+    ]
+  },
+  "fileTemplates": {
+    "templates": [
+      {
+        "name": "Next.js Page",
+        "extension": "tsx",
+        "fileName": "page",
+        "reformat": false,
+        "text": "export default function Page() {\n  return (\n    <main>\n      <h1>Page</h1>\n    </main>\n  )\n}\n"
+      },
+      {
+        "name": "Next.js Layout",
+        "extension": "tsx",
+        "fileName": "layout",
+        "reformat": false,
+        "text": "export default function Layout({ children }: { children: React.ReactNode }) {\n  return <section>{children}</section>\n}\n"
+      },
+      {
+        "name": "Next.js Route Handler",
+        "extension": "ts",
+        "fileName": "route",
+        "reformat": false,
+        "text": "export async function GET(request: Request) {\n  return Response.json({})\n}\n"
+      },
+      {
+        "name": "Next.js Loading UI",
+        "extension": "tsx",
+        "fileName": "loading",
+        "reformat": false,
+        "text": "export default function Loading() {\n  return <p>Loading…</p>\n}\n"
+      },
+      {
+        "name": "Next.js Error UI",
+        "extension": "tsx",
+        "fileName": "error",
+        "reformat": false,
+        "text": "'use client'\n\nexport default function ErrorBoundary({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {\n  return (\n    <div>\n      <h2>Something went wrong.</h2>\n      <p>{error.message}</p>\n      <button onClick={() => reset()}>Try again</button>\n    </div>\n  )\n}\n"
+      },
+      {
+        "name": "Next.js Not Found",
+        "extension": "tsx",
+        "fileName": "not-found",
+        "reformat": false,
+        "text": "export default function NotFound() {\n  return (\n    <div>\n      <h2>Not found</h2>\n    </div>\n  )\n}\n"
+      },
+      {
+        "name": "Next.js Pages Router Page",
+        "extension": "tsx",
+        "reformat": false,
+        "text": "export default function Page() {\n  return (\n    <main>\n      <h1>${NAME}</h1>\n    </main>\n  )\n}\n"
+      },
+      {
+        "name": "Next.js API Route",
+        "extension": "ts",
+        "reformat": false,
+        "text": "import type { NextApiRequest, NextApiResponse } from 'next'\n\nexport default function handler(req: NextApiRequest, res: NextApiResponse) {\n  res.status(200).json({})\n}\n"
+      }
+    ]
+  }
+}

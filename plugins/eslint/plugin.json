@@ -1,0 +1,129 @@
+{
+  "name": "ESLint",
+  "description": "ESLint in the editor: offered when a project has an ESLint configuration; its problems as you type in JavaScript, TypeScript, JSX, TSX, Vue and Svelte files, beside their own language server, its quick fixes (fix this problem, disable the rule for the line or the file, fix all), Fix ESLint Problems and Run eslint --fix on save. ESLint itself comes from the project's node_modules.",
+  "extensions": [],
+  "project": {
+    "markers": {
+      "files": [
+        "eslint.config.js",
+        "eslint.config.mjs",
+        "eslint.config.cjs",
+        "eslint.config.ts",
+        "eslint.config.mts",
+        "eslint.config.cts",
+        ".eslintrc",
+        ".eslintrc.js",
+        ".eslintrc.cjs",
+        ".eslintrc.json",
+        ".eslintrc.yml",
+        ".eslintrc.yaml"
+      ],
+      "packages": [
+        "eslint"
+      ]
+    }
+  },
+  "languageServers": [
+    {
+      "id": "eslint",
+      "name": "ESLint",
+      "languages": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "vue",
+        "svelte"
+      ],
+      "languageIds": {
+        "js": "javascript",
+        "mjs": "javascript",
+        "cjs": "javascript",
+        "jsx": "javascriptreact",
+        "ts": "typescript",
+        "mts": "typescript",
+        "cts": "typescript",
+        "tsx": "typescriptreact",
+        "vue": "vue",
+        "svelte": "svelte"
+      },
+      "extensions": [
+        "js",
+        "mjs",
+        "cjs",
+        "jsx",
+        "ts",
+        "mts",
+        "cts",
+        "tsx",
+        "vue",
+        "svelte"
+      ],
+      "command": "vscode-eslint-language-server",
+      "args": [
+        "--stdio"
+      ],
+      "workspaceSymbols": false,
+      "alongside": true,
+      "when": {
+        "files": [
+          "eslint.config.js",
+          "eslint.config.mjs",
+          "eslint.config.cjs",
+          "eslint.config.ts",
+          "eslint.config.mts",
+          "eslint.config.cts",
+          ".eslintrc",
+          ".eslintrc.js",
+          ".eslintrc.cjs",
+          ".eslintrc.json",
+          ".eslintrc.yml",
+          ".eslintrc.yaml"
+        ],
+        "packages": [
+          "eslint"
+        ]
+      },
+      "fixOnSave": {
+        "kind": "source.fixAll.eslint",
+        "setting": "codeQuality.eslint.fixOnSave"
+      },
+      "settings": {
+        "": {
+          "validate": "on",
+          "run": "onType",
+          "nodePath": null,
+          "experimental": {},
+          "problems": {},
+          "rulesCustomizations": [],
+          "onIgnoredFiles": "off",
+          "quiet": false,
+          "codeAction": {
+            "disableRuleComment": {
+              "enable": true,
+              "location": "separateLine",
+              "commentStyle": "line"
+            },
+            "showDocumentation": {
+              "enable": true
+            }
+          },
+          "codeActionOnSave": {
+            "mode": "all"
+          },
+          "workingDirectory": {
+            "mode": "location"
+          },
+          "workspaceFolder": {
+            "name": "${projectName}",
+            "uri": "${projectUri}"
+          }
+        }
+      },
+      "install": {
+        "kind": "npm",
+        "package": "vscode-langservers-extracted@4.10.0"
+      }
+    }
+  ]
+}

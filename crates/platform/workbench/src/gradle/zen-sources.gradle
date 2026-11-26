@@ -1,0 +1,32 @@
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedArtifactResult
+import org.gradle.api.artifacts.result.ResolvedDependencyResult
+import org.gradle.jvm.JvmLibrary
+import org.gradle.language.base.artifact.SourcesArtifact
+
+allprojects { p ->
+    p.tasks.register('zenDownloadSources') {
+        def names = ['compileClasspath', 'runtimeClasspath', 'testCompileClasspath', 'testRuntimeClasspath']
+        def configurations = p.configurations
+        def handler = p.dependencies
+        def path = p.path
+        doLast {
+            def ids = new LinkedHashSet()
+            configurations.findAll { it.name in names && it.canBeResolved }.each { configuration ->
+                configuration.incoming.resolutionResult.allDependencies.each { dependency ->
+                    if (dependency instanceof ResolvedDependencyResult && dependency.selected.id instanceof ModuleComponentIdentifier) {
+                        ids << dependency.selected.id
+                    }
+                }
+            }
+            def found = 0
+            if (!ids.isEmpty()) {
+                def result = handler.createArtifactResolutionQuery().forComponents(ids).withArtifacts(JvmLibrary, SourcesArtifact).execute()
+                result.resolvedComponents.each { component ->
+                    component.getArtifacts(SourcesArtifact).each { if (it instanceof ResolvedArtifactResult) found++ }
+                }
+            }
+            println "${path}: the sources of ${found} of ${ids.size()} libraries"
+        }
+    }
+}

@@ -1,0 +1,5 @@
+{
+  "name": "CSS",
+  "description": "CSS support: highlighting of selectors, properties, values, at-rules, comments and custom properties; folding of blocks and comments; the structure of rules; completion of properties, values, units, at-rules and pseudo-classes; colour previews.",
+  "extensions": ["css"]
+}

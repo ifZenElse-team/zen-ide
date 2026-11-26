@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A synthetic scheme for the tests of zen-jb-import. -->
+<scheme name="Chains" parent_scheme="Default">
+  <colors>
+    <option name="CARET_COLOR" value="0" />
+    <option name="LINE_NUMBERS_COLOR" value="ff" />
+    <option name="SELECTION_BACKGROUND" value="12345" />
+    <option name="CARET_ROW_COLOR" value="not-a-colour" />
+  </colors>
+  <attributes>
+    <option name="DEFAULT_NUMBER">
+      <value>
+        <option name="FOREGROUND" value="abcdef" />
+        <option name="FONT_TYPE" value="2" />
+        <option name="EFFECT_COLOR" value="111111" />
+        <option name="EFFECT_TYPE" value="3" />
+      </value>
+    </option>
+    <option name="DEFAULT_CONSTANT" baseAttributes="MIDDLE" />
+    <option name="MIDDLE" baseAttributes="DEFAULT_NUMBER" />
+    <option name="DEFAULT_KEYWORD" baseAttributes="LOOP_A" />
+    <option name="LOOP_A" baseAttributes="LOOP_B" />
+    <option name="LOOP_B" baseAttributes="LOOP_A" />
+    <option name="DEFAULT_STRING" baseAttributes="NOT_IN_THIS_FILE" />
+    <option name="DEFAULT_METADATA">
+      <value>
+        <option name="BACKGROUND" value="222222" />
+        <option name="EFFECT_TYPE" value="1" />
+      </value>
+    </option>
+  </attributes>
+</scheme>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Synthetic fixture written for the Zen IDE tests from the public format documentation; not taken from any JetBrains product. -->
+<project version="4">
+  <component name="Encoding" addBOMForNewFiles="with NO BOM">
+    <file url="file://$PROJECT_DIR$/legacy" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/legacy/notes.txt" charset="KOI8-R" />
+    <file url="PROJECT" charset="UTF-8" />
+  </component>
+</project>

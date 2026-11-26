@@ -1,0 +1,20 @@
+{
+  "name": "GitLab CI",
+  "description": "Highlights GitLab CI/CD configuration: keywords, job names, CI/CD variables, rules expressions, anchors, !reference tags, strings and comments.",
+  "extensions": [],
+  "names": [".gitlab-ci.yml", ".gitlab-ci.yaml", "*.gitlab-ci.yml", "*.gitlab-ci.yaml"],
+  "schemas": [
+    {
+      "id": "gitlab-ci",
+      "name": "GitLab CI/CD",
+      "server": "yaml-language-server",
+      "entry": "ci.json",
+      "files": [
+        ".gitlab-ci.yml",
+        ".gitlab-ci.yaml",
+        "*.gitlab-ci.yml",
+        "*.gitlab-ci.yaml"
+      ]
+    }
+  ]
+}

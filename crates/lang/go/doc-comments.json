@@ -1,0 +1,9 @@
+[
+  {
+    "language": "go",
+    "opening": "//",
+    "keywords": ["func", "type", "var", "const"],
+    "parameterName": "first",
+    "text": "// $NAME$ $END$"
+  }
+]

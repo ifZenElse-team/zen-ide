@@ -1,0 +1,27 @@
+processing-compiler-page = Компилятор
+processing-compiler-note = Как IDE сама компилирует код на Java, когда собирает Java-приложение через javac.
+processing-page = Обработчики аннотаций
+processing-no-project = Откройте проект, чтобы изменить настройки обработки аннотаций; они хранятся для каждого проекта.
+processing-unknown = Настройки обработки аннотаций { $key } нет.
+processing-bad-value = Настройка обработки аннотаций { $key } не может быть { $value }.
+processing-enabled = Включить обработку аннотаций
+processing-source = Брать обработчики из:
+processing-source-build = Сборки проекта (Maven или Gradle)
+processing-source-custom = Пути к обработчикам
+processing-custom-path = Путь к обработчикам:
+processing-from-build = Из сборки { $tool }: { $value }
+processing-generated = Сохранять сгенерированные исходники относительно модуля
+processing-generated-main = Папка основных исходников:
+processing-options = Параметры обработчиков аннотаций
+processing-options-field = Параметры:
+processing-options-note = Параметры разделяются точкой с запятой: name=value; other=value. Они передаются как -Aname=value поверх параметров сборки.
+processing-lombok = Lombok
+processing-lombok-none = Проект не зависит от Lombok.
+processing-lombok-found = Lombok { $version }: языковой сервер Java работает с агентом { $jar }.
+processing-lombok-newest = Lombok { $version }, самый новый в локальных репозиториях, так как сборка не называет версию: языковой сервер Java работает с агентом { $jar }.
+processing-lombok-missing = { $file } зависит от Lombok { $version }, которого ещё нет в локальном репозитории Maven или кэше Gradle. Перезагрузите проект, чтобы сборка его скачала; после этого языковой сервер Java перезапустится с ним.
+processing-reach-note = Эти настройки действуют, когда IDE компилирует Java-приложение через javac, и включают или выключают обработку аннотаций языковым сервером Java в проектах Gradle. В проектах Maven языковой сервер следует обработчикам и параметрам из pom.xml.
+processing-restart-lombok = { $server } перезапускается с агентом Lombok { $version }.
+processing-restart-no-lombok = { $server } перезапускается без Lombok: проект больше от него не зависит.
+processing-restart-settings = { $server } перезапускается, чтобы применить настройки обработки аннотаций.
+processing-restart-jdk = { $server } перезапускается с JDK проекта { $version }.

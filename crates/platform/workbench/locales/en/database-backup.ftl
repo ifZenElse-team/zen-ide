@@ -1,0 +1,35 @@
+# Zen Workbench: backing up and restoring databases with pg_dump, pg_restore, psql, mysqldump and mysql.
+
+database-backup-unsupported = { $name } has no backup tools here; PostgreSQL, MySQL and MariaDB connections do.
+database-backup-ssh = { $name } is reached through an SSH tunnel; backup and restore run the tools directly against the server, which does not work through the tunnel yet.
+database-backup-no-database = { $name } names no database: choose the database to back up or restore.
+database-backup-password-needed = A password is needed for { $name }: save it for the connection or enter it for this run.
+database-backup-relative = { $path } is not an absolute path.
+database-backup-no-folder = The folder { $path } does not exist.
+database-backup-exists = { $path } already exists.
+database-backup-unknown-run = Run { $id } is not a backup or restore of this window.
+database-backup-searching = Looking for the tools on PATH, in Homebrew and in Docker…
+database-backup-no-tool = { $tool } was not found on PATH, in Homebrew's folders or in Postgres.app.{ $docker } Install it, for example with `{ $install }`, and try again.
+database-backup-docker-without = { " " }The Docker container { $container } does not have it either.
+database-backup-docker-none = { " " }No running Docker container publishes the connection's port.
+database-backup-docker-not-running = { " " }Docker did not answer.
+database-backup-not-in-container = { $tool } in a Docker container cannot read or write a directory backup; use another format or a { $tool } on this computer.
+database-backup-tool-docker = Using { $version } in the Docker container { $container }
+database-backup-tool-homebrew = Using { $version } from Homebrew: { $path }
+database-backup-tool-path = Using { $version }: { $path }
+database-backup-failed = The tool ended with exit code { $code }; nothing was written.
+database-backup-written = Backup written to { $path } ({ $size })
+database-backup-move-failed = The backup could not be moved to { $path }: { $error }
+database-backup-run-name = Backup { $database }
+database-restore-run-name = Restore { $database }
+database-restore-done = Restore into { $database } finished
+database-restore-no-file = The backup { $path } does not exist.
+database-restore-unreadable = The backup { $path } cannot be read: { $error }
+database-restore-read-only = { $name } is read-only: a restore changes the database, so nothing was started.
+database-restore-confirm = Restore { $path } into database { $database } of { $name }? Objects in the backup are created again and their rows loaded; with Clean they are dropped first.
+database-backup-agent-extra-args = Agents cannot pass extra arguments to the backup tools: they could name other files or servers, or run commands. Ask the person to add them in the Backup dialog.
+database-backup-password-unwritable = The password cannot be written into the tool's password file (it holds a line break); type it when the tool asks, or change it.
+database-backup-password-copy = The password file could not be copied into the container, so the tool did not start.
+database-backup-asking-version = Asking the server its version, to use a matching tool…
+database-backup-tool-too-new = { $tool } { $major } is newer than the server (PostgreSQL { $server }): a restore with it can stop half-way, so it was not started. Install a client of the server's version, for example: brew install postgresql@{ $server }
+database-backup-tool-too-old = { $tool } { $major } is older than the server (PostgreSQL { $server }) and cannot back it up. Install a client of the server's version or newer, for example: brew install postgresql@{ $server }

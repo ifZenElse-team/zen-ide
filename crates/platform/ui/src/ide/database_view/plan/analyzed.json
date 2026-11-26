@@ -1,0 +1,109 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Sort",
+      "Startup Cost": 31.62,
+      "Total Cost": 31.62,
+      "Plan Rows": 3,
+      "Actual Total Time": 0.155,
+      "Actual Rows": 2.0,
+      "Actual Loops": 1,
+      "Sort Key": [
+        "(sum(o.total)) DESC"
+      ],
+      "Sort Method": "quicksort",
+      "Sort Space Used": 25,
+      "Sort Space Type": "Memory",
+      "Shared Hit Blocks": 11,
+      "Plans": [
+        {
+          "Node Type": "Aggregate",
+          "Strategy": "Hashed",
+          "Partial Mode": "Simple",
+          "Startup Cost": 31.55,
+          "Total Cost": 31.59,
+          "Plan Rows": 3,
+          "Actual Total Time": 0.147,
+          "Actual Rows": 2.0,
+          "Actual Loops": 1,
+          "Group Key": [
+            "c.country"
+          ],
+          "Planned Partitions": 0,
+          "HashAgg Batches": 1,
+          "Peak Memory Usage": 32,
+          "Disk Usage": 0,
+          "Shared Hit Blocks": 8,
+          "Plans": [
+            {
+              "Node Type": "Hash Join",
+              "Join Type": "Inner",
+              "Startup Cost": 6.16,
+              "Total Cost": 27.07,
+              "Plan Rows": 598,
+              "Actual Total Time": 0.099,
+              "Actual Rows": 540.0,
+              "Actual Loops": 1,
+              "Inner Unique": true,
+              "Hash Cond": "(o.customer = c.id)",
+              "Shared Hit Blocks": 8,
+              "Plans": [
+                {
+                  "Node Type": "Seq Scan",
+                  "Relation Name": "orders",
+                  "Alias": "o",
+                  "Startup Cost": 0.0,
+                  "Total Cost": 18.5,
+                  "Plan Rows": 900,
+                  "Actual Total Time": 0.042,
+                  "Actual Rows": 900.0,
+                  "Actual Loops": 1,
+                  "Filter": "(total > '100'::numeric)",
+                  "Rows Removed by Filter": 100,
+                  "Shared Hit Blocks": 6
+                },
+                {
+                  "Node Type": "Hash",
+                  "Startup Cost": 4.5,
+                  "Total Cost": 4.5,
+                  "Plan Rows": 133,
+                  "Actual Total Time": 0.016,
+                  "Actual Rows": 133.0,
+                  "Actual Loops": 1,
+                  "Hash Buckets": 1024,
+                  "Original Hash Buckets": 1024,
+                  "Hash Batches": 1,
+                  "Original Hash Batches": 1,
+                  "Peak Memory Usage": 14,
+                  "Shared Hit Blocks": 2,
+                  "Plans": [
+                    {
+                      "Node Type": "Seq Scan",
+                      "Relation Name": "customers",
+                      "Alias": "c",
+                      "Startup Cost": 0.0,
+                      "Total Cost": 4.5,
+                      "Plan Rows": 133,
+                      "Actual Total Time": 0.009,
+                      "Actual Rows": 133.0,
+                      "Actual Loops": 1,
+                      "Filter": "(country <> 'FR'::text)",
+                      "Rows Removed by Filter": 67,
+                      "Shared Hit Blocks": 2
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.234,
+    "Triggers": [],
+    "Execution Time": 0.176,
+    "Settings": {
+      "work_mem": "64MB"
+    }
+  }
+]

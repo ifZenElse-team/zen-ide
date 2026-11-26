@@ -1,0 +1,82 @@
+# Zen UI: Caffeine, which keeps the computer awake: its tool window on the right stripe and
+# Settings → Tools → Caffeine. English is the source language (ADR-0024).
+
+ide-caffeine-title = Caffeine
+ide-caffeine-unavailable = Caffeine is not available on this system: it needs caffeinate (macOS) or systemd-inhibit (Linux)
+ide-caffeine-off = Caffeine is off: the computer may sleep as usual
+# $what: what is kept awake, e.g. "the system (idle sleep), the display"; $length: e.g. "for 42 min more".
+ide-caffeine-on = Caffeine keeps awake: { $what }, { $length }
+ide-caffeine-for-ever = until you turn it off
+ide-caffeine-for-time = for { $left } more
+ide-caffeine-for-while = while something runs: { $what }
+ide-caffeine-busy = Running now: { $what }
+ide-caffeine-paused-battery = Paused: the computer runs on its battery
+ide-caffeine-paused-low = Paused: the battery is below { $level }%
+ide-caffeine-paused-waiting = Paused: nothing it watches runs now
+ide-caffeine-failed = The keeper program could not start: { $error }
+ide-caffeine-lid = With the lid closed the display sleeps anyway: that is the system's rule
+# What the coffee drinker in the tool window does, by Caffeine's state.
+ide-caffeine-look-asleep = Asleep: Caffeine is off
+ide-caffeine-look-waiting = Waiting, the cup down: Caffeine pauses
+ide-caffeine-look-steady = Sipping steadily: the system stays awake
+ide-caffeine-look-wide = Eyes wide open: the display stays on too
+ide-caffeine-look-wired = Wide awake on everything: every keep-awake option is on
+# $left: e.g. "42 min".
+ide-caffeine-unavailable-short = Not available on this system
+ide-caffeine-summary-off = Off: the computer may sleep as usual
+ide-caffeine-summary-on = Keeping awake: { $what } · { $length }
+ide-caffeine-short-everything = everything
+ide-caffeine-short-idle = the system
+ide-caffeine-short-display = the display
+ide-caffeine-short-disk = the disk
+ide-caffeine-short-system = the system on mains power
+ide-caffeine-short-user = "user is active"
+ide-caffeine-short-while = while something runs
+ide-caffeine-paused-low-short = Paused: the battery is low
+ide-caffeine-failed-short = The keeper program could not start
+ide-caffeine-maximum = Maximum Caffeine
+ide-caffeine-maximum-hint = Every keep-awake option, until turned off
+ide-caffeine-maximum-off-hint = On at maximum: click to turn it off
+ide-caffeine-time-left = { $left } left
+ide-caffeine-left-minutes = { $minutes } min
+ide-caffeine-left-hours = { $hours } h { $minutes } min
+ide-caffeine-left-whole-hours = { $hours } h
+ide-caffeine-min = min
+ide-caffeine-turn-on = Turn On
+ide-caffeine-turn-off = Turn Off
+ide-caffeine-menu-for = Keep awake for
+ide-caffeine-for-ever-item = Until Turned Off
+ide-caffeine-custom = Custom:
+ide-caffeine-custom-start = Start
+ide-caffeine-while-item = While Something Runs
+ide-caffeine-menu-while = While
+ide-caffeine-while-run = Runs and tests
+ide-caffeine-while-debug = Debug sessions
+ide-caffeine-while-task = Background tasks (go get, cargo, Git push and pull)
+ide-caffeine-while-indexing = Indexing
+ide-caffeine-while-agent = Agents connected over MCP
+ide-caffeine-menu-what = What to keep awake
+ide-caffeine-what-idle = The system (idle sleep)
+ide-caffeine-what-display = The display
+ide-caffeine-what-disk = The disk
+ide-caffeine-what-system = The system, on mains power only
+ide-caffeine-what-user = "User is active" (wakes the display)
+ide-caffeine-menu-battery = Battery
+ide-caffeine-off-on-battery = Pause on battery power
+ide-caffeine-low-battery = Pause below
+ide-caffeine-resume = Go on again when charging
+ide-caffeine-settings = Caffeine Settings…
+
+settings-caffeine = Caffeine
+settings-caffeine-about = Caffeine keeps the computer awake for long builds, tests and agent sessions. It runs the system's own caffeinate (systemd-inhibit on Linux) as a child of the IDE, so nothing stays awake once the IDE has ended. Its tool window, the coffee cup on the right stripe under Git, turns it on and off.
+settings-caffeine-defaults = These are the defaults: Turn On in the Caffeine tool window, and the start with the IDE, turn Caffeine on with them; the tool window changes them too.
+settings-caffeine-what = What to keep awake
+settings-caffeine-lid = Closing the lid of a laptop still puts the display to sleep: that is the system's rule.
+settings-caffeine-length = Turn on for
+settings-caffeine-length-custom = Custom: { $minutes } min
+settings-caffeine-custom-minutes = Custom duration, in minutes:
+settings-caffeine-while = While something runs, watch
+settings-caffeine-battery = Battery
+settings-caffeine-low-level = Battery level, in percent:
+settings-caffeine-launch = Start
+settings-caffeine-start-on-launch = Turn Caffeine on when the IDE starts

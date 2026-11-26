@@ -1,0 +1,35 @@
+# Локальная история (zen_workbench::local_history, ADR-0060).
+
+local-history-save = Сохранение
+local-history-external = Внешнее изменение
+local-history-before = До действия «{ $action }»
+local-history-deleted = Удалён
+local-history-current = Текущая версия
+local-history-action-replace-in-files = Замена в файлах
+local-history-action-rename = Переименование
+local-history-action-rollback = Откат
+local-history-action-revert = Возврат версии
+local-history-action-apply-patch = Применение патча
+local-history-action-file-encoding = Изменение кодировки файла
+local-history-action-extract = Выделение или встраивание
+local-history-action-byte-order-mark = Смена метки порядка байтов
+local-history-action-line-separators = Смена разделителей строк
+local-history-action-editorconfig-export = Экспорт в файл EditorConfig
+local-history-action-preview-edit = Правка в предпросмотре поиска в файлах
+local-history-action-file-edit = Правка средой разработки
+local-history-action-safe-delete = Безопасное удаление
+local-history-action-move = Перемещение
+local-history-action-change-signature = Изменение сигнатуры
+local-history-action-pull-members-up = Перенос членов вверх
+local-history-action-push-members-down = Перенос членов вниз
+local-history-action-extract-superclass = Выделение суперкласса
+local-history-action-extract-interface = Выделение интерфейса
+local-history-action-encapsulate-fields = Инкапсуляция полей
+local-history-action-introduce-parameter-object = Введение объекта параметров
+local-history-error-off = Локальная история здесь недоступна.
+local-history-error-outside = { $path } не входит в проект.
+local-history-error-no-version = В локальной истории нет такой версии { $path }.
+local-history-error-no-content = { $path } в тот момент не существовал.
+local-history-error-label = Введите метку.
+local-history-error-read = Не удалось прочитать локальную историю: { $error }
+local-history-error-write = Не удалось вернуть { $path }: { $error }

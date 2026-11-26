@@ -1,0 +1,84 @@
+{
+  "name": "Biome",
+  "description": "Biome in the editor: offered when a project has biome.json; its problems as you type in JavaScript, TypeScript, JSX, TSX, JSON, CSS and GraphQL files, beside their own language server, its quick fixes and safe fixes on save, and Reformat Code with Biome. Biome comes from the project's node_modules.",
+  "extensions": [],
+  "project": {
+    "markers": {
+      "files": [
+        "biome.json",
+        "biome.jsonc"
+      ],
+      "packages": [
+        "@biomejs/biome"
+      ]
+    }
+  },
+  "languageServers": [
+    {
+      "id": "biome",
+      "name": "Biome",
+      "languages": [
+        "javascript",
+        "javascriptreact",
+        "typescript",
+        "typescriptreact",
+        "json",
+        "jsonc",
+        "css",
+        "graphql"
+      ],
+      "languageIds": {
+        "js": "javascript",
+        "mjs": "javascript",
+        "cjs": "javascript",
+        "jsx": "javascriptreact",
+        "ts": "typescript",
+        "mts": "typescript",
+        "cts": "typescript",
+        "tsx": "typescriptreact",
+        "json": "json",
+        "jsonc": "jsonc",
+        "css": "css",
+        "graphql": "graphql",
+        "gql": "graphql"
+      },
+      "extensions": [
+        "js",
+        "mjs",
+        "cjs",
+        "jsx",
+        "ts",
+        "mts",
+        "cts",
+        "tsx",
+        "json",
+        "jsonc",
+        "css",
+        "graphql",
+        "gql"
+      ],
+      "command": "biome",
+      "args": [
+        "lsp-proxy"
+      ],
+      "workspaceSymbols": false,
+      "alongside": true,
+      "formats": true,
+      "fromProject": true,
+      "when": {
+        "files": [
+          "biome.json",
+          "biome.jsonc"
+        ]
+      },
+      "fixOnSave": {
+        "kind": "source.fixAll.biome",
+        "setting": "codeQuality.biome.fixOnSave"
+      },
+      "install": {
+        "kind": "manual",
+        "hint": "Biome runs from the project: add it with npm install --save-dev @biomejs/biome."
+      }
+    }
+  ]
+}

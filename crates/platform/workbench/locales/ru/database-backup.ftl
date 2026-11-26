@@ -1,0 +1,35 @@
+# Zen Workbench: резервное копирование и восстановление баз данных через pg_dump, pg_restore, psql, mysqldump и mysql.
+
+database-backup-unsupported = Для { $name } здесь нет инструментов резервного копирования; они есть у подключений PostgreSQL, MySQL и MariaDB.
+database-backup-ssh = { $name } доступно через SSH-туннель; резервное копирование и восстановление запускают инструменты напрямую к серверу, а через туннель это пока не работает.
+database-backup-no-database = В { $name } не указана база данных: выберите базу для копирования или восстановления.
+database-backup-password-needed = Для { $name } нужен пароль: сохраните его в подключении или введите для этого запуска.
+database-backup-relative = { $path } — не абсолютный путь.
+database-backup-no-folder = Папки { $path } не существует.
+database-backup-exists = { $path } уже существует.
+database-backup-unknown-run = Запуск { $id } — не резервное копирование и не восстановление этого окна.
+database-backup-searching = Поиск инструментов в PATH, Homebrew и Docker…
+database-backup-no-tool = { $tool } не найден ни в PATH, ни в папках Homebrew, ни в Postgres.app.{ $docker } Установите его, например командой `{ $install }`, и повторите.
+database-backup-docker-without = { " " }В Docker-контейнере { $container } его тоже нет.
+database-backup-docker-none = { " " }Ни один запущенный Docker-контейнер не публикует порт подключения.
+database-backup-docker-not-running = { " " }Docker не ответил.
+database-backup-not-in-container = { $tool } в Docker-контейнере не может читать или писать копию в формате каталога; выберите другой формат или { $tool } на этом компьютере.
+database-backup-tool-docker = Используется { $version } в Docker-контейнере { $container }
+database-backup-tool-homebrew = Используется { $version } из Homebrew: { $path }
+database-backup-tool-path = Используется { $version }: { $path }
+database-backup-failed = Инструмент завершился с кодом { $code }; ничего не записано.
+database-backup-written = Резервная копия записана в { $path } ({ $size })
+database-backup-move-failed = Не удалось переместить резервную копию в { $path }: { $error }
+database-backup-run-name = Копия { $database }
+database-restore-run-name = Восстановление { $database }
+database-restore-done = Восстановление в { $database } завершено
+database-restore-no-file = Резервной копии { $path } не существует.
+database-restore-unreadable = Не удалось прочитать резервную копию { $path }: { $error }
+database-restore-read-only = { $name } только для чтения: восстановление меняет базу данных, поэтому ничего не запущено.
+database-restore-confirm = Восстановить { $path } в базу данных { $database } подключения { $name }? Объекты из копии будут созданы заново и заполнены строками; с Clean они сначала удаляются.
+database-backup-agent-extra-args = Агенты не могут передавать дополнительные аргументы инструментам резервного копирования: ими можно указать другие файлы или серверы или выполнить команды. Попросите человека добавить их в диалоге резервного копирования.
+database-backup-password-unwritable = Пароль нельзя записать в файл пароля инструмента (в нём есть перевод строки); введите его, когда инструмент спросит, или смените пароль.
+database-backup-password-copy = Не удалось скопировать файл пароля в контейнер, поэтому инструмент не запущен.
+database-backup-asking-version = Узнаём версию сервера, чтобы взять подходящий инструмент…
+database-backup-tool-too-new = { $tool } { $major } новее сервера (PostgreSQL { $server }): восстановление им может остановиться на полпути, поэтому оно не запущено. Установите клиент версии сервера, например: brew install postgresql@{ $server }
+database-backup-tool-too-old = { $tool } { $major } старше сервера (PostgreSQL { $server }) и не может сделать его резервную копию. Установите клиент версии сервера или новее, например: brew install postgresql@{ $server }

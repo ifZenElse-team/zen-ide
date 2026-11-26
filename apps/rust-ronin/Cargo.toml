@@ -1,0 +1,30 @@
+[package]
+name = "rust-ronin"
+description = "RustRonin: the Zen IDE for Rust."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[[bin]]
+name = "rustronin"
+path = "src/main.rs"
+
+[dependencies]
+eframe.workspace = true
+serde_json.workspace = true
+zen-core.workspace = true
+zen-i18n.workspace = true
+zen-lang-go.workspace = true
+zen-lang-rust.workspace = true
+zen-modules.workspace = true
+zen-ui.workspace = true
+zen-update.workspace = true
+zen-workbench.workspace = true
+
+[dev-dependencies]
+zen-testkit.workspace = true
+
+[lints]
+workspace = true

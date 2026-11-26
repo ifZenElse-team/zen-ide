@@ -1,0 +1,16 @@
+{"Time":"2026-10-18T18:06:37.568871+08:00","Action":"start","Package":"example.com/demo/ex"}
+{"Time":"2026-10-18T18:06:37.949205+08:00","Action":"run","Package":"example.com/demo/ex","Test":"ExampleHello"}
+{"Time":"2026-10-18T18:06:37.949527+08:00","Action":"output","Package":"example.com/demo/ex","Test":"ExampleHello","Output":"=== RUN   ExampleHello\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:37.949658+08:00","Action":"output","Package":"example.com/demo/ex","Test":"ExampleHello","Output":"--- PASS: ExampleHello (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:37.949699+08:00","Action":"pass","Package":"example.com/demo/ex","Test":"ExampleHello","Elapsed":0}
+{"Time":"2026-10-18T18:06:37.949718+08:00","Action":"run","Package":"example.com/demo/ex","Test":"ExampleWrong"}
+{"Time":"2026-10-18T18:06:37.94973+08:00","Action":"output","Package":"example.com/demo/ex","Test":"ExampleWrong","Output":"=== RUN   ExampleWrong\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:37.949746+08:00","Action":"output","Package":"example.com/demo/ex","Test":"ExampleWrong","Output":"--- FAIL: ExampleWrong (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:37.949761+08:00","Action":"output","Package":"example.com/demo/ex","Test":"ExampleWrong","Output":"got:\n"}
+{"Time":"2026-10-18T18:06:37.949772+08:00","Action":"output","Package":"example.com/demo/ex","Test":"ExampleWrong","Output":"got this\n"}
+{"Time":"2026-10-18T18:06:37.949782+08:00","Action":"output","Package":"example.com/demo/ex","Test":"ExampleWrong","Output":"want:\n"}
+{"Time":"2026-10-18T18:06:37.949792+08:00","Action":"output","Package":"example.com/demo/ex","Test":"ExampleWrong","Output":"want that\n"}
+{"Time":"2026-10-18T18:06:37.949802+08:00","Action":"fail","Package":"example.com/demo/ex","Test":"ExampleWrong","Elapsed":0}
+{"Time":"2026-10-18T18:06:37.949811+08:00","Action":"output","Package":"example.com/demo/ex","Output":"FAIL\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:37.950845+08:00","Action":"output","Package":"example.com/demo/ex","Output":"FAIL\texample.com/demo/ex\t0.382s\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:37.950874+08:00","Action":"fail","Package":"example.com/demo/ex","Elapsed":0.382}

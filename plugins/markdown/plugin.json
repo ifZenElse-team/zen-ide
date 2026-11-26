@@ -1,0 +1,8 @@
+{
+  "name": "Markdown",
+  "description": "Markdown: highlighting of headings, emphasis, links, lists, quotes and code; the headings in the Structure view; folding of sections and fenced code. The preview beside the text is the IDE's own.",
+  "extensions": [
+    "md",
+    "markdown"
+  ]
+}

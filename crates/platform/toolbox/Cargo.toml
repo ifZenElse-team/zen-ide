@@ -1,0 +1,28 @@
+[package]
+name = "zen-toolbox"
+description = "Zen Platform, layer L5: the tools Zen Toolbox manages, their states, and the toolbox commands."
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+zen-core.workspace = true
+zen-i18n.workspace = true
+zen-project.workspace = true
+zen-update.workspace = true
+schemars.workspace = true
+semver.workspace = true
+serde.workspace = true
+
+[dev-dependencies]
+# Each test thread has its own interface language (zen-i18n's docs).
+zen-i18n = { workspace = true, features = ["thread-languages"] }
+flate2.workspace = true
+serde_json.workspace = true
+tar.workspace = true
+tempfile.workspace = true
+
+[lints]
+workspace = true

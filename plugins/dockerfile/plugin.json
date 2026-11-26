@@ -1,0 +1,405 @@
+{
+  "name": "Docker",
+  "description": "Highlights Dockerfiles and Containerfiles (instructions, flags, strings, variables, heredocs, comments, parser directives) and completes and checks their instructions and flags, and Docker Compose files (keys, strings, numbers, constants, anchors, ${VAR} interpolation), whose keys it completes and checks against the Compose Specification, and has a Docker tool window that lists containers, images, volumes and networks and starts, stops and deletes them through the docker command.",
+  "runs": [
+    "docker"
+  ],
+  "toolWindows": [
+    {
+      "id": "docker",
+      "title": {
+        "en": "Docker",
+        "ru": "Docker"
+      },
+      "icon": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 16 16\"><g fill=\"none\" stroke=\"black\" stroke-width=\"1.2\" stroke-linejoin=\"round\"><rect x=\"1.6\" y=\"8.6\" width=\"5.6\" height=\"5.2\" rx=\"0.6\"/><rect x=\"8.8\" y=\"8.6\" width=\"5.6\" height=\"5.2\" rx=\"0.6\"/><rect x=\"5.2\" y=\"2.2\" width=\"5.6\" height=\"5.2\" rx=\"0.6\"/></g></svg>",
+      "side": "right",
+      "sections": [
+        {
+          "id": "containers",
+          "title": {
+            "en": "Containers",
+            "ru": "Контейнеры"
+          },
+          "columns": [
+            "name",
+            "image",
+            "status",
+            "ports"
+          ],
+          "columnTitles": {
+            "name": {
+              "en": "Name",
+              "ru": "Имя"
+            },
+            "image": {
+              "en": "Image",
+              "ru": "Образ"
+            },
+            "status": {
+              "en": "Status",
+              "ru": "Состояние"
+            },
+            "ports": {
+              "en": "Ports",
+              "ru": "Порты"
+            }
+          },
+          "list": {
+            "program": "docker",
+            "args": [
+              "container",
+              "ls",
+              "--all",
+              "--no-trunc",
+              "--format",
+              "{{json .}}"
+            ]
+          },
+          "actions": [
+            {
+              "id": "logs",
+              "title": {
+                "en": "Show Log",
+                "ru": "Показать журнал"
+              },
+              "kind": "stream",
+              "rows": true,
+              "program": "docker",
+              "args": [
+                "container",
+                "logs",
+                "--follow",
+                "--tail",
+                "200",
+                "${row.id}"
+              ]
+            },
+            {
+              "id": "shell",
+              "title": {
+                "en": "Open Shell",
+                "ru": "Открыть оболочку"
+              },
+              "kind": "terminal",
+              "rows": true,
+              "program": "docker",
+              "args": [
+                "container",
+                "exec",
+                "--interactive",
+                "--tty",
+                "${row.id}",
+                "sh"
+              ]
+            },
+            {
+              "id": "start",
+              "title": {
+                "en": "Start",
+                "ru": "Запустить"
+              },
+              "kind": "change",
+              "rows": true,
+              "program": "docker",
+              "args": [
+                "container",
+                "start",
+                "${row.id}"
+              ]
+            },
+            {
+              "id": "stop",
+              "title": {
+                "en": "Stop",
+                "ru": "Остановить"
+              },
+              "kind": "change",
+              "rows": true,
+              "program": "docker",
+              "args": [
+                "container",
+                "stop",
+                "${row.id}"
+              ]
+            },
+            {
+              "id": "restart",
+              "title": {
+                "en": "Restart",
+                "ru": "Перезапустить"
+              },
+              "kind": "change",
+              "rows": true,
+              "program": "docker",
+              "args": [
+                "container",
+                "restart",
+                "${row.id}"
+              ]
+            },
+            {
+              "id": "remove",
+              "title": {
+                "en": "Delete",
+                "ru": "Удалить"
+              },
+              "kind": "destroy",
+              "rows": true,
+              "program": "docker",
+              "args": [
+                "container",
+                "rm",
+                "${row.id}"
+              ]
+            },
+            {
+              "id": "prune",
+              "title": {
+                "en": "Delete Stopped Containers",
+                "ru": "Удалить остановленные контейнеры"
+              },
+              "kind": "destroy",
+              "rows": false,
+              "program": "docker",
+              "args": [
+                "container",
+                "prune",
+                "--force"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "images",
+          "title": {
+            "en": "Images",
+            "ru": "Образы"
+          },
+          "columns": [
+            "image",
+            "size",
+            "created"
+          ],
+          "columnTitles": {
+            "image": {
+              "en": "Image",
+              "ru": "Образ"
+            },
+            "size": {
+              "en": "Size",
+              "ru": "Размер"
+            },
+            "created": {
+              "en": "Created",
+              "ru": "Создан"
+            }
+          },
+          "list": {
+            "program": "docker",
+            "args": [
+              "image",
+              "ls",
+              "--format",
+              "{{json .}}"
+            ]
+          },
+          "actions": [
+            {
+              "id": "pull",
+              "title": {
+                "en": "Pull",
+                "ru": "Загрузить"
+              },
+              "kind": "change",
+              "rows": true,
+              "program": "docker",
+              "args": [
+                "image",
+                "pull",
+                "${row.image}"
+              ]
+            },
+            {
+              "id": "remove",
+              "title": {
+                "en": "Delete",
+                "ru": "Удалить"
+              },
+              "kind": "destroy",
+              "rows": true,
+              "program": "docker",
+              "args": [
+                "image",
+                "rm",
+                "${row.id}"
+              ]
+            },
+            {
+              "id": "prune",
+              "title": {
+                "en": "Delete Unused Images",
+                "ru": "Удалить неиспользуемые образы"
+              },
+              "kind": "destroy",
+              "rows": false,
+              "program": "docker",
+              "args": [
+                "image",
+                "prune",
+                "--force"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "volumes",
+          "title": {
+            "en": "Volumes",
+            "ru": "Тома"
+          },
+          "columns": [
+            "name",
+            "driver"
+          ],
+          "columnTitles": {
+            "name": {
+              "en": "Name",
+              "ru": "Имя"
+            },
+            "driver": {
+              "en": "Driver",
+              "ru": "Драйвер"
+            }
+          },
+          "list": {
+            "program": "docker",
+            "args": [
+              "volume",
+              "ls",
+              "--format",
+              "{{json .}}"
+            ]
+          },
+          "actions": [
+            {
+              "id": "remove",
+              "title": {
+                "en": "Delete",
+                "ru": "Удалить"
+              },
+              "kind": "destroy",
+              "rows": true,
+              "program": "docker",
+              "args": [
+                "volume",
+                "rm",
+                "${row.id}"
+              ]
+            },
+            {
+              "id": "prune",
+              "title": {
+                "en": "Delete Unused Volumes",
+                "ru": "Удалить неиспользуемые тома"
+              },
+              "kind": "destroy",
+              "rows": false,
+              "program": "docker",
+              "args": [
+                "volume",
+                "prune",
+                "--force"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "networks",
+          "title": {
+            "en": "Networks",
+            "ru": "Сети"
+          },
+          "columns": [
+            "name",
+            "driver",
+            "scope"
+          ],
+          "columnTitles": {
+            "name": {
+              "en": "Name",
+              "ru": "Имя"
+            },
+            "driver": {
+              "en": "Driver",
+              "ru": "Драйвер"
+            },
+            "scope": {
+              "en": "Scope",
+              "ru": "Область"
+            }
+          },
+          "list": {
+            "program": "docker",
+            "args": [
+              "network",
+              "ls",
+              "--format",
+              "{{json .}}"
+            ]
+          },
+          "actions": [
+            {
+              "id": "remove",
+              "title": {
+                "en": "Delete",
+                "ru": "Удалить"
+              },
+              "kind": "destroy",
+              "rows": true,
+              "program": "docker",
+              "args": [
+                "network",
+                "rm",
+                "${row.id}"
+              ]
+            },
+            {
+              "id": "prune",
+              "title": {
+                "en": "Delete Unused Networks",
+                "ru": "Удалить неиспользуемые сети"
+              },
+              "kind": "destroy",
+              "rows": false,
+              "program": "docker",
+              "args": [
+                "network",
+                "prune",
+                "--force"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "extensions": [
+    "dockerfile",
+    "containerfile"
+  ],
+  "names": [
+    "Dockerfile",
+    "Dockerfile.*",
+    "*.Dockerfile",
+    "Containerfile",
+    "Containerfile.*",
+    "docker-compose.yml",
+    "docker-compose.yaml",
+    "docker-compose.*.yml",
+    "docker-compose.*.yaml",
+    "compose.yml",
+    "compose.yaml",
+    "compose.*.yml",
+    "compose.*.yaml"
+  ]
+}

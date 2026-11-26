@@ -1,0 +1,9 @@
+workbench-macro-exists = A macro named “{ $name }” already exists.
+workbench-macro-unknown = There is no macro named “{ $name }”.
+workbench-macro-no-last = No macro has been recorded yet.
+workbench-macro-empty-name = A macro needs a name.
+workbench-macro-no-step = The macro “{ $name }” has no action { $step }.
+workbench-macro-save-failed = Cannot save the macros: { $detail }
+workbench-macro-unreadable = Cannot read the saved macros: { $detail }
+workbench-macro-corrupt = The macros file is damaged ({ $detail }); it is kept as { $file }.
+workbench-macro-step-refused = Action { $step } of the macro ({ $command }) is not one a macro can play.

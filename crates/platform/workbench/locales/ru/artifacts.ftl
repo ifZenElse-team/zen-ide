@@ -1,0 +1,16 @@
+artifacts-built = Собран { $name }: { $path } (файлов: { $count })
+artifacts-copied = Скопирована рядом: { $path }
+artifacts-run-all = Сборка артефактов
+artifacts-error-entry = Не удалось положить { $name } в jar: { $error }
+artifacts-error-library = Не удалось прочитать библиотеку { $path }: { $error }
+artifacts-error-write = Не удалось сохранить артефакты: { $error }
+artifacts-error-no-module = В проекте нет модуля { $module }.
+artifacts-error-no-build = У { $module } нет сборки Maven или Gradle, которая бы его упаковала.
+artifacts-error-none = В проекте нет артефактов для сборки: добавьте артефакт в «Структура проекта» → «Артефакты».
+artifacts-error-unknown = В проекте нет артефакта { $name }.
+artifacts-error-cannot-build = Не удалось собрать артефакты: { $error }
+artifacts-error-no-name = У артефакта должно быть имя.
+artifacts-error-taken = Артефакт с именем { $name } уже есть.
+artifacts-before-launch = Сборка артефактов
+artifacts-before-launch-field = Артефакты:
+artifacts-before-launch-none = Выберите артефакты для сборки.

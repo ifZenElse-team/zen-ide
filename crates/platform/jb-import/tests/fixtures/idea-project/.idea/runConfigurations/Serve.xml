@@ -1,0 +1,17 @@
+<!-- Synthetic fixture written for the Zen IDE tests from the public format documentation; not taken from any JetBrains product. -->
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Serve" type="GoApplicationRunConfiguration" factoryName="Go Application">
+    <module name="orchard" />
+    <working_directory value="$PROJECT_DIR$" />
+    <parameters value="--listen :7311" />
+    <envs>
+      <env name="ORCHARD_MODE" value="dev" />
+      <env name="ORCHARD_SEED" value="17" />
+    </envs>
+    <kind value="PACKAGE" />
+    <package value="example.org/orchard" />
+    <directory value="$PROJECT_DIR$" />
+    <filePath value="$PROJECT_DIR$/main.go" />
+    <method v="2" />
+  </configuration>
+</component>

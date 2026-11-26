@@ -1,0 +1,27 @@
+Zen IDE
+Copyright (c) 2026 The ifzenelse team and the Zen IDE contributors.
+
+Licensed under the MIT License or the Apache License, Version 2.0, at your option
+(see LICENSE-MIT and LICENSE-APACHE).
+
+The names "Zen IDE", "Zen Platform", "Zen Toolbox", "RustRonin", "GoGarden", "PyPetal",
+"JvmJizo", "WebWave", "CppCrane", "SharpShuriken", "PhpPagoda", "RubyRyokan",
+"SqlScroll", "DevopsDaruma" and "TestTotami", and any associated logos, are not covered by the licenses above. See TRADEMARKS.md.
+
+Third-party material
+
+This product bundles third-party material under its own licences. Per-file details (author, source,
+licence) are in ATTRIBUTION.md.
+
+Inter font (assets/fonts/Inter-*.ttf) — SIL Open Font License 1.1. See assets/fonts/OFL-Inter.txt.
+JetBrains Mono font (assets/fonts/JetBrainsMono-*.ttf) — SIL Open Font License 1.1. See assets/fonts/OFL-JetBrainsMono.txt.
+egui fallback fonts, compiled in through the epaint_default_fonts crate: Hack (MIT and Bitstream Vera
+licence), Ubuntu-Light (Ubuntu Font Licence 1.0), Noto Emoji (SIL Open Font License 1.1) and
+emoji-icon-font (SIL Open Font License 1.1).
+STIX Two Math font 2.13, compiled in unmodified through the latex-rust crate (math in the Markdown
+preview) — SIL Open Font License 1.1. See assets/fonts/OFL-STIXTwoMath.txt. STIX Fonts is a trademark
+of The Institute of Electrical and Electronics Engineers, Inc.
+The dvips colour names of the LaTeX graphics bundle (drivers.dtx), as the modified and marked table
+data/dvipsnames.tsv of the latex-rust crate — LaTeX Project Public License 1.3c. Copyright 1994 David
+Carlisle and Sebastian Rahtz, 1995-1999 David Carlisle, 2000-2026 The LaTeX Project. The unmodified
+bundle: https://github.com/latex3/latex2e/tree/develop/required/graphics

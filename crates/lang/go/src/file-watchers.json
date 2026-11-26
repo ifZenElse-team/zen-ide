@@ -1,0 +1,29 @@
+[
+  {
+    "name": "go fmt",
+    "fileType": "go",
+    "program": "$GoExecPath$",
+    "arguments": "fmt $FilePath$",
+    "outputPaths": "$FilePath$",
+    "workingDirectory": "$ProjectFileDir$",
+    "triggerOnExternal": false
+  },
+  {
+    "name": "goimports",
+    "fileType": "go",
+    "program": "goimports",
+    "arguments": "-w $FilePath$",
+    "outputPaths": "$FilePath$",
+    "workingDirectory": "$ProjectFileDir$",
+    "triggerOnExternal": false
+  },
+  {
+    "name": "golangci-lint",
+    "fileType": "go",
+    "program": "golangci-lint",
+    "arguments": "run $FileDir$",
+    "workingDirectory": "$ProjectFileDir$",
+    "triggerOnExternal": false,
+    "outputFilters": ["^$FILE_PATH$:$LINE$:$COLUMN$: $MESSAGE$"]
+  }
+]

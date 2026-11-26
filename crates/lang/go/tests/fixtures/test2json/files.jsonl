@@ -1,0 +1,8 @@
+{"Time":"2026-10-18T18:06:31.483449+08:00","Action":"start","Package":"command-line-arguments"}
+{"Time":"2026-10-18T18:06:31.866075+08:00","Action":"run","Package":"command-line-arguments","Test":"TestAdd"}
+{"Time":"2026-10-18T18:06:31.866304+08:00","Action":"output","Package":"command-line-arguments","Test":"TestAdd","Output":"=== RUN   TestAdd\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:31.866477+08:00","Action":"output","Package":"command-line-arguments","Test":"TestAdd","Output":"--- PASS: TestAdd (0.00s)\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:31.866502+08:00","Action":"pass","Package":"command-line-arguments","Test":"TestAdd","Elapsed":0}
+{"Time":"2026-10-18T18:06:31.866524+08:00","Action":"output","Package":"command-line-arguments","Output":"PASS\n","OutputType":"frame"}
+{"Time":"2026-10-18T18:06:31.867309+08:00","Action":"output","Package":"command-line-arguments","Output":"ok  \tcommand-line-arguments\t0.384s\n"}
+{"Time":"2026-10-18T18:06:31.867382+08:00","Action":"pass","Package":"command-line-arguments","Elapsed":0.384}

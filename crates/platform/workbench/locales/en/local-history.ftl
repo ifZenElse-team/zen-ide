@@ -1,0 +1,35 @@
+# Local History (zen_workbench::local_history, ADR-0060). English is the source language (ADR-0024).
+
+local-history-save = Save
+local-history-external = External change
+local-history-before = Before { $action }
+local-history-deleted = Deleted
+local-history-current = Current version
+local-history-action-replace-in-files = Replace in Files
+local-history-action-rename = Rename
+local-history-action-rollback = Rollback
+local-history-action-revert = Revert
+local-history-action-apply-patch = Apply Patch
+local-history-action-file-encoding = Change File Encoding
+local-history-action-extract = Extract or Inline
+local-history-action-byte-order-mark = Change Byte Order Mark
+local-history-action-line-separators = Change Line Separators
+local-history-action-editorconfig-export = Export to EditorConfig File
+local-history-action-preview-edit = Edit in Find in Files Preview
+local-history-action-file-edit = Edit by the IDE
+local-history-action-safe-delete = Safe Delete
+local-history-action-move = Move
+local-history-action-change-signature = Change Signature
+local-history-action-pull-members-up = Pull Members Up
+local-history-action-push-members-down = Push Members Down
+local-history-action-extract-superclass = Extract Superclass
+local-history-action-extract-interface = Extract Interface
+local-history-action-encapsulate-fields = Encapsulate Fields
+local-history-action-introduce-parameter-object = Introduce Parameter Object
+local-history-error-off = Local History is not available here.
+local-history-error-outside = { $path } is not in the project.
+local-history-error-no-version = Local History has no such version of { $path }.
+local-history-error-no-content = { $path } did not exist at that moment.
+local-history-error-label = Enter a label.
+local-history-error-read = Cannot read Local History: { $error }
+local-history-error-write = Cannot revert { $path }: { $error }
