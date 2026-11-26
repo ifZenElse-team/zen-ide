@@ -166,6 +166,23 @@ fails the job fails and keeps nothing, so the IDEs' versions never diverge. Its 
 `release-build/`, are kept for 7 days (an IDE's archive is about 40 MB, the six about 240 MB;
 GitLab's limit is 1 GB).
 
+**A trial build** proves that a product builds and packs on a machine, and is never published:
+
+```sh
+cargo xtask release-build gogarden 0.0.0 --trial [--platform macos|linux|windows|all] [--out <dir>]
+```
+
+It builds one product (an IDE or `toolbox`) with the same build, bundling, licence notices and
+packing as a release, and skips what makes a build a release: the source check (a commit of `main`
+on `origin/main`), the quality gate, the version check against the published releases and the
+release notes of the changelog (the notes are "A trial build: not a release."). `build.json`
+records the gate as `skipped`, and `release-publish` refuses a build whose gate did not pass, so a
+trial build cannot be signed or sent. The workflow **Release build (trial)**
+(`.github/workflows/release-build.yml`, started by hand: Actions → Release build (trial) → Run
+workflow, with the product and a version) runs it on GitHub-hosted runners for macOS on Apple
+silicon, Linux and Windows (the last two on a Linux runner, cross-built as on the Mac), with no
+secret, and keeps the folders as workflow artefacts for three days.
+
 **Publish** (only on a maintainer's machine):
 
 ```sh

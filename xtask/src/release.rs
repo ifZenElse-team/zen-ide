@@ -371,16 +371,28 @@ pub(crate) fn toolbox(args: &[String]) -> Result<(), String> {
         _ => return Err("usage: cargo xtask release-toolbox <version> [notes]".to_owned()),
     };
     let out = crate::release_flow::default_out("toolbox", version)?;
-    build_toolbox(version, given, &out)?;
+    build_toolbox(version, given, &out, false)?;
     crate::release_flow::publish_dir(&out, false, None)
 }
 
-pub(crate) fn build_toolbox(version: &str, given: Option<&str>, out: &Path) -> Result<(), String> {
+pub(crate) const TRIAL_NOTES: &str = "A trial build: not a release.";
+
+pub(crate) const TRIAL_GATE: &str = "skipped";
+
+pub(crate) fn gate_unless(trial: bool) -> Result<(), String> {
+    if trial {
+        println!("==> Trial build: the source check and the quality gate are skipped");
+        return Ok(());
+    }
+    gate()
+}
+
+pub(crate) fn build_toolbox(version: &str, given: Option<&str>, out: &Path, trial: bool) -> Result<(), String> {
     let notes = notes(given, &crate::changelog::product_path("toolbox"), version)?;
     if !cfg!(target_os = "macos") {
         return Err("Zen Toolbox releases are built on macOS only for now".to_owned());
     }
-    gate()?;
+    gate_unless(trial)?;
     let arch = std::env::consts::ARCH;
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
     let target = crate::bench::target_dir(&cargo)?;
@@ -437,7 +449,10 @@ pub(crate) fn build_toolbox(version: &str, given: Option<&str>, out: &Path) -> R
     std::fs::write(out.join(format!("{file}.sha256")), format!("{digest}  {file}\n"))
         .map_err(|error| error.to_string())?;
 
-    let record = crate::release_flow::BuildRecord::new("toolbox", "toolbox", "Zen Toolbox", version, notes);
+    let mut record = crate::release_flow::BuildRecord::new("toolbox", "toolbox", "Zen Toolbox", version, notes);
+    if trial {
+        record.gate = TRIAL_GATE.to_owned();
+    }
     crate::release_flow::finish(
         out,
         record,
@@ -575,9 +590,13 @@ pub(crate) fn build_ides_for(
     for &platform in platforms.iter().filter(|platform| **platform != crate::native::Platform::Macos) {
         for (id, _, _) in IDES {
             let product = crate::cross::product(id)?;
-            if let Err(error) =
-                crate::native::build(&product, version, platform, &crate::native::folder(out, id, version, platform))
-            {
+            if let Err(error) = crate::native::build(
+                &product,
+                version,
+                platform,
+                &crate::native::folder(out, id, version, platform),
+                false,
+            ) {
                 let _ = std::fs::remove_dir_all(out);
                 return Err(format!("{error}; no IDE was built (the IDEs are released together)"));
             }
@@ -594,7 +613,7 @@ pub(crate) fn build_ides(release: &IdesRelease, out: &Path) -> Result<(), String
     }
     crate::release_flow::clean_out(out)?;
     for (id, _, _) in IDES {
-        if let Err(error) = build_ide(id, version, None, &out.join(format!("{id}-{version}"))) {
+        if let Err(error) = build_ide(id, version, None, &out.join(format!("{id}-{version}")), false) {
             let _ = std::fs::remove_dir_all(out);
             return Err(format!("{error}; no IDE was built (the IDEs are released together)"));
         }
@@ -613,14 +632,14 @@ fn ide_of(id: &str) -> Result<(&'static str, &'static str), String> {
     Ok((name, package))
 }
 
-pub(crate) fn build_ide(id: &str, version: &str, given: Option<&str>, out: &Path) -> Result<(), String> {
+pub(crate) fn build_ide(id: &str, version: &str, given: Option<&str>, out: &Path, trial: bool) -> Result<(), String> {
     let (name, package) = ide_of(id)?;
     let notes = notes(given, &crate::changelog::product_path(id), version)?;
     bundled_plugins(id)?;
     if !cfg!(target_os = "macos") {
         return Err("releases are built on macOS only for now".to_owned());
     }
-    gate()?;
+    gate_unless(trial)?;
     let arch = std::env::consts::ARCH;
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
     let target = crate::bench::target_dir(&cargo)?;
@@ -664,7 +683,10 @@ pub(crate) fn build_ide(id: &str, version: &str, given: Option<&str>, out: &Path
             .arg(format!("{name}.app")),
         "tar",
     )?;
-    let record = crate::release_flow::BuildRecord::new("ide", id, name, version, notes);
+    let mut record = crate::release_flow::BuildRecord::new("ide", id, name, version, notes);
+    if trial {
+        record.gate = TRIAL_GATE.to_owned();
+    }
     crate::release_flow::finish(out, record, &[(archive, "update")])
 }
 
