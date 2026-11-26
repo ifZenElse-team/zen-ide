@@ -515,8 +515,7 @@ pub(crate) fn native_published(
 }
 
 pub(crate) fn publish_command(args: &[String]) -> Result<(), String> {
-    let usage =
-        "usage: cargo xtask release-publish (--from <dir> | --pipeline <id> | --job <id>) [--dry-run] [--stage <name>]";
+    let usage = "usage: cargo xtask release-publish (--from <dir> | --run <GitHub run id> | --pipeline <id> | --job <id>) [--dry-run] [--stage <name>]";
     let mut dry_run = false;
     let mut stage = None;
     let mut source = None;
@@ -525,7 +524,7 @@ pub(crate) fn publish_command(args: &[String]) -> Result<(), String> {
         match arg.as_str() {
             "--dry-run" => dry_run = true,
             "--stage" if stage.is_none() => stage = Some(args.next().ok_or(usage)?.clone()),
-            "--from" | "--pipeline" | "--job" if source.is_none() => {
+            "--from" | "--run" | "--pipeline" | "--job" if source.is_none() => {
                 source = Some((arg.clone(), args.next().ok_or(usage)?.clone()));
             }
             other => return Err(format!("unknown option `{other}`; {usage}")),
@@ -533,9 +532,74 @@ pub(crate) fn publish_command(args: &[String]) -> Result<(), String> {
     }
     let dir = match source.ok_or(usage)? {
         (from, dir) if from == "--from" => PathBuf::from(dir),
+        (run, id) if run == "--run" => fetch_run(&id)?,
         (kind, id) => fetch(&kind, &id)?,
     };
-    publish_all(&dir, dry_run, stage.as_deref())
+    let groups = joined_groups(&dir)?;
+    if groups.is_empty() {
+        return publish_all(&dir, dry_run, stage.as_deref());
+    }
+    println!("==> A release joined by CI: {} groups", groups.len());
+    for group in groups {
+        publish_all(&group, dry_run, stage.as_deref())?;
+    }
+    Ok(())
+}
+
+const RUN_ARTEFACT: &str = "release";
+
+pub(crate) fn joined_groups(dir: &Path) -> Result<Vec<PathBuf>, String> {
+    let Some(root) = [dir.join(crate::release_ci::BUILD_DIR), dir.to_owned()]
+        .into_iter()
+        .find(|root| root.join("release-plan.json").is_file())
+    else {
+        return Ok(Vec::new());
+    };
+    let path = root.join("release-plan.json");
+    let bytes = std::fs::read(&path).map_err(|error| format!("{}: {error}", path.display()))?;
+    let built: crate::release_ci::BuiltRelease =
+        serde_json::from_slice(&bytes).map_err(|error| format!("{}: {error}", path.display()))?;
+    if built.schema != crate::release_ci::SCHEMA {
+        return Err(format!("{}: schema {}; update the checkout", path.display(), built.schema));
+    }
+    let mut groups = Vec::new();
+    for group in &built.groups {
+        let folder = root.join(group);
+        if folder.components().any(|part| part == std::path::Component::ParentDir) || !folder.is_dir() {
+            return Err(format!("{}: `{group}` is not a folder of the release", path.display()));
+        }
+        groups.push(folder);
+    }
+    Ok(groups)
+}
+
+pub(crate) fn run_download(id: &str, dir: &Path) -> Vec<String> {
+    ["run", "download", id, "--name", RUN_ARTEFACT, "--dir"]
+        .into_iter()
+        .map(str::to_owned)
+        .chain([dir.display().to_string()])
+        .collect()
+}
+
+fn fetch_run(id: &str) -> Result<PathBuf, String> {
+    if id.is_empty() || !id.chars().all(|c| c.is_ascii_digit()) {
+        return Err(format!("`{id}` is not a run id (the number in the run's address on GitHub)"));
+    }
+    let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
+    let dir = crate::bench::target_dir(&cargo)?.join("release-fetch").join(format!("run-{id}"));
+    clean_out(&dir)?;
+    println!("==> Downloading the artefact `{RUN_ARTEFACT}` of run {id} with gh");
+    let status = Command::new("gh")
+        .args(run_download(id, &dir))
+        .status()
+        .map_err(|error| format!("cannot run gh (install the GitHub CLI and run `gh auth login`): {error}"))?;
+    if !status.success() {
+        return Err(format!(
+            "gh run download {id} failed: the run must be of the workflow Release, with its join job passed, and its \
+             artefacts not yet expired"
+        ));
+    }
+    Ok(dir)
 }
 
 pub(crate) fn publish_all(dir: &Path, dry_run: bool, stage: Option<&str>) -> Result<(), String> {
@@ -778,6 +842,36 @@ mod tests {
         record.files.clear();
         save(dir.path(), &record);
         assert!(verified(dir.path()).unwrap_err().contains("no files"));
+    }
+
+    #[test]
+    fn a_release_joined_by_ci_is_published_group_by_group() {
+        let dir = tempfile::tempdir().unwrap();
+        assert_eq!(joined_groups(dir.path()).unwrap(), Vec::<PathBuf>::new(), "a plain build folder");
+        let root = dir.path().join("release-build");
+        std::fs::create_dir_all(root.join("builds/ides-26.11.1")).unwrap();
+        std::fs::create_dir_all(root.join("builds/toolbox")).unwrap();
+        let plan = |groups: &[&str]| {
+            let built = crate::release_ci::BuiltRelease {
+                schema: crate::release_ci::SCHEMA,
+                tag: "v26.11.1".to_owned(),
+                version: "26.11.1".to_owned(),
+                groups: groups.iter().map(|group| (*group).to_owned()).collect(),
+            };
+            std::fs::write(root.join("release-plan.json"), serde_json::to_vec(&built).unwrap()).unwrap();
+        };
+        plan(&["builds/ides-26.11.1", "builds/toolbox"]);
+        let expected = vec![root.join("builds/ides-26.11.1"), root.join("builds/toolbox")];
+        assert_eq!(joined_groups(dir.path()).unwrap(), expected, "the folder a run's artefact unpacks into");
+        assert_eq!(joined_groups(&root).unwrap(), expected, "or release-build itself");
+        plan(&["builds/ides-26.11.1", "../elsewhere"]);
+        assert!(joined_groups(dir.path()).unwrap_err().contains("not a folder of the release"));
+        plan(&["builds/plugins/plugin-json-0.1.3"]);
+        assert!(joined_groups(dir.path()).unwrap_err().contains("not a folder of the release"), "a missing group");
+        assert_eq!(
+            run_download("9001", Path::new("/t/run-9001")).join(" "),
+            "run download 9001 --name release --dir /t/run-9001"
+        );
     }
 
     #[test]
