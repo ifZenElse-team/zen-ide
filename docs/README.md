@@ -336,7 +336,7 @@ ADR-0179 as it stood then; the gate refuses two records under one number.
 | [0297](adr/0297-index-completions-hidden-nodes-and-output-documents.md) | Index completions, nodes outside the graph and run output as a document | Accepted (the owner, 2026-11-16) |
 | [0298](adr/0298-a-go-projects-environment.md) | A Go project's environment: a shared file, a personal layer, and where they reach | Accepted (the owner, 2026-11-17) |
 | [0299](adr/0299-cluster-state-beside-a-project-index.md) | Cluster state beside a project index, with another plug-in's window values | Accepted (the owner, 2026-11-16) |
-| [0300](adr/0300-releases-from-github.md) | Releases from GitHub | Proposed |
+| [0300](adr/0300-releases-from-github.md) | Releases from GitHub | Accepted |
 
 ## Open questions
 

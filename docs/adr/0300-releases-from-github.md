@@ -1,6 +1,6 @@
 # ADR-0300: Releases from GitHub
 
-- **Status:** Proposed
+- **Status:** Accepted (the owner, 2026-11-27)
 - **Date:** 2026-11-26
 - **Would supersede, once decided:** the GitLab parts of
   [ADR-0171](0171-releases-from-a-protected-tag-through-gitlab.md) (the pipeline, its variables, the
@@ -94,6 +94,12 @@ open and records the gate as `skipped`.
 | 9 | Fallback on a maintainer's machine | Unchanged, except that `release-publish --pipeline` must fetch a GitHub run's artefacts | `release_flow.rs:613-645` rewritten |
 
 ## The choices that are the owner's
+
+The owner, 2026-11-27: every choice is taken as recommended below: builds on GitHub-hosted runners
+(1 A), a job in a `release` environment with required reviewers after a draft release (2 C), updates
+from our release server now and the GitHub release as a mirror later (3 A, then C), the secrets as
+environment secrets with every limit listed (4 A, with B as the fallback), the macOS signature moved
+as it is, and the order of work of section 6.
 
 ### 1. Where builds run
 
