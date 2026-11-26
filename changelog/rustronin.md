@@ -4,6 +4,16 @@ Every release of RustRonin, the Rust IDE, newest first. Each section is the rele
 users see as "What's new"; the format is in [README.md](README.md). RustRonin 0.1.0 and 0.1.1
 were withdrawn (2026-10-16); 0.2.0 is the first release since.
 
+## 26.11.10 - 2026-11-27
+
+### Changed
+
+- The Kotlin language server is listed as **Kotlin LSP** in **Settings → Languages & Frameworks →
+  Language Servers**; the notice beside it still says whose software it is.
+- The **About** window, the website and the application's copyright line say that Zen IDE is an
+  independent project, not affiliated with any other IDE vendor, without a list of products.
+- The link of an internal error report opens the project's issues on GitHub.
+
 ## 26.11.9 - 2026-11-17
 
 ### Added
