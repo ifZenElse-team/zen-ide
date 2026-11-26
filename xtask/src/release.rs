@@ -358,28 +358,53 @@ pub(crate) fn toolbox(args: &[String]) -> Result<(), String> {
         _ => return Err("usage: cargo xtask release-toolbox <version> [notes]".to_owned()),
     };
     let out = crate::release_flow::default_out("toolbox", version)?;
-    build_toolbox(version, given, &out, false)?;
+    build_toolbox(version, given, &out, Gate::Here)?;
     crate::release_flow::publish_dir(&out, false, None)
 }
 
 pub(crate) const TRIAL_NOTES: &str = "A trial build: not a release.";
 
-pub(crate) const TRIAL_GATE: &str = "skipped";
-
-pub(crate) fn gate_unless(trial: bool) -> Result<(), String> {
-    if trial {
-        println!("==> Trial build: the source check and the quality gate are skipped");
-        return Ok(());
-    }
-    gate()
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub(crate) enum Gate {
+    Here,
+    Deferred,
+    Trial,
 }
 
-pub(crate) fn build_toolbox(version: &str, given: Option<&str>, out: &Path, trial: bool) -> Result<(), String> {
+impl Gate {
+    pub(crate) fn recorded(self) -> &'static str {
+        match self {
+            Self::Here => "passed",
+            Self::Deferred => "deferred",
+            Self::Trial => "skipped",
+        }
+    }
+
+    pub(crate) fn pass(self) -> Result<(), String> {
+        match self {
+            Self::Here => gate(),
+            Self::Deferred => {
+                check_source()?;
+                println!(
+                    "==> The quality gate runs in a job of its own: this build records it as `deferred`, and \
+                     `release-ci join` takes the build only with that job's pass for the same tree"
+                );
+                Ok(())
+            }
+            Self::Trial => {
+                println!("==> Trial build: the source check and the quality gate are skipped");
+                Ok(())
+            }
+        }
+    }
+}
+
+pub(crate) fn build_toolbox(version: &str, given: Option<&str>, out: &Path, gate: Gate) -> Result<(), String> {
     let notes = notes(given, &crate::changelog::product_path("toolbox"), version)?;
     if !cfg!(target_os = "macos") {
         return Err("Zen Toolbox releases are built on macOS only for now".to_owned());
     }
-    gate_unless(trial)?;
+    gate.pass()?;
     let arch = std::env::consts::ARCH;
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
     let target = crate::bench::target_dir(&cargo)?;
@@ -437,9 +462,7 @@ pub(crate) fn build_toolbox(version: &str, given: Option<&str>, out: &Path, tria
         .map_err(|error| error.to_string())?;
 
     let mut record = crate::release_flow::BuildRecord::new("toolbox", "toolbox", "Zen Toolbox", version, notes);
-    if trial {
-        record.gate = TRIAL_GATE.to_owned();
-    }
+    record.gate = gate.recorded().to_owned();
     crate::release_flow::finish(
         out,
         record,
@@ -582,7 +605,7 @@ pub(crate) fn build_ides_for(
                 version,
                 platform,
                 &crate::native::folder(out, id, version, platform),
-                false,
+                Gate::Here,
             ) {
                 let _ = std::fs::remove_dir_all(out);
                 return Err(format!("{error}; no IDE was built (the IDEs are released together)"));
@@ -600,7 +623,7 @@ pub(crate) fn build_ides(release: &IdesRelease, out: &Path) -> Result<(), String
     }
     crate::release_flow::clean_out(out)?;
     for (id, _, _) in IDES {
-        if let Err(error) = build_ide(id, version, None, &out.join(format!("{id}-{version}")), false) {
+        if let Err(error) = build_ide(id, version, None, &out.join(format!("{id}-{version}")), Gate::Here) {
             let _ = std::fs::remove_dir_all(out);
             return Err(format!("{error}; no IDE was built (the IDEs are released together)"));
         }
@@ -619,14 +642,14 @@ fn ide_of(id: &str) -> Result<(&'static str, &'static str), String> {
     Ok((name, package))
 }
 
-pub(crate) fn build_ide(id: &str, version: &str, given: Option<&str>, out: &Path, trial: bool) -> Result<(), String> {
+pub(crate) fn build_ide(id: &str, version: &str, given: Option<&str>, out: &Path, gate: Gate) -> Result<(), String> {
     let (name, package) = ide_of(id)?;
     let notes = notes(given, &crate::changelog::product_path(id), version)?;
     bundled_plugins(id)?;
     if !cfg!(target_os = "macos") {
         return Err("releases are built on macOS only for now".to_owned());
     }
-    gate_unless(trial)?;
+    gate.pass()?;
     let arch = std::env::consts::ARCH;
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
     let target = crate::bench::target_dir(&cargo)?;
@@ -671,9 +694,7 @@ pub(crate) fn build_ide(id: &str, version: &str, given: Option<&str>, out: &Path
         "tar",
     )?;
     let mut record = crate::release_flow::BuildRecord::new("ide", id, name, version, notes);
-    if trial {
-        record.gate = TRIAL_GATE.to_owned();
-    }
+    record.gate = gate.recorded().to_owned();
     crate::release_flow::finish(out, record, &[(archive, "update")])
 }
 
@@ -730,7 +751,7 @@ pub(crate) fn plugin(args: &[String]) -> Result<(), String> {
         return Err("usage: cargo xtask release plugin <id> <version>".to_owned());
     };
     let out = crate::release_flow::default_out(&format!("plugin-{id}"), version)?;
-    build_plugin(id, version, &[crate::native::Platform::Macos], &out)?;
+    build_plugin(id, version, &[crate::native::Platform::Macos], &out, Gate::Here)?;
     crate::release_flow::publish_dir(&out, false, None)
 }
 
@@ -795,6 +816,7 @@ pub(crate) fn build_plugin(
     version: &str,
     platforms: &[crate::native::Platform],
     out: &Path,
+    gate: Gate,
 ) -> Result<(), String> {
     let folder = PathBuf::from("plugins").join(id);
     let mut info: PluginInfo = serde_json::from_slice(
@@ -817,7 +839,7 @@ pub(crate) fn build_plugin(
         }
     }
     let notes = crate::changelog::notes(&crate::changelog::plugin_path(id), version)?;
-    gate()?;
+    gate.pass()?;
     let cargo = std::env::var("CARGO").unwrap_or_else(|_| "cargo".to_owned());
     let target = crate::bench::target_dir(&cargo)?;
     let package = format!("zen-plugin-{id}");
@@ -860,6 +882,7 @@ pub(crate) fn build_plugin(
     info.database_drivers = with_programs(&info.database_drivers, id, version, &programs);
     let mut record = crate::release_flow::BuildRecord::new("plugin", id, &info.name, version, notes);
     record.publish_args = plugin_publish_args(&info);
+    record.gate = gate.recorded().to_owned();
     crate::release_flow::finish(out, record, &files)
 }
 

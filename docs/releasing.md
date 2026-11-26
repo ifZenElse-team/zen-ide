@@ -95,6 +95,40 @@ which of the two the server refused. On a maintainer's machine: `zen-releases ch
 website deployed with the server, as before). A stage job against an older server stops with
 "deploy it first", having made nothing live.
 
+## Releasing from a tag on GitHub
+
+The same release, built by the workflow **Release** (`.github/workflows/release.yml`, ADR-0300) on
+GitHub-hosted runners when a tag `v<YY.M.N>` is pushed. The notes are gathered and merged first and
+the tag is made on that commit of `main`, exactly as above. The GitLab pipeline stays the way to
+release until the last step of ADR-0300's order is done; until then the workflow on GitHub builds
+and joins, and publishes nothing.
+
+| Job | Runner | Secrets | What it does |
+|---|---|---|---|
+| `plan` | Linux | none | `cargo xtask release-ci matrix`: what the tag releases (every IDE; Zen Toolbox and the catalog's plug-ins when their version is not published), written as the jobs below; refuses, building nothing, notes that are not gathered or an IDE changelog without the version's section |
+| `gate` | macOS | none | `cargo xtask release-ci gate`: the source check and the full quality gate (`cargo xtask ci`), once; its pass is `release-gate.json` with the commit, the tree and the compiler |
+| `macos` (3 jobs) | macOS, Apple silicon | none | `cargo xtask release-ci part <ide> macos`: the application bundles, two IDEs in a job (the second reuses what the first compiled) |
+| `cross` (12 jobs, 14 with Zen Toolbox) | Linux | none | `cargo xtask release-ci part <ide|toolbox> <linux|windows>`: one product for one platform, cross-built as on the Mac (ADR-0150) |
+| `extras` (only when there is something) | macOS | none | Zen Toolbox for macOS (`part toolbox macos`) and the catalog's plug-ins with their driver programs for every platform (`part plugins all`) |
+| `join` | Linux | none | `cargo xtask release-ci join`: takes every part only if its files match its `build.json`, its commit, tree and compiler are those of the gate's pass, and the parts are exactly the release (every IDE once for each platform, all or none); lays them out as `release-ci build` does (`release-build/`, with the website and `release-plan.json`) and keeps that as the workflow artefact `release` for 7 days |
+
+A part is a release build with every check of one (the source check, the version, the notes) but
+the gate, which it records as `deferred` in `build.json`; nothing publishes a build whose gate is
+not `passed`, and only `join` turns `deferred` into `passed`, with the gate job's pass for the same
+tree. That is how the gate runs once for twenty builds. The jobs are split so that the release
+takes about as long as its slowest job: a clean macOS build of one IDE took 61 minutes on a hosted
+runner (2026-11-26) and a Linux or Windows one 17 to 18, and at most five macOS jobs run at a time
+there, which is why the six bundles are three jobs, beside the gate and `extras`. The gate's own
+time on a hosted runner is not measured yet.
+
+No release build restores a cache: every part and the gate compile from nothing. `plan` and `join`,
+which build only `xtask`, restore the cache the workflows of `main` save and never save one; a
+cache a pull request's run wrote cannot reach them, because GitHub keeps a cache within the ref
+that wrote it and the default branch, and no workflow here saves a cache from a pull request
+(`ci.yml`). The workflow has `contents: read` and names no environment.
+
+The version's month is the month in UTC on GitHub (`TZ: UTC`).
+
 ## On a maintainer's machine (the fallback)
 
 ```sh
