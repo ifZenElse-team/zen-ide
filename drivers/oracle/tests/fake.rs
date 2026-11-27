@@ -288,6 +288,20 @@ fn a_missing_sqlcl_or_java_says_so() {
     assert!(no_java["error"]["message"].as_str().unwrap().starts_with("Java is missing"));
 }
 
+#[cfg(unix)]
+#[test]
+fn what_sqlcl_printed_before_it_ended_is_read_on_a_machine_with_java() {
+    let home = std::env::temp_dir().join(format!("zen-java-home-{}", std::process::id()));
+    std::fs::create_dir_all(home.join("bin")).unwrap();
+    std::fs::write(home.join("bin/java"), "#!/bin/sh\n").unwrap();
+    for _ in 0..20 {
+        let mut driver = Driver::start(&[("JAVA_HOME", home.to_str().unwrap())]);
+        let no_java = driver.connect("secret", json!({ "program": fake("no-java") }));
+        assert_eq!(data(&no_java)["code"], "javaMissing", "{no_java}");
+    }
+    std::fs::remove_dir_all(&home).unwrap();
+}
+
 #[test]
 fn a_result_larger_than_a_statement_may_print_comes_back_cut() {
     let mut driver = Driver::start(&[("ZEN_DB_ORACLE_MOST_BYTES", "330")]);

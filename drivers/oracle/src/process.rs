@@ -111,7 +111,7 @@ impl Process {
         };
         let errors = Arc::new(Mutex::new(VecDeque::new()));
         let kept = Arc::clone(&errors);
-        tokio::spawn(async move {
+        let reading = tokio::spawn(async move {
             let mut reader = BufReader::new(stderr);
             let mut buffer = Vec::new();
             while let Some(line) = next_line(&mut reader, &mut buffer).await {
@@ -139,6 +139,7 @@ impl Process {
             return Ok((process, block.lines.iter().map(|line| target.redact(line)).collect()));
         }
         let _ = tokio::time::timeout(Duration::from_secs(2), process.child.wait()).await;
+        let _ = tokio::time::timeout(Duration::from_secs(2), reading).await;
         let mut printed = block.lines;
         printed.extend(process.errors());
         printed.retain(|line| !line.trim().is_empty());
