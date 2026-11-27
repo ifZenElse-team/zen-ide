@@ -46,6 +46,8 @@ gather <YY.M.N>` moves them into the release's section below and into the produc
 - `cargo xtask release-publish --run <run id>` publishes a release built by the workflow from a
   maintainer's machine, fetched with `gh run download`; `--pipeline` and `--job` keep fetching
   from GitLab (docs/releasing.md, "Releasing from a tag on GitHub").
+- The workflow "Tests" runs every test on a hosted Mac each night and when started by hand, without
+  stopping at the first failure, so a test that depends on the machine is found before a release tag.
 
 ### Changed
 

@@ -14,6 +14,11 @@ were withdrawn (2026-10-16); 0.2.0 is the first release since.
   independent project, not affiliated with any other IDE vendor, without a list of products.
 - The link of an internal error report opens the project's issues on GitHub.
 
+### Fixed
+
+- An Oracle connection whose SQLcl finds no Java says "Java is missing" every time: on a busy
+  machine that has another Java installed it could say only "SQLcl ended".
+
 ## 26.11.9 - 2026-11-17
 
 ### Added
