@@ -14,7 +14,7 @@ fn fake_shell(dir: &Path, body: &str) -> PathBuf {
 const LOGIN: &str = concat!(
     "echo 'a prompt theme says hello'\n",
     "export FROM_LOGIN=yes KUBECONFIG=/k/a.yaml:/k/b.yaml PATH=/opt/tools/bin:/usr/bin:/bin\n",
-    "export ZEN_SECRET=no DYLD_INSERT_LIBRARIES=/evil.dylib LD_PRELOAD=/evil.so SHLVL=3\n",
+    "export ZEN_SECRET=no DYLD_LIBRARY_PATH=/evil LD_PRELOAD=/evil.so SHLVL=3\n",
     "export SPACED='two words' NEWLINE='first\nsecond' EQUALS='a=b'\n",
     "[ \"$1 $2 $3\" = '-l -i -c' ] || exit 9\n",
     "export SCRIPT=\"$4\" MARKED='x</zen-environment>y<zen-environment>z'\n",
@@ -92,7 +92,7 @@ fn a_login_shell_is_read_in_the_home_folder_without_what_the_ide_never_takes() {
         "a value may hold the script"
     );
     assert_eq!(environment.get("MARKED"), Some("x</zen-environment>y<zen-environment>z"));
-    for never in ["ZEN_SECRET", "DYLD_INSERT_LIBRARIES", "LD_PRELOAD", "SHLVL", "HOME", "PWD"] {
+    for never in ["ZEN_SECRET", "DYLD_LIBRARY_PATH", "LD_PRELOAD", "SHLVL", "HOME", "PWD"] {
         assert_eq!(environment.get(never), None, "{never}");
     }
     let wd = std::fs::read_to_string(dir.path().join("where")).unwrap();
