@@ -40,3 +40,18 @@ jobs:
         run: rustc --version && cargo --version && cargo deny --version
       - name: Gate without tests
         run: cargo xtask ci --skip test
+
+  oracle-on-macos:
+    name: Temporary, the Oracle driver's tests on macOS
+    runs-on: macos-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - name: Java on this machine
+        run: /usr/libexec/java_home || true; echo "JAVA_HOME=$JAVA_HOME"
+      - name: Tests
+        run: for i in 1 2 3; do cargo test -p zen-db-oracle --locked; done
