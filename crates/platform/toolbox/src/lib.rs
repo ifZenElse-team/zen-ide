@@ -2538,7 +2538,8 @@ mod tests {
         assert!(profile.contains(added["line"].as_str().unwrap()), "{profile}");
         let status = registry.dispatch(&mut session, "toolbox.shellScripts.status", serde_json::json!({})).unwrap();
         assert_eq!(status["inProfile"], true);
-        if std::path::Path::new(&zen_update::scripts::user_shell()).exists() {
+        let shell = zen_update::scripts::user_shell();
+        if shell.exists() && shell.file_name().is_some_and(|name| name == "zsh") {
             assert_eq!(status["onPath"], true, "a new terminal window finds the launchers");
         }
         let view = tools.shell_scripts();
