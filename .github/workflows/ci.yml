@@ -40,18 +40,3 @@ jobs:
         run: rustc --version && cargo --version && cargo deny --version
       - name: Gate without tests
         run: cargo xtask ci --skip test
-
-  hosted-mac:
-    name: Temporary, two crates' tests on macOS
-    runs-on: macos-latest
-    timeout-minutes: 40
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - name: Toolchain
-        run: rustup show active-toolchain || rustup toolchain install
-      - name: This machine
-        run: csrutil status || true; echo "SHELL=$SHELL"; dscl . -read "/Users/$USER" UserShell || true
-      - name: Tests
-        run: cargo test -p zen-env -p zen-toolbox --locked
