@@ -1,0 +1,34 @@
+name: Tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 1 * * *"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  CARGO_PROFILE_DEV_DEBUG: "0"
+
+jobs:
+  macos:
+    name: Every test, on macOS
+    runs-on: macos-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - name: Versions
+        run: rustc --version && cargo --version && sw_vers && sysctl -n hw.ncpu hw.memsize
+      - name: Every test, without stopping at the first failure
+        run: cargo test --workspace --locked --no-fail-fast
