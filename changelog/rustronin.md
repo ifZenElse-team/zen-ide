@@ -4,6 +4,13 @@ Every release of RustRonin, the Rust IDE, newest first. Each section is the rele
 users see as "What's new"; the format is in [README.md](README.md). RustRonin 0.1.0 and 0.1.1
 were withdrawn (2026-10-16); 0.2.0 is the first release since.
 
+## 26.11.11 - 2026-11-28
+
+### Fixed
+
+- The buttons of the **Trust and Open Project** dialog, and the outlined buttons of the other
+  dialogs, keep their size and place under the pointer: only their colour changes.
+
 ## 26.11.10 - 2026-11-27
 
 ### Changed

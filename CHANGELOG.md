@@ -13,6 +13,47 @@ Changes not released yet are not written here: each pull request adds its notes 
 [changelog/unreleased/](changelog/unreleased/README.md) (ADR-0188), and `cargo xtask changelog
 gather <YY.M.N>` moves them into the release's section below and into the products' changelogs.
 
+## [26.11.11] - 2026-11-28
+
+### Added
+
+- The workflow **Release dry run** (`.github/workflows/release-dry-run.yml`) runs the builds of a
+  release on `main` every night and by hand: the plan, every build of every product for every
+  platform and the join, at the calendar's next version, with the gate without its tests on macOS
+  (the workflow **Tests** runs every test each night). It names no environment, reads no secret and
+  keeps only workflow artefacts; its builds record the gate as `skipped`, so nothing publishes
+  them. The jobs it shares with a release are in `.github/workflows/release-parts.yml`, which
+  `release.yml` calls. `cargo xtask release-ci plan`, `matrix`, `part` and `join` take
+  `--dry-run`: notes still waiting and a missing changelog section are reported, not refused
+  (docs/releasing.md, "The nightly dry run").
+
+### Changed
+
+- A release on GitHub stops in its first job, before anything is built, when its version is not the
+  calendar's next or its commit is not on `origin/main`, and, when it will be staged from GitHub,
+  when its ref is not protected or the environment `release` has no required reviewers or does not
+  allow it. `stage` and `live` check first that the release secrets are set, printing only which
+  are missing.
+- A release starts with a push to the branch `release`, which always points at a commit of `main`
+  and only moves forward (ADR-0301); a pushed tag `v*` starts nothing. The version is the
+  calendar's next unpublished one, fixed by the plan for the whole run. The tag `v<version>` is
+  created by the last job, after the release is live, on the released commit, together with
+  publishing the GitHub release, so a failed attempt leaves no tag.
+- "Released" means listed in the published manifest: `cargo xtask changelog gather`,
+  `release-version` and `release-ci plan` agree on it, and a failed attempt's version takes more
+  notes without anyone deleting anything.
+- The release secrets are used only by a run of the protected branch `release` (never by a pull
+  request's run, another branch or a tag), and `stage` and `live` release only the run's own
+  commit, and only while `release` still points at it. The credentials check runs on `release`.
+- `cargo xtask release-ci` takes the version as `v<YY.M.N>`, or the calendar's next without one.
+
+### Removed
+
+- The repository variable `ZEN_RELEASE_FROM_GITHUB`: the approval before `stage` is where a release
+  is stopped.
+- The GitLab paths of `cargo xtask release-ci` and of the CI checks: a GitLab job is refused as a CI
+  of another kind, and `release-ci live` no longer creates a GitLab release.
+
 ## [26.11.10] - 2026-11-27
 
 ### Added

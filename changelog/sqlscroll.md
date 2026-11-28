@@ -3,6 +3,13 @@
 Every release of SqlScroll, the Zen IDE for SQL and databases, newest first. Each section is the
 release notes users see as "What's new"; the format is in [README.md](README.md).
 
+## 26.11.11 - 2026-11-28
+
+### Fixed
+
+- The buttons of the **Trust and Open Project** dialog, and the outlined buttons of the other
+  dialogs, keep their size and place under the pointer: only their colour changes.
+
 ## 26.11.10 - 2026-11-27
 
 ### Changed
