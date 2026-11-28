@@ -71,6 +71,43 @@ impl Fixture {
         crate::accessibility::testing::find(&tree, role, name).is_some()
     }
 
+    fn rect_of(&mut self, role: Role, name: &str) -> egui::Rect {
+        let app = &mut self.app;
+        let tree = self.screen.accessibility_tree(|ui| root_frame(app, ui));
+        let node = crate::accessibility::testing::find(&tree, role, name)
+            .unwrap_or_else(|| panic!("no {role:?} named {name:?}"));
+        let bounds = node.bounds().expect("the node has bounds");
+        egui::Rect::from_min_max(
+            egui::pos2(bounds.x0 as f32, bounds.y0 as f32),
+            egui::pos2(bounds.x1 as f32, bounds.y1 as f32),
+        )
+    }
+
+    fn dialog_and_buttons(&mut self, buttons: &[&str]) -> Vec<egui::Rect> {
+        let rects: Vec<egui::Rect> = buttons.iter().map(|name| self.rect_of(Role::Button, name)).collect();
+        let ctx = self.screen.context().clone();
+        let layer = ctx.layer_id_at(rects[0].center()).expect("the dialog is under its button");
+        let dialog = ctx.memory(|memory| memory.area_rect(layer.id)).expect("the dialog has a rectangle");
+        std::iter::once(dialog).chain(rects).collect()
+    }
+
+    fn hover(&mut self, at: egui::Pos2) {
+        self.step(vec![egui::Event::PointerMoved(at)]);
+        for _ in 0..3 {
+            self.step(Vec::new());
+        }
+    }
+
+    fn assert_steady_under_the_pointer(&mut self, buttons: &[&str]) {
+        self.hover(egui::pos2(5.0, 5.0));
+        let resting = self.dialog_and_buttons(buttons);
+        for (index, name) in buttons.iter().enumerate() {
+            self.hover(resting[index + 1].center());
+            let hovered = self.dialog_and_buttons(buttons);
+            assert_eq!(hovered, resting, "the dialog and {buttons:?} with the pointer over {name:?}");
+        }
+    }
+
     fn open(&mut self) {
         let project = self.project.clone();
         self.app.open(None, &project);
@@ -223,4 +260,25 @@ fn the_banner_trusts_an_open_project_without_reopening_it_and_agents_cannot_ask(
     assert!(zen_workbench::trust::is_trusted(&f.env, &f.project));
     assert_eq!(f.opened(), vec![f.project.clone()], "the same window");
     assert!(!f.shows(Role::Link, "Trust project…"));
+}
+
+#[test]
+fn the_buttons_keep_their_size_and_place_under_the_pointer() {
+    let mut f = Fixture::new();
+    f.open();
+    f.assert_steady_under_the_pointer(&["Trust Project", "Preview in Safe Mode", "Don't Open"]);
+}
+
+#[test]
+fn the_buttons_of_an_open_project_keep_their_size_and_place_under_the_pointer() {
+    let mut f = Fixture::new();
+    f.open();
+    f.click(Role::Button, "Preview in Safe Mode");
+    let main = f.project.join("main.go");
+    let params = json!({ "command": "file.document.open", "params": { "path": main } });
+    ask_on(&mut f.screen, &mut f.app, "dispatch_command", params);
+    f.step(Vec::new());
+    f.step(Vec::new());
+    f.click(Role::Link, "Trust project…");
+    f.assert_steady_under_the_pointer(&["Trust Project", "Cancel"]);
 }

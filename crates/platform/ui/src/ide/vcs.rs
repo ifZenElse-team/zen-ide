@@ -633,13 +633,25 @@ pub(super) const BUTTON_WIDTH: f32 = 84.0;
 pub(super) const BUTTON_PADDING: f32 = 12.0;
 
 pub(super) fn secondary_button_sized(ui: &mut Ui, p: &IdePalette, label: &str, width: f32) -> egui::Response {
-    ui.add(
-        egui::Button::new(egui::RichText::new(label).font(theme::regular(13.0)).color(p.text))
-            .min_size(vec2(width, 30.0))
-            .corner_radius(6)
-            .fill(Color32::TRANSPARENT)
-            .stroke(Stroke::new(1.0, p.button_border)),
-    )
+    let button = egui::Button::new(egui::RichText::new(label).font(theme::regular(13.0)).color(p.text))
+        .min_size(vec2(width, 30.0))
+        .corner_radius(6)
+        .fill(Color32::TRANSPARENT)
+        .stroke(Stroke::new(1.0, p.button_border));
+    add_outlined(ui, button)
+}
+
+fn add_outlined(ui: &mut Ui, button: egui::Button<'_>) -> egui::Response {
+    let widgets = ui.visuals().widgets.clone();
+    let states = &mut ui.visuals_mut().widgets;
+    for state in
+        [&mut states.noninteractive, &mut states.inactive, &mut states.hovered, &mut states.active, &mut states.open]
+    {
+        state.bg_stroke = Stroke::NONE;
+    }
+    let response = ui.add(button);
+    ui.visuals_mut().widgets = widgets;
+    response
 }
 
 pub(super) fn format_date(seconds: i64) -> String {
@@ -660,6 +672,33 @@ pub(super) fn format_date(seconds: i64) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    fn button_row(screen: &mut crate::offscreen::Offscreen, palette: &IdePalette, at: egui::Pos2) -> Vec<Rect> {
+        let mut rects = Vec::new();
+        for events in [vec![egui::Event::PointerMoved(at)], Vec::new(), Vec::new(), Vec::new()] {
+            rects.clear();
+            screen.step(events, |ui| {
+                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+                    rects.push(primary_button(ui, palette, "Commit and Push Everything").rect);
+                    rects.push(secondary_button(ui, palette, "Show the Whole History").rect);
+                    rects.push(secondary_button_sized(ui, palette, "Compare with Branch", 120.0).rect);
+                    rects.push(secondary_button(ui, palette, "No").rect);
+                });
+            });
+        }
+        rects
+    }
+
+    #[test]
+    fn dialog_buttons_keep_their_size_and_place_under_the_pointer() {
+        let palette = IdePalette::zen_dark();
+        let mut screen = crate::offscreen::Offscreen::new(vec2(900.0, 120.0), 1.0);
+        palette.apply(screen.context());
+        let resting = button_row(&mut screen, &palette, pos2(5.0, 110.0));
+        for rect in resting.clone() {
+            assert_eq!(button_row(&mut screen, &palette, rect.center()), resting, "the pointer over {rect:?}");
+        }
+    }
 
     #[test]
     fn no_frame_waits_for_a_full_status() {
