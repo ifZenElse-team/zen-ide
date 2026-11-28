@@ -75,19 +75,31 @@ pub(crate) fn command(args: &[String]) -> Result<(), String> {
     }
     let usage = format!(
         "usage: cargo xtask release-ci (plan | build | stage | verify | live | matrix | gate | join | notes | part \
-         <ide|toolbox|plugins> <macos|linux|windows|all>) [v<YY.M.N>] (the tag is {} in CI); release-ci credentials \
-         checks the signing key and the upload token against the server and sends nothing",
+         <ide|toolbox|plugins> <macos|linux|windows|all>) [v<YY.M.N>] (the tag is {} in CI); plan, matrix, part and \
+         join take --dry-run, a dry run of the release of this commit at the calendar's next version, never \
+         published; release-ci credentials checks the signing key and the upload token against the server and sends \
+         nothing",
         ci.tag_variable()
     );
-    let own = || ci.tag().map(str::to_owned).ok_or_else(|| usage.clone());
-    let (step, part, tag) = match args {
+    let dry_run = args.iter().any(|arg| arg == "--dry-run");
+    let args: Vec<String> = args.iter().filter(|arg| *arg != "--dry-run").cloned().collect();
+    let own = || match ci.tag() {
+        Some(tag) => Ok(tag.to_owned()),
+        None if dry_run => dry_run_tag(),
+        None => Err(usage.clone()),
+    };
+    let (step, part, tag) = match args.as_slice() {
         [step, what, platform] if step == "part" => (step.as_str(), Some((what, platform)), own()?),
         [step, what, platform, tag] if step == "part" => (step.as_str(), Some((what, platform)), tag.clone()),
         [step] if step != "part" => (step.as_str(), None, own()?),
         [step, tag] if step != "part" => (step.as_str(), None, tag.clone()),
         _ => return Err(usage),
     };
-    if let Some(problem) = ci.tag_problem(&tag) {
+    if dry_run {
+        if let Some(problem) = dry_run_problem(step) {
+            return Err(problem);
+        }
+    } else if let Some(problem) = ci.tag_problem(&tag) {
         return Err(problem);
     }
     let version = tag_version(&tag)?;
@@ -96,6 +108,10 @@ pub(crate) fn command(args: &[String]) -> Result<(), String> {
             let plan = plan(&version)?;
             println!("{}", describe(&plan));
             match crate::unreleased::release_problem(Path::new("."), &version, plan.toolbox.as_deref()) {
+                Some(problem) if dry_run => {
+                    println!("A release of this commit would be refused now: {problem}");
+                    Ok(())
+                }
                 Some(problem) => Err(format!("the tag would be refused: {problem}")),
                 None => Ok(()),
             }
@@ -105,15 +121,29 @@ pub(crate) fn command(args: &[String]) -> Result<(), String> {
         "verify" => verify(&tag, &version),
         "live" => live(&tag, &version, &ci),
         "notes" => notes(&tag, &version),
-        "matrix" => crate::release_parts::matrix(&tag, &version),
+        "matrix" => crate::release_parts::matrix(&tag, &version, dry_run, &ci),
         "gate" => crate::release_parts::gate(&tag, &version),
-        "join" => crate::release_parts::join(&tag, &version),
+        "join" => crate::release_parts::join(&tag, &version, dry_run),
         "part" => match part {
-            Some((what, platform)) => crate::release_parts::part(&version, what, platform),
+            Some((what, platform)) => crate::release_parts::part(&version, what, platform, dry_run),
             None => Err(usage),
         },
         _ => Err(usage),
     }
+}
+
+pub(crate) fn dry_run_problem(step: &str) -> Option<String> {
+    (!["plan", "matrix", "part", "join"].contains(&step)).then(|| {
+        format!(
+            "a dry run plans, builds and joins only (release-ci plan, matrix, part and join): `{step}` is a step of a \
+             real release and never runs in one"
+        )
+    })
+}
+
+fn dry_run_tag() -> Result<String, String> {
+    let (year, month) = crate::calendar::this_month()?;
+    Ok(format!("v{}", crate::calendar::next(year, month, &crate::release::published_ide_versions()?)))
 }
 
 pub(crate) fn tag_version(tag: &str) -> Result<String, String> {
@@ -825,6 +855,16 @@ mod tests {
         assert_eq!(tag_version("v26.10.4").unwrap(), "26.10.4");
         for bad in ["26.10.4", "v0.3.15", "v26.13.1", "release-26.10.4", "v26.10.4-rc1", ""] {
             assert!(tag_version(bad).is_err(), "{bad}");
+        }
+    }
+
+    #[test]
+    fn a_dry_run_plans_builds_and_joins_and_never_signs_sends_or_releases() {
+        for step in ["plan", "matrix", "part", "join"] {
+            assert_eq!(dry_run_problem(step), None, "{step}");
+        }
+        for step in ["build", "gate", "stage", "verify", "notes", "live", "credentials", "anything"] {
+            assert!(dry_run_problem(step).unwrap().contains(&format!("`{step}`")), "{step}");
         }
     }
 

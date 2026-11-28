@@ -1,0 +1,32 @@
+name: Release dry run
+
+# Every night, the release of the latest commit of `main` as it would be made now, at the calendar's
+# next version: the plan, the gate without its tests (the workflow Tests runs every test each night),
+# every build of every product for every platform and the join, as `release.yml` runs them
+# (docs/releasing.md, "The nightly dry run"). It tolerates notes still waiting in
+# changelog/unreleased/ and a missing changelog section, and says so in the plan. It names no
+# environment, reads no secret and its token can only read; it writes nothing but workflow
+# artefacts: the parts for a day, the build records for a week. Its builds record the gate as
+# `skipped`, which nothing publishes. A failure makes the run red: Actions, Release dry run.
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-dry-run
+  cancel-in-progress: true
+
+jobs:
+  dry-run:
+    name: Dry run
+    permissions:
+      contents: read
+      actions: read
+    uses: ./.github/workflows/release-parts.yml
+    with:
+      dry-run: true

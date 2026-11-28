@@ -1,6 +1,6 @@
 # Releasing
 
-> **Last updated:** 2026-11-26 · **Decisions:** [ADR-0020](adr/0020-release-server.md),
+> **Last updated:** 2026-11-28 · **Decisions:** [ADR-0020](adr/0020-release-server.md),
 > [ADR-0022](adr/0022-toolbox-updates-itself.md), [ADR-0146](adr/0146-one-calendar-version-for-every-ide-and-release-channels.md),
 > [ADR-0171](adr/0171-releases-from-a-protected-tag-through-gitlab.md), [ADR-0188](adr/0188-release-notes-and-decision-records-in-files-of-their-own.md)
 
@@ -98,14 +98,15 @@ website deployed with the server, as before). A stage job against an older serve
 ## Releasing from a tag on GitHub
 
 The same release, built by the workflow **Release** (`.github/workflows/release.yml`, ADR-0300) on
-GitHub-hosted runners when a tag `v<YY.M.N>` is pushed. The notes are gathered and merged first and
+GitHub-hosted runners when a tag `v<YY.M.N>` is pushed. Its builds are the jobs of
+`.github/workflows/release-parts.yml`, which the nightly dry run (below) calls too. The notes are gathered and merged first and
 the tag is made on that commit of `main`, exactly as above. The GitLab pipeline stays the way to
 release until the last step of ADR-0300's order is done; until then the workflow on GitHub builds
 and joins, and publishes nothing.
 
 | Job | Runner | Secrets | What it does |
 |---|---|---|---|
-| `plan` | Linux | none | `cargo xtask release-ci matrix`: what the tag releases (every IDE; Zen Toolbox and the catalog's plug-ins when their version is not published), written as the jobs below; refuses, building nothing, notes that are not gathered or an IDE changelog without the version's section |
+| `plan` | Linux | none | `cargo xtask release-ci matrix`: what the tag releases (every IDE; Zen Toolbox and the catalog's plug-ins when their version is not published), written as the jobs below; refuses, building nothing, notes that are not gathered, an IDE changelog without the version's section, a version that is not the calendar's next and a commit that is not on `origin/main`; and when `ZEN_RELEASE_FROM_GITHUB` is `true`, a ref that is not protected and an environment `release` that does not exist, has no required reviewers or does not allow the tag (read with the job's token, `actions: read`) |
 | `gate` | macOS | none | `cargo xtask release-ci gate`: the source check and the full quality gate (`cargo xtask ci`), once; its pass is `release-gate.json` with the commit, the tree and the compiler |
 | `macos` (3 jobs) | macOS, Apple silicon | none | `cargo xtask release-ci part <ide> macos`: the application bundles, two IDEs in a job (the second reuses what the first compiled) |
 | `cross` (12 jobs, 14 with Zen Toolbox) | Linux | none | `cargo xtask release-ci part <ide|toolbox> <linux|windows>`: one product for one platform, cross-built as on the Mac (ADR-0150) |
@@ -129,15 +130,73 @@ that wrote it and the default branch, and no workflow here saves a cache from a 
 
 The version's month is the month in UTC on GitHub (`TZ: UTC`).
 
-**After `join`: stage, verify, release.** These jobs run only when the repository variable
+**What stops a release before it is built.** The plan checks everything a release needs that a job
+without the secrets can see (the row of `plan` above), so a tag that cannot be released fails in a
+few minutes instead of after the builds. The secrets themselves cannot be checked there: GitHub
+gives an environment's secrets only to a job that names the environment, which asks the reviewers
+first, and the job's token cannot list them. A third approval at the start was not wanted, so the
+first step of `stage` and of `live` checks that `ZEN_PUBLISHER_KEY`, `ZEN_RELEASES_TOKEN` and
+`ZEN_RELEASES_SERVER` are set, before anything is compiled, signed or sent, and prints only which
+are missing. To know beforehand, run **Release credentials** (below) before the tag.
+
+### The nightly dry run
+
+Every night at 03:17 UTC, and by hand (Actions → **Release dry run** → Run workflow), the workflow
+**Release dry run** (`.github/workflows/release-dry-run.yml`) runs the builds of a release on the
+latest commit of `main`, as a release of it would be made now: the plan, every build of every
+product for every platform, and the join, with the version the calendar gives
+(`cargo xtask release-version`). So a release meets no problem of its builds for the first time on
+its tag.
+
+A dry run is not a release, and differs from one only here:
+
+- **The notes.** It tolerates notes still waiting in `changelog/unreleased/` and a changelog without
+  the version's section (the usual state between releases): the plan says what a release would
+  refuse ("A release of this commit would be refused now: ..."), and a build without its section
+  carries the notes of a trial build.
+- **The gate.** The full gate is not run: the workflow **Tests** runs every test on a hosted Mac
+  each night (01:00 UTC) and **CI** runs the gate without tests on Linux after every merge, so a dry
+  run runs only the gate without its tests on macOS (`cargo xtask ci --skip test`), for what is
+  checked on macOS alone (Clippy of the macOS code). Every build records the gate as `skipped`, as a
+  trial build does; `join --dry-run` takes only such parts, checks them as a release's join does
+  (each file against its `build.json`; every part of the commit and compiler of the join's own
+  checkout; exactly the release) and leaves them `skipped`. Nothing publishes a build whose gate is
+  not `passed`, and `release-ci stage`, `verify`, `notes`, `live`, `build` and `gate` refuse
+  `--dry-run`.
+- **Nothing outside the run.** It names no environment, reads no secret, and its token can only
+  read; it signs nothing and sends nothing. It keeps the parts as workflow artefacts for one day
+  (the join needs them) and the build records (`dry-run-records`: `release-plan.json` and every
+  `build.json`) for seven; the joined release itself is not kept, since nothing may use it.
+
+It costs about what the builds of a release cost (three macOS jobs, an `extras` job when Zen
+Toolbox or a plug-in has a new version, the gate without tests on macOS, and twelve or fourteen
+Linux jobs), on hosted minutes that are free for a public repository. It starts two hours after
+**Tests**, so the two do not compete for the five macOS runners that run at once.
+
+**A failure** makes the run red: Actions → **Release dry run** → the run → the failed job's log.
+GitHub mails the failure to the person who last changed the workflow's `cron` line, and shows it on
+the repository's Actions page. A newer run cancels a dry run still going (one at a time). GitHub
+turns scheduled workflows of a public repository off after 60 days without activity in it.
+
+```sh
+cargo xtask release-ci plan --dry-run          # on any checkout: what a dry run would build now
+```
+
+The steps run as in the workflow: `release-ci matrix --dry-run`, `release-ci part <ide|toolbox|plugins>
+<platform> [v<YY.M.N>] --dry-run` and `release-ci join [v<YY.M.N>] --dry-run` (without a version,
+the calendar's next).
+
+### After `join`: stage, verify, release
+
+These jobs run only when the repository variable
 `ZEN_RELEASE_FROM_GITHUB` is `true`; without it a tag's run ends with the artefact `release`.
 
 | Job | Runner | Secrets | Token | What it does |
 |---|---|---|---|---|
-| `stage` | Linux | the environment `release` | read | Compiles `xtask` and `zen-releases` first, without the secrets; then one step with them runs `cargo xtask release-ci stage`, as in GitLab: uploads every file (stored, listed nowhere), signs and stages the manifest, the catalog, the changelogs and the website under `v<version>-p<run id>`. Its record is the artefact `stage` |
+| `stage` | Linux | the environment `release` | read | Checks that the secrets are set (above); compiles `xtask` and `zen-releases` first, without the secrets; then one step with them runs `cargo xtask release-ci stage`, as in GitLab: uploads every file (stored, listed nowhere), signs and stages the manifest, the catalog, the changelogs and the website under `v<version>-p<run id>`. Its record is the artefact `stage` |
 | `verify` | macOS | none | read | `cargo xtask release-ci verify`: every staged file downloaded from its public address and compared with the build, `codesign --verify` for each macOS application, the staged documents and website. Its checks are the artefact `verify` |
 | `draft` | Linux | none | `contents: write` | `cargo xtask release-ci notes` writes the release's text (each product's notes, a link to every file with its SHA-256, what was checked); `gh release create --draft` makes the draft release of the tag, or rewrites the draft a run made before |
-| `live` | Linux | the environment `release` | read | After the environment's reviewers approve: `cargo xtask release-ci live`, one request that makes the stage live |
+| `live` | Linux | the environment `release` | read | After the environment's reviewers approve, and once the secrets are checked as in `stage`: `cargo xtask release-ci live`, one request that makes the stage live |
 | `publish` | Linux | none | `contents: write` | Publishes the draft |
 
 So the button is the approval of `live`: Actions → the tag's run → **Review deployments** → `release`

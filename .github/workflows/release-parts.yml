@@ -1,0 +1,307 @@
+name: Release parts
+
+# The builds of a release, called by `release.yml` for a release and by `release-dry-run.yml` every
+# night (docs/releasing.md). It reads no secret, signs nothing and publishes nothing, and names no
+# environment; its token can only read.
+#
+# - plan: what the release is, as the jobs below. A release refuses notes that are not gathered, a
+#   version that is not the calendar's next, a commit not on origin/main and, when the jobs after
+#   `join` will run, an unprotected ref or an environment `release` without reviewers or not
+#   allowing the ref, all before anything is built. A dry run is the release of this commit at the
+#   calendar's next version and only reports what a release would refuse.
+# - gate: the full quality gate, once, on macOS. In a dry run, the gate without its tests: the
+#   workflow `Tests` runs every test each night already.
+# - macos, cross, extras: the builds, each recording the gate as `deferred`, or `skipped` in a dry
+#   run.
+# - join: checks every part against its build.json and the gate's pass (in a dry run, against the
+#   commit and the compiler of its own checkout), and lays them out as one release, kept as the
+#   workflow artefact `release`. A dry run keeps only the build records, and nothing publishes its
+#   builds: their gate is `skipped`.
+#
+# No product build restores a cache. The two small jobs that only build xtask restore the cache
+# that the workflows of `main` write (never one written by a pull request: GitHub keeps a cache
+# within the ref that wrote it plus the default branch, no pull request's workflow here saves one,
+# and this workflow saves none).
+
+on:
+  workflow_call:
+    inputs:
+      dry-run:
+        description: Build the release of this commit at the calendar's next version, never published
+        type: boolean
+        required: true
+      from-github:
+        description: The jobs after `join` will stage and release, so the plan checks what they need
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+  TZ: UTC
+  DRY_RUN: ${{ inputs.dry-run && '--dry-run' || '' }}
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      matrix: ${{ steps.matrix.outputs.matrix }}
+      tag: ${{ steps.matrix.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: xtask
+          save-if: false
+      - name: What the release is, and what stops it before anything is built
+        id: matrix
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ZEN_RELEASE_FROM_GITHUB: ${{ inputs.from-github }}
+        run: |
+          set -eu
+          cargo xtask release-ci matrix ${DRY_RUN:+"$DRY_RUN"}
+          echo "matrix=$(cat release-matrix.json)" >> "$GITHUB_OUTPUT"
+          echo "tag=$(jq -r .tag release-matrix.json)" >> "$GITHUB_OUTPUT"
+
+  gate:
+    name: Quality gate
+    needs: plan
+    runs-on: macos-latest
+    timeout-minutes: 300
+    env:
+      TAG: ${{ needs.plan.outputs.tag }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: taiki-e/install-action@893d6ee8d714b6c7dfe2bcd94e5759e9a7958a7e # v2.90.10
+        with:
+          tool: cargo-deny
+      - name: Versions
+        run: rustc --version && cargo --version && cargo deny --version && sw_vers
+      - name: The full gate
+        if: ${{ !inputs.dry-run }}
+        env:
+          CARGO_PROFILE_DEV_DEBUG: "0"
+        run: cargo xtask release-ci gate "$TAG"
+      - name: The gate without its tests (a dry run; the workflow Tests runs them)
+        if: ${{ inputs.dry-run }}
+        env:
+          CARGO_PROFILE_DEV_DEBUG: "0"
+        run: cargo xtask ci --skip test
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !inputs.dry-run }}
+        with:
+          name: gate
+          path: release-gate.json
+          if-no-files-found: error
+          retention-days: 7
+
+  macos:
+    name: macOS, ${{ matrix.job.name }}
+    needs: plan
+    runs-on: macos-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: true
+      matrix:
+        job: ${{ fromJSON(needs.plan.outputs.matrix).macos }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: The runner is Apple silicon
+        run: test "$(uname -m)" = arm64
+      - name: Toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - name: Versions
+        run: rustc --version && cargo --version && sw_vers
+      - name: Build
+        env:
+          PARTS: ${{ matrix.job.parts }}
+          TAG: ${{ needs.plan.outputs.tag }}
+        run: |
+          set -eu
+          for part in $PARTS; do cargo xtask release-ci part "$part" macos "$TAG" ${DRY_RUN:+"$DRY_RUN"}; done
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: part-macos-${{ strategy.job-index }}
+          path: release-build/parts
+          if-no-files-found: error
+          retention-days: ${{ inputs.dry-run && 1 || 7 }}
+
+  cross:
+    name: ${{ matrix.job.name }}
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: true
+      matrix:
+        job: ${{ fromJSON(needs.plan.outputs.matrix).cross }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: taiki-e/install-action@893d6ee8d714b6c7dfe2bcd94e5759e9a7958a7e # v2.90.10
+        if: matrix.job.platform == 'linux'
+        with:
+          tool: cargo-zigbuild
+      - name: Zig (the linker of the Linux build, ADR-0150)
+        if: matrix.job.platform == 'linux'
+        run: |
+          set -eu
+          python3 -m venv "$RUNNER_TEMP/zig"
+          "$RUNNER_TEMP/zig/bin/pip" install --quiet ziglang==0.17.0
+          mkdir -p "$RUNNER_TEMP/bin"
+          printf '#!/bin/sh\nexec "%s" -m ziglang "$@"\n' "$RUNNER_TEMP/zig/bin/python" > "$RUNNER_TEMP/bin/zig"
+          chmod +x "$RUNNER_TEMP/bin/zig"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
+      - name: MinGW-w64 (the linker of the Windows build, ADR-0150)
+        if: matrix.job.platform == 'windows'
+        run: |
+          set -eu
+          rustup target add x86_64-pc-windows-gnu
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq gcc-mingw-w64-x86-64 mingw-w64-x86-64-dev
+      - name: Versions
+        run: rustc --version && cargo --version
+      - name: Build
+        env:
+          PART: ${{ matrix.job.part }}
+          PLATFORM: ${{ matrix.job.platform }}
+          TAG: ${{ needs.plan.outputs.tag }}
+        run: cargo xtask release-ci part "$PART" "$PLATFORM" "$TAG" ${DRY_RUN:+"$DRY_RUN"}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: part-${{ matrix.job.part }}-${{ matrix.job.platform }}
+          path: release-build/parts
+          if-no-files-found: error
+          retention-days: ${{ inputs.dry-run && 1 || 7 }}
+
+  extras:
+    name: macOS, Zen Toolbox and plug-ins
+    needs: plan
+    if: fromJSON(needs.plan.outputs.matrix).extras != ''
+    runs-on: macos-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: The runner is Apple silicon
+        run: test "$(uname -m)" = arm64
+      - name: Toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: taiki-e/install-action@893d6ee8d714b6c7dfe2bcd94e5759e9a7958a7e # v2.90.10
+        if: contains(fromJSON(needs.plan.outputs.matrix).extras, 'plugins')
+        with:
+          tool: cargo-zigbuild
+      - name: Zig and MinGW-w64 (the driver programs of plug-ins, for Linux and Windows)
+        if: contains(fromJSON(needs.plan.outputs.matrix).extras, 'plugins')
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: "1"
+        run: |
+          set -eu
+          brew install zig mingw-w64
+          rustup target add x86_64-unknown-linux-gnu x86_64-pc-windows-gnu
+      - name: Versions
+        run: rustc --version && cargo --version && sw_vers
+      - name: Build
+        env:
+          PARTS: ${{ fromJSON(needs.plan.outputs.matrix).extras }}
+          TAG: ${{ needs.plan.outputs.tag }}
+        run: |
+          set -eu
+          for part in $PARTS; do
+            case "$part" in
+              plugins) cargo xtask release-ci part plugins all "$TAG" ${DRY_RUN:+"$DRY_RUN"} ;;
+              *) cargo xtask release-ci part "$part" macos "$TAG" ${DRY_RUN:+"$DRY_RUN"} ;;
+            esac
+          done
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: part-macos-extras
+          path: release-build/parts
+          if-no-files-found: error
+          retention-days: ${{ inputs.dry-run && 1 || 7 }}
+
+  join:
+    name: Join
+    needs: [plan, gate, macos, cross, extras]
+    if: >-
+      !cancelled() && needs.plan.result == 'success' && needs.gate.result == 'success' &&
+      needs.macos.result == 'success' && needs.cross.result == 'success' &&
+      (needs.extras.result == 'success' || needs.extras.result == 'skipped')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Toolchain
+        run: rustup show active-toolchain || rustup toolchain install
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+        with:
+          shared-key: xtask
+          save-if: false
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        if: ${{ !inputs.dry-run }}
+        with:
+          name: gate
+          path: .
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: part-*
+          path: release-build/parts
+          merge-multiple: true
+      - name: Join the parts into one release
+        env:
+          TAG: ${{ needs.plan.outputs.tag }}
+        run: |
+          set -eu
+          cargo xtask release-ci join "$TAG" ${DRY_RUN:+"$DRY_RUN"}
+          find release-build -type f -name build.json | sort
+          cat release-build/release-plan.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ inputs.dry-run }}
+        with:
+          name: dry-run-records
+          path: |
+            release-build/release-plan.json
+            release-build/builds/**/build.json
+          if-no-files-found: error
+          retention-days: 7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: ${{ !inputs.dry-run }}
+        with:
+          name: release
+          path: |
+            release-build
+            release-gate.json
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
