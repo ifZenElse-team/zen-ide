@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
@@ -206,7 +206,7 @@ pub(crate) fn release_problem(root: &Path, version: &str, toolbox: Option<&str>)
         .map(|path| path.display().to_string())
         .collect();
     let gather = format!(
-        "run `cargo xtask changelog gather {version}{}` on a branch from main, merge it, and tag that commit (docs/releasing.md, step 2)",
+        "run `cargo xtask changelog gather {version}{}` on a branch from main, merge it, and release that commit (docs/releasing.md)",
         toolbox.map(|toolbox| format!(" --toolbox {toolbox}")).unwrap_or_default()
     );
     if !waiting.is_empty() {
@@ -263,48 +263,40 @@ pub(crate) fn today() -> Result<String, String> {
 
 #[derive(Debug, Default, PartialEq, Eq)]
 pub(crate) struct Released {
-    pub(crate) tags: BTreeSet<String>,
-    pub(crate) sections: BTreeMap<String, BTreeSet<String>>,
+    pub(crate) ides: BTreeSet<String>,
+    pub(crate) toolbox: BTreeSet<String>,
 }
 
 impl Released {
     fn has(&self, file: &str, version: &str) -> bool {
-        self.tags.contains(version) || self.sections.get(file).is_some_and(|versions| versions.contains(version))
+        if file == "changelog/toolbox.md" { self.toolbox.contains(version) } else { self.ides.contains(version) }
     }
 }
 
-fn repository_versions(text: &str) -> BTreeSet<String> {
-    text.lines()
-        .filter_map(|line| line.strip_prefix("## ["))
-        .filter_map(|rest| rest.split_once(']').map(|(version, _)| version.to_owned()))
-        .filter(|version| version != "Unreleased")
-        .collect()
-}
-
-pub(crate) fn released_in(root: &Path) -> Released {
-    let git = |args: &[&str]| -> Option<String> {
-        let output = Command::new("git").current_dir(root).args(args).output().ok()?;
-        output.status.success().then(|| String::from_utf8_lossy(&output.stdout).into_owned())
-    };
+pub(crate) fn released_from(manifest: &serde_json::Value) -> Released {
     let mut released = Released::default();
-    let tags = git(&["tag", "--list", "v*"]).unwrap_or_default();
-    let mut versions: Vec<crate::calendar::Calendar> =
-        tags.lines().filter_map(|tag| crate::calendar::parse(tag.trim().strip_prefix('v')?)).collect();
-    versions.sort();
-    released.tags = versions.iter().map(ToString::to_string).collect();
-    let Some(newest) = versions.last() else { return released };
-    let mut files: Vec<String> = crate::release::IDES.iter().map(|ide| format!("changelog/{}.md", ide.0)).collect();
-    files.push("changelog/toolbox.md".to_owned());
-    for file in files {
-        if let Some(text) = git(&["show", &format!("v{newest}:{file}")]) {
-            let versions = crate::changelog::parse(&text).unwrap_or_default().into_iter().map(|entry| entry.version);
-            released.sections.insert(file, versions.collect());
+    for product in manifest["products"].as_array().into_iter().flatten() {
+        let id = product["id"].as_str().unwrap_or_default();
+        let versions = if id == "toolbox" {
+            &mut released.toolbox
+        } else if crate::release::IDES.iter().any(|ide| ide.0 == id) {
+            &mut released.ides
+        } else {
+            continue;
+        };
+        for release in product["releases"].as_array().into_iter().flatten() {
+            if let Some(version) = release["version"].as_str() {
+                versions.insert(version.to_owned());
+            }
         }
     }
-    if let Some(text) = git(&["show", &format!("v{newest}:CHANGELOG.md")]) {
-        released.sections.insert("CHANGELOG.md".to_owned(), repository_versions(&text));
-    }
     released
+}
+
+pub(crate) fn released() -> Result<Released, String> {
+    crate::release::public_manifest()
+        .map(|manifest| released_from(&manifest))
+        .map_err(|error| format!("{error}; a release is what the published manifest lists (ADR-0301)"))
 }
 
 fn extend(body: &str, notes: &[&Note]) -> String {
@@ -389,8 +381,8 @@ fn put(
     let existing = text.lines().position(is_section);
     if existing.is_some() && released.has(file, version) {
         return Err(format!(
-            "{file}: {version} is released already (its tag or the newest release tag has its section), and a \
-             release's notes are never changed; gather into the next version"
+            "{file}: {version} is released already (the published manifest lists it), and a release's notes are \
+             never changed; gather into the next version"
         ));
     }
     if notes.is_empty() {
@@ -423,10 +415,10 @@ pub(crate) fn gather_in(
     if crate::calendar::parse(version).is_none() {
         return Err(format!("`{version}` is not a calendar version YY.M.N (ADR-0146)"));
     }
-    if released.tags.contains(version) {
+    if released.ides.contains(version) {
         return Err(format!(
-            "{version} is released already (the tag v{version}): its notes are never changed; gather into the next \
-             version"
+            "{version} is released already (the published manifest lists it): its notes are never changed; gather \
+             into the next version"
         ));
     }
     if let Some(toolbox) = toolbox
@@ -553,7 +545,7 @@ pub(crate) fn gather(args: &[String]) -> Result<(), String> {
         None => today()?,
     };
     let root = Path::new(".");
-    let gathered = gather_in(root, &version, &date, toolbox.as_deref(), &released_in(root))?;
+    let gathered = gather_in(root, &version, &date, toolbox.as_deref(), &released()?)?;
     for path in &gathered.changelogs {
         println!("Wrote the notes of {version} into {}.", path.display());
     }
@@ -730,7 +722,7 @@ mod tests {
         );
         assert!(!folder.join("d.md").exists() && folder.join("c.md").exists());
         let mut toolbox_out = out(&["26.10.4"]);
-        toolbox_out.sections.insert("changelog/toolbox.md".to_owned(), ["0.3.0".to_owned()].into());
+        toolbox_out.toolbox.insert("0.3.0".to_owned());
         let error = gather_in(root, "26.10.6", "2026-11-03", Some("0.3.0"), &toolbox_out).unwrap_err();
         assert!(error.contains("changelog/toolbox.md: 0.3.0 is released already"), "{error}");
         gather_in(root, "26.10.6", "2026-11-03", Some("0.3.1"), &released).unwrap();
@@ -761,7 +753,7 @@ mod tests {
     }
 
     fn out(versions: &[&str]) -> Released {
-        Released { tags: versions.iter().map(|version| (*version).to_owned()).collect(), ..Released::default() }
+        Released { ides: versions.iter().map(|version| (*version).to_owned()).collect(), ..Released::default() }
     }
 
     #[test]
@@ -799,15 +791,44 @@ mod tests {
     }
 
     #[test]
-    fn the_release_tags_say_what_is_out() {
-        let released = released_in(&Path::new(env!("CARGO_MANIFEST_DIR")).join(".."));
-        if !released.tags.contains("26.10.4") {
-            return;
-        }
-        assert!(released.has("changelog/gogarden.md", "26.10.3"));
-        assert!(released.has("CHANGELOG.md", "26.10.4"));
-        assert!(released.sections["changelog/toolbox.md"].contains("0.3.15"));
-        assert!(!released.has("changelog/toolbox.md", "99.0.0"));
+    fn what_is_released_is_what_the_published_manifest_lists() {
+        let manifest = serde_json::json!({ "schema": 1, "products": [
+            { "id": "toolbox", "releases": [{ "version": "0.3.18" }] },
+            { "id": "gogarden", "releases": [{ "version": "26.11.9" }, { "version": "26.11.10" }] },
+            { "id": "sqlscroll", "releases": [{ "version": "26.11.10" }] },
+            { "id": "someone-else", "releases": [{ "version": "26.11.11" }] }
+        ] });
+        let released = released_from(&manifest);
+        assert!(released.has("changelog/gogarden.md", "26.11.9"));
+        assert!(released.has("CHANGELOG.md", "26.11.10"));
+        assert!(released.has("changelog/rustronin.md", "26.11.10"), "the IDEs share their versions");
+        assert!(released.has("changelog/toolbox.md", "0.3.18"));
+        assert!(!released.has("changelog/toolbox.md", "26.11.10") && !released.has("CHANGELOG.md", "0.3.18"));
+        assert!(!released.has("CHANGELOG.md", "26.11.11"), "a product that is not an IDE of ours counts for nothing");
+        assert_eq!(released_from(&serde_json::json!({})), Released::default());
+    }
+
+    #[test]
+    fn a_failed_attempt_leaves_its_version_open_to_more_notes() {
+        let dir = tempfile::tempdir().unwrap();
+        let root = dir.path();
+        repository(root);
+        let folder = root.join(FOLDER);
+        std::fs::write(folder.join("a.md"), "## ides\n\n### Fixed\n\n- First.\n").unwrap();
+        let published = out(&["26.10.4"]);
+        gather_in(root, "26.10.5", "2026-11-02", None, &published).unwrap();
+        assert_eq!(release_problem(root, "26.10.5", None), None, "ready to release");
+        std::fs::write(folder.join("fix.md"), "## ides\n\n### Fixed\n\n- The fix of the failed attempt.\n").unwrap();
+        assert!(release_problem(root, "26.10.5", None).unwrap().contains("fix.md"), "the retry needs the gather");
+        gather_in(root, "26.10.5", "2026-11-03", None, &published).unwrap();
+        assert_eq!(release_problem(root, "26.10.5", None), None);
+        let gogarden = std::fs::read_to_string(root.join(crate::changelog::product_path("gogarden"))).unwrap();
+        let entries = crate::changelog::parse(&gogarden).unwrap();
+        assert_eq!((entries[0].version.as_str(), entries[0].date.as_str()), ("26.10.5", "2026-11-02"));
+        assert_eq!(entries[0].notes, "### Fixed\n\n- First.\n- The fix of the failed attempt.");
+        std::fs::write(folder.join("late.md"), "## ides\n\n### Fixed\n\n- Late.\n").unwrap();
+        let error = gather_in(root, "26.10.5", "2026-11-04", None, &out(&["26.10.4", "26.10.5"])).unwrap_err();
+        assert!(error.contains("the published manifest lists it"), "once it is live: {error}");
     }
 
     #[test]

@@ -34,11 +34,11 @@ longer conflict there, and no note lands in a release that is already out.
 too, and `--date <YYYY-MM-DD>` for another day than today): it writes the section
 `## <YY.M.N> - <date>` into every IDE's changelog with the notes for `ides` and for that IDE, Zen
 Toolbox's section, and `## [<YY.M.N>] - <date>` into `CHANGELOG.md`, then removes the files it
-emptied, in one pull request before the tag ([docs/releasing.md](../../docs/releasing.md)). When
-the version's section is there already and not released (written by hand, or gathered before),
-the notes are added to it under their `###` sections and its date stays; a released version (its
-tag `v<YY.M.N>`, or a section the newest release tag has) is refused, so a release's notes never
-change once it is out.
+emptied, in one pull request before the release ([docs/releasing.md](../../docs/releasing.md)).
+When the version's section is there already and not released (written by hand, or gathered for an
+attempt that failed), the notes are added to it under their `###` sections and its date stays; a
+released version (one the published manifest on the release server lists) is refused, so a
+release's notes never change once it is out.
 
 What waits here can be read at any time: `cargo xtask changelog preview` prints it by product and
 section, and on GitHub the draft release "Next release" holds the same text, written again after

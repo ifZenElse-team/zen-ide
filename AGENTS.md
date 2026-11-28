@@ -13,11 +13,12 @@ to the details instead of repeating them. How to work with agents: [docs/ai-work
 > function; everything else is installed when needed. Never build a feature for one product only:
 > shared behaviour goes into the platform (`crates/platform`), capabilities into plug-ins.
 >
-> **Releases are made by the maintainers** ([ADR-0171](docs/adr/0171-releases-from-a-protected-tag-through-gitlab.md)):
-> a release is a protected tag `v<YY.M.N>` on `main`, built, staged and checked by the release
-> pipeline and made live by the owner. The signing key and the release server's token are protected
-> CI variables, never files in the repository. A contributor's work ends with a merged pull
-> request: never create a release tag or run `cargo xtask release*`.
+> **Releases are made by the maintainers** ([ADR-0301](docs/adr/0301-releases-start-from-a-release-branch.md)):
+> the owner moves the protected branch `release` forward to a commit of `main`; the release workflow
+> builds, stages and checks it, the owner approves it twice, and the last job tags it `v<YY.M.N>`.
+> The signing key and the release server's token are secrets of the environment `release`, never
+> files in the repository. A contributor's work ends with a merged pull request: never push to
+> `release`, create a release tag or run `cargo xtask release*`.
 
 ## 1. What this project is
 
@@ -74,12 +75,13 @@ run by CI on every pull request. Tasks are GitHub issues (section 5).
    Basic web (HTML, CSS, JavaScript, TypeScript) is in the base set of every IDE. Features every IDE
    needs (the editor, Git, run, language servers, settings) live in the platform.
    ([ADR-0050](docs/adr/0050-products-are-plugin-bundles.md), [ADR-0036](docs/adr/0036-bundled-plugins.md))
-12. **Releases are the maintainers'.** A release is the tag `v<YY.M.N>` on `main`, created by a
-   maintainer; its pipeline builds every platform, stages everything on the release server, checks
-   the staged downloads, and waits for the owner's click on the manual `release` job, which makes
-   it live ([ADR-0171](docs/adr/0171-releases-from-a-protected-tag-through-gitlab.md)). The signing
-   key and the release server's token exist only as protected, masked CI variables and with the
-   maintainers; never copy them anywhere else. Every release is for macOS and is checked after
+12. **Releases are the maintainers'.** A release is a push of the branch `release` to a commit of
+   `main`, by the owner, at the calendar's next version; the workflow **Release** builds every
+   platform, stages everything on the release server, checks the staged downloads, and waits twice
+   for the owner's approval, before staging and before making it live; only then does it create the
+   tag `v<YY.M.N>` ([ADR-0301](docs/adr/0301-releases-start-from-a-release-branch.md)). The signing
+   key and the release server's token exist only as secrets of the environment `release` and with
+   the maintainers; never copy them anywhere else. Every release is for macOS and is checked after
    publishing; Linux and Windows builds are made on request
    ([docs/releasing.md](docs/releasing.md)).
 

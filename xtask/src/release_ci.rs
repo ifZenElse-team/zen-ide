@@ -73,35 +73,32 @@ pub(crate) fn command(args: &[String]) -> Result<(), String> {
     if args.len() == 1 && args[0] == "credentials" {
         return credentials();
     }
-    let usage = format!(
-        "usage: cargo xtask release-ci (plan | build | stage | verify | live | matrix | gate | join | notes | part \
-         <ide|toolbox|plugins> <macos|linux|windows|all>) [v<YY.M.N>] (the tag is {} in CI); plan, matrix, part and \
-         join take --dry-run, a dry run of the release of this commit at the calendar's next version, never \
-         published; release-ci credentials checks the signing key and the upload token against the server and sends \
-         nothing",
-        ci.tag_variable()
-    );
+    let usage = "usage: cargo xtask release-ci (plan | build | stage | verify | live | matrix | gate | join | notes \
+                 | part <ide|toolbox|plugins> <macos|linux|windows|all>) [v<YY.M.N>] (without a version, the calendar's \
+                 next, as `cargo xtask release-version` prints it; in the workflow, the plan's); plan, matrix, part and \
+                 join take --dry-run, a dry run of the release of this commit, never published; release-ci credentials \
+                 checks the signing key and the upload token against the server and sends nothing"
+        .to_owned();
     let dry_run = args.iter().any(|arg| arg == "--dry-run");
     let args: Vec<String> = args.iter().filter(|arg| *arg != "--dry-run").cloned().collect();
-    let own = || match ci.tag() {
-        Some(tag) => Ok(tag.to_owned()),
-        None if dry_run => dry_run_tag(),
-        None => Err(usage.clone()),
-    };
-    let (step, part, tag) = match args.as_slice() {
-        [step, what, platform] if step == "part" => (step.as_str(), Some((what, platform)), own()?),
-        [step, what, platform, tag] if step == "part" => (step.as_str(), Some((what, platform)), tag.clone()),
-        [step] if step != "part" => (step.as_str(), None, own()?),
-        [step, tag] if step != "part" => (step.as_str(), None, tag.clone()),
+    let (step, part, given) = match args.as_slice() {
+        [step, what, platform] if step == "part" => (step.as_str(), Some((what, platform)), None),
+        [step, what, platform, tag] if step == "part" => (step.as_str(), Some((what, platform)), Some(tag.clone())),
+        [step] if step != "part" => (step.as_str(), None, None),
+        [step, tag] if step != "part" => (step.as_str(), None, Some(tag.clone())),
         _ => return Err(usage),
     };
     if dry_run {
         if let Some(problem) = dry_run_problem(step) {
             return Err(problem);
         }
-    } else if let Some(problem) = ci.tag_problem(&tag) {
+    } else if let Some(problem) = ci.release_problem(None) {
         return Err(problem);
     }
+    let tag = match given {
+        Some(tag) => tag,
+        None => next_tag()?,
+    };
     let version = tag_version(&tag)?;
     match step {
         "plan" => {
@@ -112,8 +109,17 @@ pub(crate) fn command(args: &[String]) -> Result<(), String> {
                     println!("A release of this commit would be refused now: {problem}");
                     Ok(())
                 }
-                Some(problem) => Err(format!("the tag would be refused: {problem}")),
-                None => Ok(()),
+                Some(problem) => Err(format!("a release of this commit would be refused: {problem}")),
+                None if dry_run => Ok(()),
+                None => match crate::release::version_problem(
+                    &version,
+                    &crate::release::published_ide_versions()?,
+                    crate::calendar::this_month()?,
+                    false,
+                ) {
+                    Some(problem) => Err(format!("a release of this commit would be refused: {problem}")),
+                    None => Ok(()),
+                },
             }
         }
         "build" => build(&tag, &version),
@@ -141,7 +147,7 @@ pub(crate) fn dry_run_problem(step: &str) -> Option<String> {
     })
 }
 
-fn dry_run_tag() -> Result<String, String> {
+pub(crate) fn next_tag() -> Result<String, String> {
     let (year, month) = crate::calendar::this_month()?;
     Ok(format!("v{}", crate::calendar::next(year, month, &crate::release::published_ide_versions()?)))
 }
@@ -149,7 +155,7 @@ fn dry_run_tag() -> Result<String, String> {
 pub(crate) fn tag_version(tag: &str) -> Result<String, String> {
     let version = tag.strip_prefix('v').unwrap_or_default();
     if crate::calendar::parse(version).is_none() {
-        return Err(format!("`{tag}` is not a release tag: a release tag is v<YY.M.N>, such as v26.10.4 (ADR-0171)"));
+        return Err(format!("`{tag}` is not a release's version: it is v<YY.M.N>, such as v26.10.4 (ADR-0146)"));
     }
     Ok(version.to_owned())
 }
@@ -299,6 +305,18 @@ fn stage(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String
     if groups.iter().any(|group| group.components().any(|part| part == std::path::Component::ParentDir)) {
         return Err(format!("{PLAN_FILE}: a group outside {BUILD_DIR}"));
     }
+    let records = records(&groups)?;
+    let commit = records.first().map(|record| record.commit.clone()).unwrap_or_default();
+    if let Some(problem) = records.iter().find(|record| record.commit != commit).map(|record| {
+        format!("{} {} is of commit {}, the release of commit {commit}", record.product, record.version, record.commit)
+    }) {
+        return Err(format!("{problem}; nothing was signed or sent"));
+    }
+    released_commit_problem(ci, &commit)?;
+    let published = crate::release::published_ide_versions()?;
+    if let Some(problem) = crate::release::version_problem(version, &published, crate::calendar::this_month()?, true) {
+        return Err(format!("{problem}; nothing was signed or sent"));
+    }
     let stage = stage_name(tag, ci.run());
     let mut entries = Vec::new();
     for group in &groups {
@@ -330,7 +348,6 @@ fn stage(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String
             .env("ZEN_RELEASES_TOKEN", &secrets.token),
         "zen-releases stage-site",
     )?;
-    let records = records(&groups)?;
     let files = records
         .iter()
         .flat_map(|record| record.files.iter().filter_map(|file| served(record, file, &secrets.server)))
@@ -341,7 +358,7 @@ fn stage(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String
         version: version.to_owned(),
         stage: stage.clone(),
         server: secrets.server.trim_end_matches('/').to_owned(),
-        commit: records.first().map(|record| record.commit.clone()).unwrap_or_default(),
+        commit,
         products: products(&records),
         files,
         site: format!("{}/releases/staged-site/{stage}/index.html", secrets.server.trim_end_matches('/')),
@@ -353,9 +370,8 @@ fn stage(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String
 }
 
 fn staged(tag: &str, version: &str) -> Result<StageRecord, String> {
-    let bytes = std::fs::read(STAGE_FILE).map_err(|error| {
-        format!("{STAGE_FILE}: {error}; the stage job leaves it (run the pipeline's stage job first)")
-    })?;
+    let bytes = std::fs::read(STAGE_FILE)
+        .map_err(|error| format!("{STAGE_FILE}: {error}; the stage job leaves it (run the stage job first)"))?;
     let record: StageRecord = serde_json::from_slice(&bytes).map_err(|error| format!("{STAGE_FILE}: {error}"))?;
     if record.schema != SCHEMA || record.tag != tag || record.version != version {
         return Err(format!("{STAGE_FILE} is the stage of {} {}, not of {tag}", record.tag, record.version));
@@ -376,8 +392,26 @@ fn verify(tag: &str, version: &str) -> Result<(), String> {
         println!("  {check}");
     }
     println!("  the website as it will be: {}", record.site);
-    println!("Press \"release\" in the pipeline to make it live.");
+    println!("Approve the job `live` (environment `release`) of the run to make it live.");
     Ok(())
+}
+
+fn released_commit_problem(ci: &crate::ci_host::Ci, commit: &str) -> Result<(), String> {
+    if let Some(problem) = ci.release_problem(Some(commit)) {
+        return Err(format!("{problem}; nothing was signed, sent or made live"));
+    }
+    if ci.host != crate::ci_host::Host::Github {
+        return Ok(());
+    }
+    let reference = format!("refs/heads/{}", crate::ci_host::RELEASE_BRANCH);
+    let output = Command::new("git").args(["ls-remote", "origin", &reference]).output().ok();
+    let tip = output
+        .filter(|output| output.status.success())
+        .and_then(|output| String::from_utf8_lossy(&output.stdout).split_whitespace().next().map(str::to_owned));
+    match crate::ci_host::moved_problem(commit, tip.as_deref()) {
+        Some(problem) => Err(problem),
+        None => Ok(()),
+    }
 }
 
 pub(crate) fn website(out: &Path) -> Result<(), String> {
@@ -699,10 +733,11 @@ pub(crate) fn github_release_body(record: &StageRecord, checks: &[String]) -> St
 fn live(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String> {
     let secrets = crate::release::secrets()?;
     let record = staged(tag, version)?;
-    let checks = checks()?;
+    checks()?;
     if secrets.server.trim_end_matches('/') != record.server {
         return Err(format!("the stage is on {}, the release variables name {}", record.server, secrets.server));
     }
+    released_commit_problem(ci, &record.commit)?;
     println!("==> Releasing {} ({})", record.tag, record.stage);
     run(
         Command::new(crate::release_flow::zen_releases()?)
@@ -711,111 +746,10 @@ fn live(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String>
         "zen-releases release-stage",
     )?;
     println!("==> {tag} is live: {}/releases/manifest.json, {}/", record.server, record.server);
-    match gitlab_context() {
-        Some(gitlab) => gitlab_release(&gitlab, &record, &checks),
-        None if ci.host == crate::ci_host::Host::Github => {
-            println!("The workflow's next job publishes the draft GitHub release of {tag}.");
-            Ok(())
-        }
-        None => {
-            println!("Not in GitLab CI: create the GitLab release of {tag} by hand if wanted.");
-            Ok(())
-        }
+    if ci.host == crate::ci_host::Host::Github {
+        println!("The workflow's next job publishes the draft GitHub release of {tag}.");
     }
-}
-
-struct Gitlab {
-    api: String,
-    project: String,
-    token: String,
-}
-
-fn gitlab_context() -> Option<Gitlab> {
-    let env = |name: &str| std::env::var(name).ok().filter(|value| !value.is_empty());
-    Some(Gitlab { api: env("CI_API_V4_URL")?, project: env("CI_PROJECT_ID")?, token: env("CI_JOB_TOKEN")? })
-}
-
-pub(crate) fn release_description(record: &StageRecord, checks: &[String]) -> String {
-    let mut text = format!(
-        "Every Zen IDE at {}: GoGarden, RustRonin, WebWave and JvmJizo, for macOS, Linux and Windows. Install or \
-         update them with [Zen Toolbox]({}/).\n",
-        record.version,
-        record.server.trim_end_matches('/')
-    );
-    for product in &record.products {
-        let what = if product.kind == "plugin" { " plug-in" } else { "" };
-        text.push_str(&format!("\n## {}{what} {}\n\n{}\n", product.name, product.version, product.notes.trim()));
-    }
-    text.push_str("\n## Checked before release\n\n");
-    for check in checks {
-        text.push_str(&format!("- {check}\n"));
-    }
-    text
-}
-
-pub(crate) fn release_json(record: &StageRecord, checks: &[String]) -> serde_json::Value {
-    let links: Vec<serde_json::Value> = record
-        .files
-        .iter()
-        .map(|file| serde_json::json!({ "name": file.name, "url": file.url, "link_type": file.link_type }))
-        .collect();
-    serde_json::json!({
-        "name": format!("Zen IDE {}", record.version),
-        "tag_name": record.tag,
-        "description": release_description(record, checks),
-        "assets": { "links": links },
-    })
-}
-
-fn gitlab_release(gitlab: &Gitlab, record: &StageRecord, checks: &[String]) -> Result<(), String> {
-    let releases = format!("{}/projects/{}/releases", gitlab.api, gitlab.project);
-    let json = release_json(record, checks);
-    let (status, body) = gitlab_call(gitlab, "POST", &releases, &json)?;
-    if (200..300).contains(&status) {
-        println!("==> The GitLab release {} is created with {} files.", record.tag, record.files.len());
-        return Ok(());
-    }
-    if status != 409 {
-        return Err(format!("GitLab refused the release ({status}): {body}"));
-    }
-    let release = format!("{releases}/{}", record.tag);
-    let update = serde_json::json!({ "name": json["name"], "description": json["description"] });
-    let (status, body) = gitlab_call(gitlab, "PUT", &release, &update)?;
-    if !(200..300).contains(&status) {
-        return Err(format!("GitLab refused to update the release ({status}): {body}"));
-    }
-    for link in json["assets"]["links"].as_array().into_iter().flatten() {
-        let _ = gitlab_call(gitlab, "POST", &format!("{release}/assets/links"), link)?;
-    }
-    println!("==> The GitLab release {} is updated.", record.tag);
     Ok(())
-}
-
-fn curl_call(gitlab: &Gitlab, method: &str, url: &str, body: &str) -> (Vec<String>, String) {
-    let args = ["-sS", "-K", "-", "-w", "\n%{http_code}", "--data-binary", body].map(str::to_owned).to_vec();
-    let config = format!(
-        "header = \"JOB-TOKEN: {}\"\nheader = \"Content-Type: application/json\"\nrequest = \"{method}\"\nurl = \"{url}\"\n",
-        gitlab.token
-    );
-    (args, config)
-}
-
-fn gitlab_call(gitlab: &Gitlab, method: &str, url: &str, json: &serde_json::Value) -> Result<(u16, String), String> {
-    use std::io::Write;
-    let body = serde_json::to_string(json).map_err(|error| error.to_string())?;
-    let (args, config) = curl_call(gitlab, method, url, &body);
-    let mut child = Command::new("curl")
-        .args(&args)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .spawn()
-        .map_err(|error| format!("cannot run curl: {error}"))?;
-    child.stdin.take().ok_or("no stdin")?.write_all(config.as_bytes()).map_err(|error| error.to_string())?;
-    let output = child.wait_with_output().map_err(|error| error.to_string())?;
-    let text = String::from_utf8_lossy(&output.stdout).into_owned();
-    let (body, status) = text.rsplit_once('\n').unwrap_or(("", text.as_str()));
-    let status = status.trim().parse().map_err(|_| format!("curl {method} {url}: no HTTP status"))?;
-    Ok((status, body.to_owned()))
 }
 
 #[cfg(test)]
@@ -873,14 +807,6 @@ mod tests {
         assert_eq!(stage_name("v26.10.4", Some("2142")), "v26.10.4-p2142");
         assert!(stage_name("v26.10.4", None).starts_with("v26.10.4-local-"));
         assert!(stage_name("v26.10.4", Some("../x")).starts_with("v26.10.4-local-"), "only digits");
-    }
-
-    #[test]
-    fn the_job_token_reaches_curl_on_its_standard_input_and_never_on_its_command_line() {
-        let gitlab = Gitlab { api: "https://x".to_owned(), project: "1".to_owned(), token: "s3cret".to_owned() };
-        let (args, config) = curl_call(&gitlab, "POST", "https://x/releases", "{}");
-        assert!(config.contains("JOB-TOKEN: s3cret"));
-        assert!(args.iter().all(|arg| !arg.contains("s3cret")), "{args:?}");
     }
 
     #[test]
@@ -987,7 +913,7 @@ mod tests {
     }
 
     #[test]
-    fn the_gitlab_release_carries_the_notes_and_a_link_to_every_file() {
+    fn the_github_release_carries_the_notes_and_a_link_to_every_file() {
         let records = vec![
             record("ide", "gogarden", "26.10.4", "macos-aarch64"),
             record("ide", "gogarden", "26.10.4", "linux-x86_64"),
@@ -1015,13 +941,5 @@ mod tests {
         assert!(body.contains(&format!("SHA-256 `{}`", stage.files[0].sha256)));
         assert!(body.contains("https://ide.ifzenelse.space/releases/manifest.json"));
         assert!(body.ends_with("## Checked before release\n\n- 1 staged files downloaded\n"));
-        let json = release_json(&stage, &["1 staged files downloaded".to_owned()]);
-        assert_eq!(json["tag_name"], "v26.10.4");
-        assert_eq!(json["name"], "Zen IDE 26.10.4");
-        assert_eq!(json["assets"]["links"][0]["link_type"], "package");
-        let description = json["description"].as_str().unwrap();
-        assert!(description.contains("## gogarden 26.10.4\n\n- gogarden notes."), "{description}");
-        assert!(description.contains("## json plug-in 0.2.0"));
-        assert!(description.contains("- 1 staged files downloaded"));
     }
 }

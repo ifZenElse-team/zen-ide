@@ -2,116 +2,76 @@
 
 > **Last updated:** 2026-11-28 · **Decisions:** [ADR-0020](adr/0020-release-server.md),
 > [ADR-0022](adr/0022-toolbox-updates-itself.md), [ADR-0146](adr/0146-one-calendar-version-for-every-ide-and-release-channels.md),
-> [ADR-0171](adr/0171-releases-from-a-protected-tag-through-gitlab.md), [ADR-0188](adr/0188-release-notes-and-decision-records-in-files-of-their-own.md)
+> [ADR-0171](adr/0171-releases-from-a-protected-tag-through-gitlab.md), [ADR-0188](adr/0188-release-notes-and-decision-records-in-files-of-their-own.md),
+> [ADR-0300](adr/0300-releases-from-github.md), [ADR-0301](adr/0301-releases-start-from-a-release-branch.md)
 
 > **Releases are made by the maintainers.** This page documents their tooling: the release
-> pipeline runs on the maintainers' CI and release runner, with the signing key and the release
-> server's token held as protected CI variables. A contributor never needs any of it: a change
-> ends with its pull request.
+> workflow runs on GitHub-hosted runners, with the signing key and the release server's token held
+> as secrets of the environment `release`. A contributor never needs any of it: a change ends with
+> its pull request.
 
-> **A release is a protected tag, and the owner presses the button** (the owner, 2026-10-27,
-> ADR-0171). Every IDE is released together under one calendar version `YY.M.N` (ADR-0146):
+> **A release is a push to the branch `release`, and the owner approves it twice** (ADR-0301).
+> Every IDE is released together under one calendar version `YY.M.N` (ADR-0146), which nobody names
+> by hand: it is the calendar's next unpublished version.
 >
 > ```sh
-> V=$(cargo xtask release-version)          # 26.10.4: this month, the next number
-> # The notes first (ADR-0188): on a branch from main, then merge it before the tag.
+> git fetch origin && V=$(cargo xtask release-version)   # 26.11.11: this month, the next number
+> # The notes first (ADR-0188): on a branch from main, then merge it.
 > git switch -c release/notes-$V origin/main
 > cargo xtask changelog gather $V            # add --toolbox <version> when Zen Toolbox is released too
 > git commit -am "changelog: the notes of $V" && git push -u origin HEAD   # its pull request, merged
-> cargo xtask release-ci plan v$V            # on the merged main: what the tag builds; refuses notes left
-> git tag v$V origin/main && git push origin v$V   # or GitLab → Code → Tags → New tag
+> git fetch origin && git switch --detach origin/main
+> cargo xtask release-ci plan                # on the merged main: what it releases; refuses what a release would
+> git push origin origin/main:refs/heads/release   # the release: `release` moves forward to that commit
 > ```
 >
-> The tag's pipeline refuses, building nothing, a commit whose `changelog/unreleased/` still holds
-> notes for the release (Zen Toolbox's count only when the tag releases it) or whose IDE changelogs
-> have no section of the version: gather, merge, and tag the merged commit.
->
-> The tag's pipeline builds every IDE for macOS, Linux and Windows (and Zen Toolbox and the
-> catalog's plug-ins when they have a new version), stages it all on the release server, checks
-> every staged download, and stops at the manual job **release**. Look at the staged website and the
-> checks, then press **release** (Build → Pipelines → the tag's pipeline): in a few seconds the new
-> version is in the manifest, the website shows it, and the GitLab release lists its notes and files. A maintainer's machine stays the fallback
-> (below).
+> The workflow **Release** builds every IDE for macOS, Linux and Windows (and Zen Toolbox and the
+> catalog's plug-ins when they have a new version), asks for the first approval, stages it all on the
+> release server, checks every staged download and writes a draft GitHub release; it asks for the
+> second approval, makes the release live, and only then creates the tag `v<YY.M.N>` on the released
+> commit and publishes the GitHub release. A maintainer's machine stays the fallback (below).
 
-## Releasing from a tag
+## Releasing from the branch `release`
 
-Create the tag only when the owner asks, on a commit of `main` whose pipeline passed, after the
-pull request of `cargo xtask changelog gather <YY.M.N>` is merged (step 2 of the checklist below).
-`release: build` checks it first: a tag whose commit still has notes in `changelog/unreleased/` for
-the release, or an IDE changelog without the version's section, is refused before anything is
-built; delete the tag, gather and merge, and tag again. Tags `v*` are
-protected: only maintainers can create one, and only a protected tag's pipeline is given the release
-variables.
+The branch `release` always points at a commit of `main` and only moves forward; no commit is ever
+made on it. Moving it is the request for a release: the workflow **Release**
+(`.github/workflows/release.yml`) runs on every push to it. A pushed tag starts nothing.
 
-| Job | Runner | Secrets | What it does |
-|---|---|---|---|
-| `release: build` | the release runner | none | `cargo xtask release-ci build`: refuses notes not gathered (above), then the gate, every IDE for every platform, Zen Toolbox and the catalog's plug-ins with a version not yet published, the website (`deploy/releases/site` and the guide). The build (about 1.2 GB, over GitLab's 1 GB limit for artifacts) stays on the runner in `~/ci/release/<tag>` (the last three tags are kept); the job's artifact is its SHA-256 list, and `release: stage` and `release: verify` check every file against it before using it |
-| `release: stage` | the release runner | the `release` environment | `cargo xtask release-ci stage`: uploads the artifacts (stored, listed nowhere), three at a time and only those the server does not have with the same SHA-256, so a retried stage sends nothing again. A file whose upload breaks (broken pipe, a reset connection, a timeout, or a 502–504 answer) is tried again up to three times, after 5, 10 and 15 s, and each try first asks the server whether it already has the file with the same SHA-256 (the connection may have dropped after the server kept it); every upload has time limits (30 s to connect; for the body, 10 minutes plus the file's size at 16 KiB/s, which a slow but steady line meets; 5 minutes for the answer, plus the time to pass on what the connection may still have buffered, up to 16 MiB at the least rate), so a stalled connection is tried again instead of holding the job for hours. Files over 20 MB go one at a time, smaller ones as many at a time as `--jobs` says. Two variables of the job's environment change this: `ZEN_RELEASES_UPLOAD_PARALLEL` (how many small files at a time) and `ZEN_RELEASES_MIN_RATE` (the least body rate, in KiB/s). Then the stage the signed manifest and catalog, the changelogs and the website under `v<version>-p<pipeline>`. The Air sends about 1.5 MB/s to the server (measured 2026-10-27), so the 700 MB take about ten minutes |
-| `release: verify` | the release runner | none | `cargo xtask release-ci verify`: downloads every staged file from its public address and checks its size and SHA-256 against the build, each macOS application with `codesign --verify --deep --strict`, each Debian package in Ubuntu when Docker is there (the release runner has none: the job says so; check one by hand after the release, step 6), and the staged manifest, catalog, changelogs and website |
-| `release` (manual) | the release runner | the `release` environment | `cargo xtask release-ci live`: makes the stage live in one request to the server, then creates the GitLab release of the tag: each product's notes, what was checked, a link to every file |
+Move it only when the owner asks, to a commit of `main` after the pull request of
+`cargo xtask changelog gather <YY.M.N>` is merged (step 2 of the checklist below). Only the owner
+(an organisation admin) can push to it, and only forward (the branch ruleset, below). The plan
+refuses, building nothing, a commit that is not on `origin/main`, notes still in
+`changelog/unreleased/` (Zen Toolbox's count only when Toolbox is released), an IDE changelog without
+the version's section, and a run whose ref or environment is not what a release needs. Fix the
+cause on `main`, gather and merge, and move `release` again.
 
-`cargo xtask release-ci plan v<version>` prints what a tag would build, building and sending
-nothing. The staged website is at `https://ide.ifzenelse.space/releases/staged-site/<stage>/index.html`
-(the stage job prints its address). Pressing **release** twice changes nothing the second time.
+**What counts as released.** A version is released when the published manifest on the release
+server lists it. `cargo xtask release-version`, `cargo xtask changelog gather` and the plan read
+that, and nothing reads tags: the tag `v<YY.M.N>` is created by the last job, after the release is
+live, so a failed attempt leaves no tag and nothing to delete. The same version stays the next one,
+`gather` adds the fixes' notes to its section, and the retry releases a newer commit of `main` at
+that version. Do not gather while a release runs: the version is fixed by its plan, and notes
+gathered into it then would not be in it.
 
-The live switch is refused, with nothing changed, when the live manifest or plug-in catalog changed
-after the stage was made (a plug-in published from a maintainer's machine meanwhile): it would drop that
-release. Run the tag's pipeline again (Build → Pipelines → Run pipeline on the tag, or retry from
-`release: build`): it stages afresh under the new pipeline's name. If a job fails before the
-button, nothing is live; fix the cause on `main`, delete the tag, and tag again.
+**Retrying.** If a job fails, nothing is live (until `live`) and there is no tag. Either re-run the
+failed jobs of the run (Actions → the run → Re-run failed jobs), when the cause was the machine or
+the network; or fix the cause on `main` and move `release` forward to the new commit, which starts
+a new run. A run whose commit `release` no longer points at refuses to stage or go live, so an old
+run cannot release over a newer one. Runs of the workflow wait for each other (one at a time).
 
-**The release variables** (GitLab → Settings → CI/CD → Variables), all **protected**:
+### The jobs
 
-| Variable | Value | Masked and hidden |
-|---|---|---|
-| `ZEN_PUBLISHER_KEY` | the signing key: the 64 hex digits of `~/.config/zen-ide/publisher.key`, one line | yes |
-| `ZEN_RELEASES_TOKEN` | the release server's upload token, as `ZEN_RELEASES_TOKEN=` in `releases.env` | yes |
-| `ZEN_RELEASES_SERVER` | `https://ide.ifzenelse.space` | no |
-
-Set their **environment scope** to `release`: GitLab then gives them only to the two jobs that name
-that environment (stage and release, and the credentials check), never to the build and verify jobs,
-and never to a pull request's or a branch's pipeline. `zen-releases` reads the key from
-`ZEN_PUBLISHER_KEY` (no file is written) and never prints it; `cargo xtask` refuses the release
-secrets in any GitLab job whose ref is not protected. The same two rules hold on GitHub
-(`xtask/src/ci_host.rs`, ADR-0300): a workflow run reads the secrets only when its ref is protected
-(`GITHUB_REF_PROTECTED`) and never in a pull request's run, and `release-ci` releases only the tag
-its run was started by (`GITHUB_REF`, `GITHUB_REF_TYPE` and `GITHUB_REF_NAME` must agree). A CI that
-is neither (a `CI` variable without exactly one of `GITLAB_CI` and `GITHUB_ACTIONS`) is refused the
-secrets and the release altogether; a maintainer's machine, where no CI variable is set, works as
-before. The jobs run on the release runner as the same macOS user
-as every pull request's job: a job running at the same moment could read the release jobs'
-environment. The owner accepted that risk (ADR-0171); the release jobs share
-`resource_group: release`.
-
-**Check the variables without releasing:** Build → Pipelines → Run pipeline on `main` with
-`CHECK_RELEASE_CREDENTIALS=1` (or `glab ci run -b main --variables CHECK_RELEASE_CREDENTIALS:1`).
-The job `release: check credentials` signs an empty manifest with the key and has the server check
-it with the token (`PUT /api/v1/check/manifest`, which stores nothing), and prints only `ok`, or
-which of the two the server refused. On a maintainer's machine: `zen-releases check-credentials --key
-~/.config/zen-ide/publisher.key` with `ZEN_RELEASES_TOKEN` and `ZEN_RELEASES_SERVER` set.
-
-**Once, before the first tag release:** deploy the release server ([deploy/releases](../deploy/releases/README.md)): it brings the stage endpoints and Caddy's live website
-(`site/current` in the server's data folder; until a release makes one live, Caddy serves the
-website deployed with the server, as before). A stage job against an older server stops with
-"deploy it first", having made nothing live.
-
-## Releasing from a tag on GitHub
-
-The same release, built by the workflow **Release** (`.github/workflows/release.yml`, ADR-0300) on
-GitHub-hosted runners when a tag `v<YY.M.N>` is pushed. Its builds are the jobs of
-`.github/workflows/release-parts.yml`, which the nightly dry run (below) calls too. The notes are gathered and merged first and
-the tag is made on that commit of `main`, exactly as above. The GitLab pipeline stays the way to
-release until the last step of ADR-0300's order is done; until then the workflow on GitHub builds
-and joins, and publishes nothing.
+The builds are the jobs of `.github/workflows/release-parts.yml`, which the nightly dry run (below)
+calls too. They read no secret and name no environment.
 
 | Job | Runner | Secrets | What it does |
 |---|---|---|---|
-| `plan` | Linux | none | `cargo xtask release-ci matrix`: what the tag releases (every IDE; Zen Toolbox and the catalog's plug-ins when their version is not published), written as the jobs below; refuses, building nothing, notes that are not gathered, an IDE changelog without the version's section, a version that is not the calendar's next and a commit that is not on `origin/main`; and when `ZEN_RELEASE_FROM_GITHUB` is `true`, a ref that is not protected and an environment `release` that does not exist, has no required reviewers or does not allow the tag (read with the job's token, `actions: read`) |
+| `plan` | Linux | none | `cargo xtask release-ci matrix`: what the release is (every IDE; Zen Toolbox and the catalog's plug-ins when their version is not published), written as the jobs below, and its version, fixed for the whole run; refuses, building nothing, notes that are not gathered, an IDE changelog without the version's section, a version that is not the calendar's next, a commit that is not on `origin/main`, a run that is not of the protected branch `release`, and an environment `release` that does not exist, has no required reviewers or does not allow the branch `release` (read with the job's token, `actions: read`) |
 | `gate` | macOS | none | `cargo xtask release-ci gate`: the source check and the full quality gate (`cargo xtask ci`), once; its pass is `release-gate.json` with the commit, the tree and the compiler |
 | `macos` (3 jobs) | macOS, Apple silicon | none | `cargo xtask release-ci part <ide> macos`: the application bundles, two IDEs in a job (the second reuses what the first compiled) |
 | `cross` (12 jobs, 14 with Zen Toolbox) | Linux | none | `cargo xtask release-ci part <ide|toolbox> <linux|windows>`: one product for one platform, cross-built as on the Mac (ADR-0150) |
 | `extras` (only when there is something) | macOS | none | Zen Toolbox for macOS (`part toolbox macos`) and the catalog's plug-ins with their driver programs for every platform (`part plugins all`) |
-| `join` | Linux | none | `cargo xtask release-ci join`: takes every part only if its files match its `build.json`, its commit, tree and compiler are those of the gate's pass, and the parts are exactly the release (every IDE once for each platform, all or none); lays them out as `release-ci build` does (`release-build/`, with the website and `release-plan.json`) and keeps that as the workflow artefact `release` for 7 days |
+| `join` | Linux | none | `cargo xtask release-ci join`: takes every part only if its files match its `build.json`, its commit, tree and compiler are those of the gate's pass, and the parts are exactly the release (every IDE once for each platform, all or none); lays them out as one release (`release-build/`, with the website and `release-plan.json`) and keeps that as the workflow artefact `release` for 7 days |
 
 A part is a release build with every check of one (the source check, the version, the notes) but
 the gate, which it records as `deferred` in `build.json`; nothing publishes a build whose gate is
@@ -119,25 +79,25 @@ not `passed`, and only `join` turns `deferred` into `passed`, with the gate job'
 tree. That is how the gate runs once for twenty builds. The jobs are split so that the release
 takes about as long as its slowest job: a clean macOS build of one IDE took 61 minutes on a hosted
 runner (2026-11-26) and a Linux or Windows one 17 to 18, and at most five macOS jobs run at a time
-there, which is why the six bundles are three jobs, beside the gate and `extras`. The gate's own
-time on a hosted runner is not measured yet.
+there, which is why the six bundles are three jobs, beside the gate and `extras`. The gate took
+about 65 minutes on a hosted Mac (2026-11-27).
 
 No release build restores a cache: every part and the gate compile from nothing. `plan` and `join`,
 which build only `xtask`, restore the cache the workflows of `main` save and never save one; a
 cache a pull request's run wrote cannot reach them, because GitHub keeps a cache within the ref
 that wrote it and the default branch, and no workflow here saves a cache from a pull request
-(`ci.yml`). The workflow has `contents: read` and names no environment.
+(`ci.yml`).
 
-The version's month is the month in UTC on GitHub (`TZ: UTC`).
+The version's month is the month in UTC on GitHub (`TZ: UTC`), fixed when the plan runs.
 
 **What stops a release before it is built.** The plan checks everything a release needs that a job
-without the secrets can see (the row of `plan` above), so a tag that cannot be released fails in a
+without the secrets can see (the row of `plan` above), so a push that cannot be released fails in a
 few minutes instead of after the builds. The secrets themselves cannot be checked there: GitHub
 gives an environment's secrets only to a job that names the environment, which asks the reviewers
 first, and the job's token cannot list them. A third approval at the start was not wanted, so the
 first step of `stage` and of `live` checks that `ZEN_PUBLISHER_KEY`, `ZEN_RELEASES_TOKEN` and
 `ZEN_RELEASES_SERVER` are set, before anything is compiled, signed or sent, and prints only which
-are missing. To know beforehand, run **Release credentials** (below) before the tag.
+are missing. To know beforehand, run **Release credentials** (below) before moving `release`.
 
 ### The nightly dry run
 
@@ -146,7 +106,7 @@ Every night at 03:17 UTC, and by hand (Actions → **Release dry run** → Run w
 latest commit of `main`, as a release of it would be made now: the plan, every build of every
 product for every platform, and the join, with the version the calendar gives
 (`cargo xtask release-version`). So a release meets no problem of its builds for the first time on
-its tag.
+release day.
 
 A dry run is not a release, and differs from one only here:
 
@@ -188,49 +148,64 @@ the calendar's next).
 
 ### After `join`: stage, verify, release
 
-These jobs run only when the repository variable
-`ZEN_RELEASE_FROM_GITHUB` is `true`; without it a tag's run ends with the artefact `release`.
-
 | Job | Runner | Secrets | Token | What it does |
 |---|---|---|---|---|
-| `stage` | Linux | the environment `release` | read | Checks that the secrets are set (above); compiles `xtask` and `zen-releases` first, without the secrets; then one step with them runs `cargo xtask release-ci stage`, as in GitLab: uploads every file (stored, listed nowhere), signs and stages the manifest, the catalog, the changelogs and the website under `v<version>-p<run id>`. Its record is the artefact `stage` |
+| `stage` | Linux | the environment `release` | read | After the first approval: checks that the secrets are set (above); compiles `xtask` and `zen-releases` without the secrets; then one step with them runs `cargo xtask release-ci stage v<version>`: refuses a build of another commit than the run's, a run whose commit `release` no longer points at, and a version published already; uploads every file (stored, listed nowhere), signs and stages the manifest, the catalog, the changelogs and the website under `v<version>-p<run id>`. Its record is the artefact `stage` |
 | `verify` | macOS | none | read | `cargo xtask release-ci verify`: every staged file downloaded from its public address and compared with the build, `codesign --verify` for each macOS application, the staged documents and website. Its checks are the artefact `verify` |
-| `draft` | Linux | none | `contents: write` | `cargo xtask release-ci notes` writes the release's text (each product's notes, a link to every file with its SHA-256, what was checked); `gh release create --draft` makes the draft release of the tag, or rewrites the draft a run made before |
-| `live` | Linux | the environment `release` | read | After the environment's reviewers approve, and once the secrets are checked as in `stage`: `cargo xtask release-ci live`, one request that makes the stage live |
-| `publish` | Linux | none | `contents: write` | Publishes the draft |
+| `draft` | Linux | none | `contents: write` | `cargo xtask release-ci notes` writes the release's text (each product's notes, a link to every file with its SHA-256, what was checked); `gh release create --draft --target <commit>` makes the draft release `v<version>` for the released commit, or rewrites the draft an earlier attempt made. A draft creates no tag |
+| `live` | Linux | the environment `release` | read | After the second approval, once the secrets are checked as in `stage`: `cargo xtask release-ci live`, which refuses as `stage` does when `release` has moved, then makes the stage live in one request |
+| `publish` | Linux | none | `contents: write` | Creates the tag `v<version>` on the released commit (or finds it there already; a tag on another commit stops it), then publishes the draft as the latest release |
 
-So the button is the approval of `live`: Actions → the tag's run → **Review deployments** → `release`
-→ Approve. Before approving, read the draft release (Releases → the draft named `Zen IDE <version>`),
+So the button is the approval of `live`: Actions → the run → **Review deployments** → `release` →
+Approve. Before approving, read the draft release (Releases → the draft named `Zen IDE <version>`),
 open the staged website (the `stage` job prints its address) and look at the `verify` job. The
 same environment guards `stage`, so the run asks for an approval twice: once before the secrets are
-used at all, once before the release is live. No job holds both a release secret and a token that
-can write to the repository.
+used at all, once before the release is live. Rejecting the first approval stops the release with
+nothing sent; the run's artefact `release` can still be published from a maintainer's machine
+(below). No job holds both a release secret and a token that can write to the repository.
 
-`cargo xtask` checks again what the environment already enforces (`xtask/src/ci_host.rs`): the
-secrets are refused unless the run's ref is protected, and `stage` and `live` release only the tag
-the run was started by.
+If `publish` fails after `live` (the tag ruleset refused the tag, for example), the release is live
+and only the tag and the GitHub release are missing: fix the cause and re-run `publish`, or have an
+organisation admin create the tag on the released commit
+(`git push origin <commit>:refs/tags/v<version>`) and re-run it.
 
-**The secrets** are the same three values as in GitLab, kept in the environment `release`
-(Settings → Environments → `release`): the secrets `ZEN_PUBLISHER_KEY` and `ZEN_RELEASES_TOKEN`, and
-the variable `ZEN_RELEASES_SERVER`. The environment allows the tags `v*` and the branch `main` (for
-the credentials check below) and has required reviewers.
+`cargo xtask` checks again what the repository's settings already enforce (`xtask/src/ci_host.rs`):
+the secrets are refused unless the run is of the protected branch `release` (`GITHUB_REF` is
+`refs/heads/release`, `GITHUB_REF_TYPE` is `branch`, `GITHUB_REF_NAME` is `release`, and
+`GITHUB_REF_PROTECTED` is `true`), never in a pull request's run, on another branch or on a tag;
+every step of a release refuses a run that is not of `release`; `stage` and `live` release only the
+run's own commit (`GITHUB_SHA`), and only while `release` points at it. A CI that is neither GitHub
+Actions nor a maintainer's machine (a `CI` variable without `GITHUB_ACTIONS`, or with `GITLAB_CI`
+too) is refused the secrets and the release altogether; a maintainer's machine, where no CI
+variable is set, works as before.
 
-**Check the secrets without releasing:** Actions → **Release credentials** → Run workflow on `main`
-(`.github/workflows/release-credentials.yml`). After the approval it runs
+### The repository's settings
+
+The owner keeps these, under Settings:
+
+- **The branch ruleset `release`** (Rules → Rulesets → New branch ruleset): target the branch
+  `release`; rules **Restrict creations**, **Restrict updates**, **Restrict deletions** and **Block
+  force pushes**; bypass list: Organization admin, always. So only the owner moves `release`, only
+  forward, and GitHub reports the branch as protected (`GITHUB_REF_PROTECTED`).
+- **The environment `release`** (Environments → `release`): the required reviewer; deployment
+  branches and tags: the branch `release` only; the secrets `ZEN_PUBLISHER_KEY` and
+  `ZEN_RELEASES_TOKEN`, and the variable `ZEN_RELEASES_SERVER` (`https://ide.ifzenelse.space`).
+- **The tag ruleset "release tags"** (`refs/tags/v*`): **Restrict updates**, **Restrict deletions**
+  and **Block force pushes**, bypass Organization admin; not **Restrict creations**, so that the
+  `publish` job can create the tag with the workflow's token (ADR-0301, decision 10). A release tag
+  can then be created by anyone with write access, but never moved or deleted, and it starts
+  nothing; `publish` refuses a tag that is not on the released commit.
+- **The variable `ZEN_RELEASE_FROM_GITHUB`** (Secrets and variables → Actions → Variables) is not
+  read any more; delete it.
+
+**Check the secrets without releasing:** Actions → **Release credentials** → Run workflow, from the
+branch `release` (`.github/workflows/release-credentials.yml`). After the approval it runs
 `cargo xtask release-ci credentials`: `zen-releases check-credentials` signs an empty manifest with
 the key and has the server check it with the token (`PUT /api/v1/check/manifest`, which stores
-nothing), and prints only `ok`, or which of the two the server refused. Run it once after the
-secrets are set, before the first tag.
+nothing), and prints only `ok`, or which of the two the server refused. Run it after the secrets
+change, and before a release when in doubt.
 
-**One host stages a tag, not both.** Both pipelines upload a version's files to the same addresses,
-and their builds differ byte for byte. A file that is only staged is replaced by the later upload,
-and releasing the earlier stage is then refused; a file that is already live cannot be replaced, so
-the later stage fails. For a given tag, let either the GitLab pipeline or the GitHub workflow reach
-its stage job. If the workflow on GitHub fails before `live`, nothing is live, and the GitLab
-pipeline of the same tag can still release it (its stage replaces the staged files).
-
-**GitHub builds, a maintainer's machine publishes** (the fallback, and the way to release while
-`ZEN_RELEASE_FROM_GITHUB` is not set):
+**GitHub builds, a maintainer's machine publishes** (the fallback):
 
 ```sh
 cargo xtask release-publish --run <run id> [--dry-run] [--stage <name>]
@@ -241,37 +216,37 @@ It downloads the run's artefact `release` with `gh run download` (the GitHub CLI
 `release-publish --from` does: every file checked against `build.json`, the commit on `origin/main`
 with the recorded tree, the gate passed, every IDE for every platform or none. `--from <dir>` takes
 such a folder too. The website is not part of this path; it goes live with a staged release or
-with a deployment of the release server.
+with a deployment of the release server. Neither creates a tag: create it on the released commit by
+hand (`git push origin <commit>:refs/tags/v<version>`) after the release is live.
 
 ## On a maintainer's machine (the fallback)
 
 ```sh
 V=$(cargo xtask release-version)
 cargo xtask release ides $V                  # build, sign and publish every IDE at once
-# or: glab ci run -b main --variables VERSION:$V, then
-cargo xtask release-publish --pipeline <id>  # verifies and publishes the runner's build
 ```
 
 `release-publish --stage <name>` stages instead of publishing, and `zen-releases release-stage
---stage <name>` makes such a stage live, as the tag pipeline does. Zen Toolbox and plug-ins keep
+--stage <name>` makes such a stage live, as the workflow does. Zen Toolbox and plug-ins keep
 their own versions (`cargo xtask release-toolbox`, `cargo xtask release plugin <id> <version>`; a
 plug-in's first catalog release is always made this way).
 
-Every release command first checks that it runs on `main` (or a detached checkout of a commit of
-`main`, as in CI), with no uncommitted changes and a commit that is already on `origin/main`
-(`ZEN_RELEASE_ANY_BRANCH=1` allows another branch in an emergency), then runs the full quality gate
-(`cargo xtask ci`), and refuses to release if either fails. A tree that already passed the gate with
-the same toolchain is not run again ([ADR-0141](adr/0141-the-gate-remembers-a-pass-by-its-tree.md)).
-On a maintainer's machine the secrets are `~/.config/zen-ide/publisher.key` and `releases.env`; they are
-never copied anywhere but into the protected GitLab variables above.
+Every release command first checks that it runs on `main`, the branch `release` or a detached
+checkout of a commit of `main` (as in CI), with no uncommitted changes and a commit that is already
+on `origin/main` (`ZEN_RELEASE_ANY_BRANCH=1` allows another branch in an emergency), then runs the
+full quality gate (`cargo xtask ci`), and refuses to release if either fails. A tree that already
+passed the gate with the same toolchain is not run again
+([ADR-0141](adr/0141-the-gate-remembers-a-pass-by-its-tree.md)). On a maintainer's machine the
+secrets are `~/.config/zen-ide/publisher.key` and `releases.env`; they are never copied anywhere but
+into the environment `release` above.
 
-## Two steps: build on the runner, publish on a maintainer's machine
+## Two steps: build, then publish on a maintainer's machine
 
 A release is a **build**, which needs no secret, and a **publish**, which needs the signing key
 (`~/.config/zen-ide/publisher.key`) and the release server's token (`releases.env`), both only on
 a maintainer's machine ([ADR-0142](adr/0142-release-builds-on-the-runner-published-on-the-release-machine.md)).
 
-**Build** (anywhere: the runner, or a maintainer's machine):
+**Build** (on a maintainer's machine; the workflow builds the same in parts):
 
 ```sh
 cargo xtask release-build ides 26.10.1 [--allow-version] [--out <dir>]   # every IDE
@@ -299,26 +274,11 @@ plug-in's catalog entry says, and every file's role, size and SHA-256.
 A plug-in that declares database drivers with a crate in `drivers/<driver>` gets their programs
 built too ([ADR-0191](adr/0191-driver-programs-published-with-their-plugins.md)), one per platform
 `--platform` asks for (`macos`, this Mac's, by default; `release plugin` builds only that one, and the
-tag pipeline builds `all`). A macOS program is signed ad hoc and checked with `codesign --verify`.
+release workflow builds `all`). A macOS program is signed ad hoc and checked with `codesign --verify`.
 The build writes each program's address (`artifacts/plugin-<id>/<version>/<file>`, relative to the
 catalog), SHA-256 and size into the catalog entry it publishes; publishing checks that the two agree,
 uploads the programs, then signs the catalog, and the release server refuses a catalog whose
 programs it does not store as listed. `--platform` changes nothing for a plug-in without them.
-
-**On the runner:** GitLab → Build → Pipelines → **Run pipeline** on `main` with the variables
-`VERSION` and, optionally, `PRODUCT` (`ides`, the default, `toolbox` or `plugin:<id>`) and
-`ALLOW_VERSION=1` (for the IDEs: `--allow-version`, below), or from a terminal:
-`glab ci run -b main --variables VERSION:26.10.1` (every IDE),
-`glab ci run -b main --variables PRODUCT:toolbox,VERSION:0.3.16`, and a plug-in with its driver
-programs for every platform with
-`glab ci run -b main --variables PRODUCT:plugin:duckdb,VERSION:0.1.0,PLATFORM:all` (`PLATFORM` is
-`macos`, the default, `linux`, `windows` or `all`). Only the `release-build` job runs
-(on the release runner, ADR-0140): for the IDEs it builds every IDE (GoGarden, RustRonin, WebWave, JvmJizo,
-SqlScroll and DevopsDaruma) one after another in the same job (each after the first reuses the
-shared crates the first built), and if one
-fails the job fails and keeps nothing, so the IDEs' versions never diverge. Its artifacts,
-`release-build/`, are kept for 7 days (an IDE's archive is about 40 MB, the six about 240 MB;
-GitLab's limit is 1 GB).
 
 **A trial build** proves that a product builds and packs on a machine, and is never published:
 
@@ -340,11 +300,11 @@ secret, and keeps the folders as workflow artefacts for three days.
 **Publish** (only on a maintainer's machine):
 
 ```sh
-cargo xtask release-publish --pipeline <pipeline id> [--dry-run]   # or --job <job id>, --from <dir>, or --run <GitHub run id>
+cargo xtask release-publish --run <GitHub run id> [--dry-run]   # or --from <dir>
 ```
 
-It downloads the `release-build` job's artifacts with `glab` (into `<target>/release-fetch/`),
-finds every build in them (the IDEs' release has one per IDE: all are verified before any is
+It downloads the run's artefact `release` with `gh` (into `<target>/release-fetch/`), or takes a
+folder of builds (`--from`), finds every build in it (the IDEs' release has one per IDE: all are verified before any is
 published, and they must be every IDE once, at one calendar version and commit; one IDE's build alone
 is refused), checks every file's size and
 SHA-256 against `build.json`, that the commit is on `origin/main`
@@ -361,10 +321,10 @@ the year's last two digits, the month without a leading zero, and the release's 
 month from 1 (`26.10.1`, `26.10.2`, `26.11.1`, `27.1.1`). Every IDE is released at every IDE release,
 even one without changes of its own. `cargo xtask release-version` prints the next version (`YY.M` of
 today, in UTC, and the month's highest published number plus one, read from the public manifest or
-`ZEN_RELEASES`). "Today" is in local time, on a maintainer's machine and on the release runner
-(`TZ` sets another). `release ides` and `release-build ides` refuse, building nothing, any other
+`ZEN_RELEASES`). "Today" is in local time on a maintainer's machine and in UTC in the release
+workflow (`TZ` sets another). `release ides` and `release-build ides` refuse, building nothing, any other
 version: one not of this month (a typo such as `27.10.1`, or `26.12.1` in October), or one that
-skips a number. `--allow-version` (on the runner, `ALLOW_VERSION=1`) builds another on purpose; it
+skips a number. `--allow-version` builds another on purpose (never in the release workflow); it
 must still be a calendar version greater than every IDE version published.
 
 IDE releases are published on the `stable` channel, as before; release channels (Preview, Beta,
@@ -425,7 +385,7 @@ The script lives in `deploy/releases/site/install.sh`, and a change to it reache
 next deployment of the release server or the next live website. On Linux the same script installs the
 `linux-x86_64` archive from the signed manifest for the user (`~/.local/share/zen-toolbox/app`, a
 link in `~/.local/bin`, a desktop entry), checking its SHA-256 from the manifest. Once a Developer ID exists, the release
-pipeline signs with the hardened runtime and notarises the `.dmg`.
+workflow signs with the hardened runtime and notarises the `.dmg`.
 
 ## IDEs (macOS)
 
@@ -467,10 +427,8 @@ cargo xtask release-build toolbox 0.3.15 --platform windows
 cargo xtask release-publish --from <out>                    # on a maintainer's machine, as for macOS
 ```
 
-or on the runner: Run pipeline on `main` with `VERSION`, `PRODUCT` (`ides` by default, or
-`toolbox`) and `PLATFORM` (`macos` by default, `linux`, `windows`, `all`), e.g.
-`glab ci run -b main --variables VERSION:26.10.1,PLATFORM:linux`, then
-`cargo xtask release-publish --pipeline <id>`.
+The release workflow builds every platform with every release (above); these commands are for a
+maintainer's machine.
 
 - **Linux x86_64:** `cargo zigbuild --target x86_64-unknown-linux-gnu.2.35`: glibc 2.35, so the
   binaries run on Ubuntu 22.04 and later; X11, xkbcommon and Wayland are loaded from the desktop.
@@ -503,29 +461,29 @@ Every release is for macOS and is checked before it is announced; Linux and Wind
 made only when asked for (the owner, 2026-10-18). Every step runs from the repository root on the
 Mac; Docker is needed only for Linux and Windows.
 
-1. **Merge first.** Merge every open pull request that is ready (`glab mr list`); each passes
-   `cargo xtask ci` after `main` is merged into it. Then `git switch main && git pull`: the release
-   commands refuse a dirty tree, another branch or an unpushed `main`.
+1. **Merge first.** Merge every open pull request that is ready (`gh pr list`); each passes the
+   required checks. Then `git fetch origin`: the version and the notes are taken from the current
+   `origin/main`, since other people release too.
 2. **Release notes.** On a branch from the current `main`, run
    `cargo xtask changelog gather <YY.M.N>` with `cargo xtask release-version` as the version (and
    `--toolbox <version>` when Zen Toolbox is released too): it moves the notes of
    `changelog/unreleased/` into the section `## <YY.M.N> - <date>` of every IDE's file, Zen
    Toolbox's and `CHANGELOG.md`, and removes the files it emptied. A section of the version that
-   is there already and not released (notes written into it by hand) takes the gathered notes after
-   its own; a released version is refused. Read the sections, edit them for users where needed, and
-   merge that one pull request before the tag. Notes merged after it make the tag's pipeline
-   refuse the release (`cargo xtask release-ci plan v<YY.M.N>` says so beforehand): run the gather
-   again on a new branch, which adds them to the same section, and merge it. Take versions from the
-   current `main`: other people release too.
-3. **The release:** tag `v<YY.M.N>` on `main` and press **release** when its pipeline stops there
-   ("Releasing from a tag", above): every IDE on every platform, and Zen Toolbox and the catalog's
-   plug-ins when they have a new version. The fallback on a maintainer's machine:
-   `cargo xtask release ides <YY.M.N>` (the gate, every bundle, the publish), or build them on the
-   runner (Run pipeline on `main` with `VERSION=<YY.M.N>`; `PRODUCT=ides` is the default) and
-   publish them with `cargo xtask release-publish --pipeline <id>` (two steps, above).
-4. **Zen Toolbox** (the tag releases it when its changelog has a new version; by hand):
-   `cargo xtask release-toolbox <version>` (the `.dmg`, the update archive), or the
-   same two steps with `PRODUCT=toolbox`.
+   is there already and not released (written by hand, or gathered for an attempt that failed)
+   takes the gathered notes after its own; a released version (one the published manifest lists)
+   is refused. Read the sections, edit them for users where needed, and merge that one pull request.
+   Notes merged after it make the plan refuse the release: run the gather again on a new branch,
+   which adds them to the same section, and merge it.
+3. **Check, then release.** On a detached checkout of the merged `origin/main`,
+   `cargo xtask release-ci plan` must print what it releases and no refusal. Then move `release`
+   to that commit, `git push origin origin/main:refs/heads/release` (the first time this creates
+   the branch), and approve the run twice ("Releasing from the branch `release`", above): every IDE
+   on every platform, and Zen Toolbox and the catalog's plug-ins when they have a new version. The
+   fallback on a maintainer's machine: `cargo xtask release ides <YY.M.N>` (the gate, every bundle,
+   the publish), or the run's artefact with `cargo xtask release-publish --run <id>` (two steps,
+   above); then the tag by hand.
+4. **Zen Toolbox** (the release workflow releases it when its changelog has a new version; by
+   hand): `cargo xtask release-toolbox <version>` (the `.dmg`, the update archive).
 5. **Check the macOS releases, every time.** Download what was published, start it with a
    throwaway data folder, and look at the screenshot: the window is drawn, the version is the new
    one, and the change of the release is there.
@@ -540,9 +498,10 @@ Mac; Docker is needed only for Linux and Windows.
 
    For Zen Toolbox, the same with the `.dmg` (`hdiutil attach -nobrowse -readonly`) and
    `Zen Toolbox.app/Contents/MacOS/zen-toolbox`: it must list the new IDE version.
-6. **Linux and Windows, when asked for:** the pipeline with `PLATFORM=linux` or `windows` (or
-   `all` with the release), then `cargo xtask release-publish --pipeline <id>` (above); the Docker
-   commands `release-linux` and `release-windows` are the fallback. Then check the Linux packages on a clean
+6. **Linux and Windows:** the release workflow builds them with every release; by hand,
+   `cargo xtask release-build ... --platform linux` or `windows`, then
+   `cargo xtask release-publish --from <out>` (above); the Docker commands `release-linux` and
+   `release-windows` are the fallback. Then check the Linux packages on a clean
    Ubuntu (they cannot be run on the Mac): install the published `.deb` with `apt` and start it
    under a virtual display.
 
@@ -569,8 +528,8 @@ Mac; Docker is needed only for Linux and Windows.
        print(p['id'], r['version'], sorted(a['platform'] for a in r['artifacts']))"
    ```
 
-8. **The website:** a tag release brings the website and the guide of its commit, live with the
-   button; look at `https://ide.ifzenelse.space/`. Deploying the release server
+8. **The website:** a release from the workflow brings the website and the guide of its commit,
+   live with the second approval; look at `https://ide.ifzenelse.space/`. Deploying the release server
    brings its own code, and the website for a release made by hand.
 
 If publishing fails on the network before anything is sent (for example "cannot fetch the

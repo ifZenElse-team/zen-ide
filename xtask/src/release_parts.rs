@@ -81,7 +81,7 @@ fn preflight(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), St
         return Err(refused(problem));
     }
     crate::release::check_source()?;
-    if ci.host != crate::ci_host::Host::Github || std::env::var("ZEN_RELEASE_FROM_GITHUB").as_deref() != Ok("true") {
+    if ci.host != crate::ci_host::Host::Github {
         return Ok(());
     }
     if let Some(problem) = ci.secrets_problem() {
@@ -94,12 +94,13 @@ fn preflight(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), St
     } else {
         None
     };
-    if let Some(problem) = environment_problem(&environment, policies.as_ref(), "tag", tag) {
+    let branch = crate::ci_host::RELEASE_BRANCH;
+    if let Some(problem) = environment_problem(&environment, policies.as_ref(), "branch", branch) {
         return Err(refused(problem));
     }
     println!(
-        "==> Before building: {tag} is the calendar's next version, its commit is on origin/main, its ref is \
-         protected, and the environment `{ENVIRONMENT}` has required reviewers and allows it"
+        "==> Before building: {tag} is the calendar's next version, this commit is on origin/main, the branch \
+         `{branch}` is protected, and the environment `{ENVIRONMENT}` has required reviewers and allows it"
     );
     Ok(())
 }
