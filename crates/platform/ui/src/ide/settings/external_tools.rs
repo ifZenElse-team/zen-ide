@@ -1,4 +1,4 @@
-use egui::{Align2, Color32, Rect, Sense, Stroke, Ui, Vec2, pos2, vec2};
+use egui::{Align2, Color32, Rect, Sense, Ui, Vec2, pos2, vec2};
 use serde_json::json;
 use zen_i18n::t;
 use zen_workbench::external_tools::{DEFAULT_GROUP, ExternalTool, MacroInfo, Preview, ToolList};
@@ -178,15 +178,12 @@ pub(super) fn tool_button(ui: &mut Ui, p: &IdePalette, glyph: Glyph, name: &str,
 }
 
 pub(super) fn dialog_button(ui: &mut Ui, p: &IdePalette, label: String, primary: bool) -> bool {
-    let text =
-        egui::RichText::new(label).font(theme::regular(13.0)).color(if primary { p.accent_text } else { p.text });
-    let button = egui::Button::new(text).min_size(vec2(84.0, 30.0)).corner_radius(6);
-    let button = if primary {
-        button.fill(p.accent)
+    let response = if primary {
+        crate::ide::vcs::primary_button(ui, p, &label)
     } else {
-        button.fill(Color32::TRANSPARENT).stroke(Stroke::new(1.0, p.button_border))
+        crate::ide::vcs::secondary_button(ui, p, &label)
     };
-    ui.add(button).clicked()
+    response.clicked()
 }
 
 impl ExternalToolsPage {

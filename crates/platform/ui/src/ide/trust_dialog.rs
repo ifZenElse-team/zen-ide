@@ -1,10 +1,10 @@
 use std::path::{Path, PathBuf};
 
-use egui::{Color32, Stroke, Ui, vec2};
+use egui::Ui;
 use zen_i18n::t;
 
 use super::settings::widgets;
-use super::{IdePalette, dialog_frame};
+use super::{IdePalette, dialog_frame, vcs};
 use crate::theme;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -43,15 +43,8 @@ fn name_of(path: &Path) -> String {
 }
 
 fn button(ui: &mut Ui, p: &IdePalette, label: String, primary: bool) -> bool {
-    let text =
-        egui::RichText::new(label).font(theme::regular(13.0)).color(if primary { p.accent_text } else { p.text });
-    let button = egui::Button::new(text).min_size(vec2(84.0, 30.0)).corner_radius(6);
-    let button = if primary {
-        button.fill(p.accent)
-    } else {
-        button.fill(Color32::TRANSPARENT).stroke(Stroke::new(1.0, p.button_border))
-    };
-    ui.add(button).clicked()
+    let response = if primary { vcs::primary_button(ui, p, &label) } else { vcs::secondary_button(ui, p, &label) };
+    response.clicked()
 }
 
 pub(super) fn show(ui: &mut Ui, p: &IdePalette, question: &mut Question) -> Option<Answer> {
