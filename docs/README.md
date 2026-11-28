@@ -219,7 +219,7 @@ ADR-0179 as it stood then; the gate refuses two records under one number.
 | [0168](adr/0168-result-paging-without-held-locks.md) | Result paging that never holds a lock outside the person's own transaction | Proposed |
 | [0169](adr/0169-missing-servers-symbols-and-run-options.md) | A missing server is named only where it could have answered, rust-analyzer returns enough symbols, run options are checked, and commits can be signed off | Proposed |
 | [0170](adr/0170-generated-sql-in-each-drivers-dialect.md) | The SQL the IDE generates is written in each driver's dialect | Proposed |
-| [0171](adr/0171-releases-from-a-protected-tag-through-gitlab.md) | Releases from a protected tag through GitLab, staged and made live by one button | Proposed (the owner, 2026-10-27) |
+| [0171](adr/0171-releases-from-a-protected-tag-through-gitlab.md) | Releases from a protected tag through GitLab, staged and made live by one button | Proposed (the owner, 2026-10-27); the protected tag and the GitLab pipeline superseded by [ADR-0301](adr/0301-releases-start-from-a-release-branch.md) |
 | [0172](adr/0172-production-safety-and-agents-on-databases.md) | Production safety: read-only connections, confirmations before statements run, and what agents may run on each connection type | Proposed |
 | [0173](adr/0173-database-profiles-for-wire-compatible-servers.md) | Database profiles: wire-compatible servers as data over the compiled-in drivers | Proposed |
 | [0174](adr/0174-external-database-driver-protocol.md) | External database drivers: a JSON-RPC protocol over a driver program's standard streams, supervised by the IDE, shipped in plug-ins | Proposed |
@@ -336,7 +336,8 @@ ADR-0179 as it stood then; the gate refuses two records under one number.
 | [0297](adr/0297-index-completions-hidden-nodes-and-output-documents.md) | Index completions, nodes outside the graph and run output as a document | Accepted (the owner, 2026-11-16) |
 | [0298](adr/0298-a-go-projects-environment.md) | A Go project's environment: a shared file, a personal layer, and where they reach | Accepted (the owner, 2026-11-17) |
 | [0299](adr/0299-cluster-state-beside-a-project-index.md) | Cluster state beside a project index, with another plug-in's window values | Accepted (the owner, 2026-11-16) |
-| [0300](adr/0300-releases-from-github.md) | Releases from GitHub | Accepted |
+| [0300](adr/0300-releases-from-github.md) | Releases from GitHub | Accepted; the tag that starts a release superseded by [ADR-0301](adr/0301-releases-start-from-a-release-branch.md) |
+| [0301](adr/0301-releases-start-from-a-release-branch.md) | Releases start from a `release` branch; the tag records a finished release | Accepted (the owner, 2026-11-28) |
 
 ## Open questions
 
