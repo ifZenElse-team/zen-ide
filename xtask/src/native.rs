@@ -95,11 +95,11 @@ pub(crate) fn build(
     platform: Platform,
     out: &Path,
     gate: crate::release::Gate,
+    given: Option<&str>,
 ) -> Result<(), String> {
     if platform == Platform::Macos {
         return Err("the macOS build is the application bundle, not this one".to_owned());
     }
-    let given = (gate == crate::release::Gate::Trial).then_some(crate::release::TRIAL_NOTES);
     let notes = crate::release::notes(given, &crate::changelog::product_path(product.id), version)?;
     if product.id != "toolbox" {
         bundled_plugins(product.id)?;

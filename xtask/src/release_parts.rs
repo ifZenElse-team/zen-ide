@@ -51,16 +51,126 @@ pub(crate) fn matrix_json(plan: &Plan) -> serde_json::Value {
     serde_json::json!({ "macos": macos, "cross": cross, "extras": extras.join(" ") })
 }
 
-pub(crate) fn matrix(tag: &str, version: &str) -> Result<(), String> {
+pub(crate) fn matrix(tag: &str, version: &str, dry_run: bool, ci: &crate::ci_host::Ci) -> Result<(), String> {
     let plan = crate::release_ci::plan(version)?;
-    println!("==> The release of {tag}:\n{}", crate::release_ci::describe(&plan));
-    if let Some(problem) = crate::unreleased::release_problem(Path::new("."), version, plan.toolbox.as_deref()) {
-        return Err(format!("{tag} is not released, nothing was built: {problem}"));
+    let what = if dry_run { "A dry run of the release" } else { "The release" };
+    println!("==> {what} of {tag}:\n{}", crate::release_ci::describe(&plan));
+    match crate::unreleased::release_problem(Path::new("."), version, plan.toolbox.as_deref()) {
+        Some(problem) if dry_run => println!(
+            "==> A release of this commit would be refused now: {problem}\n    The dry run builds it anyway: its \
+             builds record the gate as skipped, and nothing publishes them."
+        ),
+        Some(problem) => return Err(format!("{tag} is not released, nothing was built: {problem}")),
+        None => {}
     }
-    let json = serde_json::to_string(&matrix_json(&plan)).map_err(|error| error.to_string())?;
+    if !dry_run {
+        preflight(tag, version, ci)?;
+    }
+    let mut matrix = matrix_json(&plan);
+    matrix["tag"] = serde_json::json!(tag);
+    let json = serde_json::to_string(&matrix).map_err(|error| error.to_string())?;
     std::fs::write(MATRIX_FILE, &json).map_err(|error| format!("{MATRIX_FILE}: {error}"))?;
     println!("==> The jobs that build it are in {MATRIX_FILE}:\n{json}");
     Ok(())
+}
+
+fn preflight(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String> {
+    let refused = |problem: String| format!("{tag} is not released, nothing was built: {problem}");
+    let published = crate::release::published_ide_versions()?;
+    if let Some(problem) = crate::release::version_problem(version, &published, crate::calendar::this_month()?, false) {
+        return Err(refused(problem));
+    }
+    crate::release::check_source()?;
+    if ci.host != crate::ci_host::Host::Github || std::env::var("ZEN_RELEASE_FROM_GITHUB").as_deref() != Ok("true") {
+        return Ok(());
+    }
+    if let Some(problem) = ci.secrets_problem() {
+        return Err(refused(format!("the stage would be refused the release secrets: {problem}")));
+    }
+    let environment = github_api(&format!("environments/{ENVIRONMENT}"))?;
+    let custom = environment["deployment_branch_policy"]["custom_branch_policies"] == true;
+    let policies = if custom {
+        Some(github_api(&format!("environments/{ENVIRONMENT}/deployment-branch-policies"))?)
+    } else {
+        None
+    };
+    if let Some(problem) = environment_problem(&environment, policies.as_ref(), "tag", tag) {
+        return Err(refused(problem));
+    }
+    println!(
+        "==> Before building: {tag} is the calendar's next version, its commit is on origin/main, its ref is \
+         protected, and the environment `{ENVIRONMENT}` has required reviewers and allows it"
+    );
+    Ok(())
+}
+
+const ENVIRONMENT: &str = "release";
+
+fn github_api(path: &str) -> Result<serde_json::Value, String> {
+    let repository = std::env::var("GITHUB_REPOSITORY").map_err(|_| "GITHUB_REPOSITORY is not set".to_owned())?;
+    let output = std::process::Command::new("gh")
+        .args(["api", &format!("repos/{repository}/{path}")])
+        .output()
+        .map_err(|error| format!("cannot run gh: {error}"))?;
+    if !output.status.success() {
+        return Err(format!(
+            "GitHub did not answer repos/{repository}/{path} ({}): the environment `{ENVIRONMENT}` must exist, and \
+             the job needs `actions: read`; nothing was built",
+            String::from_utf8_lossy(&output.stderr).trim()
+        ));
+    }
+    serde_json::from_slice(&output.stdout).map_err(|error| format!("{path}: {error}"))
+}
+
+pub(crate) fn environment_problem(
+    environment: &serde_json::Value,
+    policies: Option<&serde_json::Value>,
+    kind: &str,
+    name: &str,
+) -> Option<String> {
+    let reviewed = environment["protection_rules"].as_array().into_iter().flatten().any(|rule| {
+        rule["type"] == "required_reviewers" && rule["reviewers"].as_array().is_some_and(|people| !people.is_empty())
+    });
+    if !reviewed {
+        return Some(format!(
+            "the environment `{ENVIRONMENT}` has no required reviewers, so nothing would ask before the secrets are \
+             used (docs/releasing.md)"
+        ));
+    }
+    let policy = &environment["deployment_branch_policy"];
+    if policy.is_null() {
+        return Some(format!(
+            "the environment `{ENVIRONMENT}` allows every branch and tag; it must allow only the refs that release \
+             (docs/releasing.md)"
+        ));
+    }
+    if policy["custom_branch_policies"] == true {
+        let allowed =
+            policies.and_then(|policies| policies["branch_policies"].as_array()).into_iter().flatten().any(|entry| {
+                entry["type"].as_str().unwrap_or("branch") == kind
+                    && matches_ref(entry["name"].as_str().unwrap_or_default(), name)
+            });
+        return (!allowed).then(|| format!("the environment `{ENVIRONMENT}` does not allow the {kind} {name}"));
+    }
+    (policy["protected_branches"] == true && kind != "branch")
+        .then(|| format!("the environment `{ENVIRONMENT}` allows protected branches only, not the {kind} {name}"))
+}
+
+pub(crate) fn matches_ref(pattern: &str, name: &str) -> bool {
+    fn at(pattern: &[char], name: &[char]) -> bool {
+        match pattern {
+            [] => name.is_empty(),
+            ['*', '*', rest @ ..] => (0..=name.len()).any(|skip| at(rest, &name[skip..])),
+            ['*', rest @ ..] => (0..=name.len())
+                .take_while(|skip| *skip == 0 || name[skip - 1] != '/')
+                .any(|skip| at(rest, &name[skip..])),
+            ['?', rest @ ..] => name.first().is_some_and(|c| *c != '/') && at(rest, &name[1..]),
+            [c, rest @ ..] => name.first() == Some(c) && at(rest, &name[1..]),
+        }
+    }
+    let pattern: Vec<char> = pattern.chars().collect();
+    let name: Vec<char> = name.chars().collect();
+    at(&pattern, &name)
 }
 
 fn here(version: &str) -> BuildRecord {
@@ -84,8 +194,17 @@ pub(crate) fn gate(tag: &str, version: &str) -> Result<(), String> {
     Ok(())
 }
 
-pub(crate) fn part(version: &str, what: &str, platform: &str) -> Result<(), String> {
+pub(crate) fn part(version: &str, what: &str, platform: &str, dry_run: bool) -> Result<(), String> {
     let parts = std::path::absolute(PARTS_DIR).map_err(|error| error.to_string())?;
+    let gate = part_gate(dry_run);
+    if dry_run {
+        crate::release::check_source()?;
+        println!(
+            "==> A dry run: the source check passed; the quality gate is not run here, and build.json records it as \
+             `{}`, which nothing publishes",
+            gate.recorded()
+        );
+    }
     if what == "plugins" {
         let plan = crate::release_ci::plan(version)?;
         if plan.plugins.is_empty() {
@@ -94,7 +213,7 @@ pub(crate) fn part(version: &str, what: &str, platform: &str) -> Result<(), Stri
         let platforms = crate::native::platforms("all")?;
         for (id, plugin_version) in &plan.plugins {
             let folder = parts.join(format!("plugin-{id}-{plugin_version}"));
-            crate::release::build_plugin(id, plugin_version, &platforms, &folder, Gate::Deferred)?;
+            crate::release::build_plugin(id, plugin_version, &platforms, &folder, gate)?;
         }
         return Ok(());
     }
@@ -115,13 +234,21 @@ pub(crate) fn part(version: &str, what: &str, platform: &str) -> Result<(), Stri
         version.to_owned()
     };
     let folder = crate::native::folder(&parts, product.id, &version, platform);
+    let notes =
+        part_notes(dry_run, crate::changelog::notes(&crate::changelog::product_path(product.id), &version).is_ok());
     match platform {
-        Platform::Macos if product.id == "toolbox" => {
-            crate::release::build_toolbox(&version, None, &folder, Gate::Deferred)
-        }
-        Platform::Macos => crate::release::build_ide(product.id, &version, None, &folder, Gate::Deferred),
-        other => crate::native::build(&product, &version, other, &folder, Gate::Deferred),
+        Platform::Macos if product.id == "toolbox" => crate::release::build_toolbox(&version, notes, &folder, gate),
+        Platform::Macos => crate::release::build_ide(product.id, &version, notes, &folder, gate),
+        other => crate::native::build(&product, &version, other, &folder, gate, notes),
     }
+}
+
+pub(crate) fn part_gate(dry_run: bool) -> Gate {
+    if dry_run { Gate::Trial } else { Gate::Deferred }
+}
+
+pub(crate) fn part_notes(dry_run: bool, has_section: bool) -> Option<&'static str> {
+    (dry_run && !has_section).then_some(crate::release::TRIAL_NOTES)
 }
 
 pub(crate) fn pass_problem(record: &BuildRecord, pass: &GatePass) -> Option<String> {
@@ -221,12 +348,25 @@ fn gate_pass(tag: &str, version: &str) -> Result<GatePass, String> {
     Ok(pass)
 }
 
-pub(crate) fn join(tag: &str, version: &str) -> Result<(), String> {
-    let pass = gate_pass(tag, version)?;
+fn dry_run_reference(tag: &str, version: &str) -> GatePass {
+    let here = here(version);
+    GatePass {
+        schema: SCHEMA,
+        tag: tag.to_owned(),
+        commit: here.commit,
+        tree: here.tree,
+        rustc: here.rustc,
+        gate: Gate::Trial.recorded().to_owned(),
+    }
+}
+
+pub(crate) fn join(tag: &str, version: &str, dry_run: bool) -> Result<(), String> {
+    let pass = if dry_run { dry_run_reference(tag, version) } else { gate_pass(tag, version)? };
+    let gate = part_gate(dry_run);
     let plan = crate::release_ci::plan(version)?;
     let mut parts: Vec<(PathBuf, BuildRecord)> = Vec::new();
     for folder in crate::release_ci::build_folders(Path::new(PARTS_DIR))? {
-        let record = crate::release_flow::verified_part(&folder)?;
+        let record = crate::release_flow::verified_part(&folder, gate)?;
         if let Some(problem) = pass_problem(&record, &pass) {
             return Err(format!("{problem}; nothing was joined"));
         }
@@ -251,7 +391,11 @@ pub(crate) fn join(tag: &str, version: &str) -> Result<(), String> {
         std::fs::rename(&folder, &to).map_err(|error| format!("{}: {error}", folder.display()))?;
         record.gate = pass.gate.clone();
         crate::release_flow::save_record(&to, &record)?;
-        crate::release_flow::verified(&to)?;
+        if dry_run {
+            crate::release_flow::verified_part(&to, gate)?;
+        } else {
+            crate::release_flow::verified(&to)?;
+        }
         println!("  {}", to.strip_prefix(&root).unwrap_or(&to).display());
     }
     println!("==> The website");
@@ -260,7 +404,18 @@ pub(crate) fn join(tag: &str, version: &str) -> Result<(), String> {
         BuiltRelease { schema: SCHEMA, tag: tag.to_owned(), version: version.to_owned(), groups: groups(&plan) };
     std::fs::write(PLAN_FILE, serde_json::to_vec_pretty(&built).map_err(|error| error.to_string())?)
         .map_err(|error| format!("{PLAN_FILE}: {error}"))?;
-    println!("\n==> {tag} is joined into {BUILD_DIR}/; nothing is uploaded yet.");
+    if dry_run {
+        println!(
+            "\n==> The dry run of {tag} is joined into {BUILD_DIR}/: every part matches its build.json, all are of \
+             commit {} with {}, and they are exactly the release. Their gate is recorded as `{}`: nothing publishes \
+             them.",
+            pass.commit,
+            pass.rustc,
+            gate.recorded()
+        );
+    } else {
+        println!("\n==> {tag} is joined into {BUILD_DIR}/; nothing is uploaded yet.");
+    }
     Ok(())
 }
 
@@ -392,6 +547,108 @@ mod tests {
     }
 
     #[test]
+    fn a_dry_run_builds_with_the_trial_gate_and_its_notes_when_the_section_is_missing() {
+        assert_eq!(part_gate(false), Gate::Deferred);
+        assert_eq!(part_gate(true), Gate::Trial);
+        assert_eq!(part_gate(true).recorded(), "skipped");
+        assert_eq!(part_notes(false, false), None, "a release reads its section, and fails without one");
+        assert_eq!(part_notes(false, true), None);
+        assert_eq!(part_notes(true, true), None, "a dry run reads the section when it is there");
+        assert_eq!(part_notes(true, false), Some(crate::release::TRIAL_NOTES));
+    }
+
+    #[test]
+    fn a_dry_runs_part_is_joined_only_as_a_dry_run_and_never_published() {
+        let dir = tempfile::tempdir().unwrap();
+        std::fs::write(dir.path().join("a.tar.gz"), b"archive").unwrap();
+        let mut part = record("ide", "gogarden", "26.11.1", "linux-x86_64");
+        part.gate = Gate::Trial.recorded().to_owned();
+        part.files = vec![crate::release_flow::BuiltFile {
+            name: "a.tar.gz".to_owned(),
+            role: "update".to_owned(),
+            size: 7,
+            sha256: crate::release_flow::sha256(&dir.path().join("a.tar.gz")).unwrap(),
+        }];
+        crate::release_flow::save_record(dir.path(), &part).unwrap();
+        assert_eq!(crate::release_flow::verified_part(dir.path(), Gate::Trial).unwrap(), part);
+        let release = crate::release_flow::verified_part(dir.path(), Gate::Deferred).unwrap_err();
+        assert!(release.contains("a release built in CI records it as deferred"), "{release}");
+        assert!(crate::release_flow::verified(dir.path()).unwrap_err().contains("it must have passed"));
+
+        part.gate = Gate::Deferred.recorded().to_owned();
+        crate::release_flow::save_record(dir.path(), &part).unwrap();
+        let dry = crate::release_flow::verified_part(dir.path(), Gate::Trial).unwrap_err();
+        assert!(
+            dry.contains("a part of a dry run records it as skipped"),
+            "a release's part is not a dry run's: {dry}"
+        );
+
+        let reference = GatePass {
+            schema: SCHEMA,
+            tag: "v26.11.1".to_owned(),
+            commit: "c0ffee".to_owned(),
+            tree: "7ree".to_owned(),
+            rustc: "rustc 1.99.1".to_owned(),
+            gate: Gate::Trial.recorded().to_owned(),
+        };
+        assert_eq!(pass_problem(&part, &reference), None);
+        part.commit = "0ther".to_owned();
+        assert!(pass_problem(&part, &reference).is_some(), "every part of a dry run is of the join's commit");
+    }
+
+    fn environment(rules: serde_json::Value, policy: serde_json::Value) -> serde_json::Value {
+        serde_json::json!({ "name": "release", "protection_rules": rules, "deployment_branch_policy": policy })
+    }
+
+    fn reviewers() -> serde_json::Value {
+        serde_json::json!([{ "type": "required_reviewers", "reviewers": [{ "type": "User", "reviewer": { "login": "x" } }] }])
+    }
+
+    #[test]
+    fn a_release_starts_only_when_its_environment_has_reviewers_and_allows_its_ref() {
+        let custom = serde_json::json!({ "protected_branches": false, "custom_branch_policies": true });
+        let policies = serde_json::json!({ "branch_policies": [
+            { "name": "v*", "type": "tag" }, { "name": "main", "type": "branch" }
+        ] });
+        let good = environment(reviewers(), custom.clone());
+        assert_eq!(environment_problem(&good, Some(&policies), "tag", "v26.11.11"), None);
+        assert_eq!(environment_problem(&good, Some(&policies), "branch", "main"), None);
+        assert!(environment_problem(&good, Some(&policies), "branch", "v26.11.11").unwrap().contains("does not allow"));
+        assert!(environment_problem(&good, Some(&policies), "tag", "main").is_some(), "the type counts");
+        assert!(environment_problem(&good, None, "tag", "v26.11.11").is_some(), "no policies read, nothing allowed");
+        let untyped = serde_json::json!({ "branch_policies": [{ "name": "release" }] });
+        assert_eq!(environment_problem(&good, Some(&untyped), "branch", "release"), None, "a branch by default");
+
+        let wait_only = serde_json::json!([{ "type": "wait_timer", "wait_timer": 5 }]);
+        for rules in
+            [serde_json::json!([]), wait_only, serde_json::json!([{ "type": "required_reviewers", "reviewers": [] }])]
+        {
+            let problem = environment_problem(&environment(rules, custom.clone()), Some(&policies), "tag", "v26.11.11");
+            assert!(problem.unwrap().contains("no required reviewers"));
+        }
+        let open = environment(reviewers(), serde_json::Value::Null);
+        assert!(environment_problem(&open, None, "tag", "v26.11.11").unwrap().contains("every branch and tag"));
+        let protected = environment(
+            reviewers(),
+            serde_json::json!({ "protected_branches": true, "custom_branch_policies": false }),
+        );
+        assert_eq!(environment_problem(&protected, None, "branch", "release"), None);
+        assert!(environment_problem(&protected, None, "tag", "v26.11.11").unwrap().contains("protected branches only"));
+    }
+
+    #[test]
+    fn ref_patterns_match_as_github_documents_them() {
+        assert!(matches_ref("v*", "v26.11.11"));
+        assert!(matches_ref("release", "release"));
+        assert!(!matches_ref("release", "release2"));
+        assert!(!matches_ref("v*", "x26.11.11"));
+        assert!(!matches_ref("release/*", "release/a/b"), "one star stops at a slash");
+        assert!(matches_ref("release/**", "release/a/b"));
+        assert!(matches_ref("v2?.*", "v26.11"));
+        assert!(!matches_ref("", "main"));
+    }
+
+    #[test]
     fn a_deferred_part_is_refused_by_the_publisher_until_it_is_joined() {
         let dir = tempfile::tempdir().unwrap();
         std::fs::write(dir.path().join("a.tar.gz"), b"archive").unwrap();
@@ -403,16 +660,22 @@ mod tests {
             sha256: crate::release_flow::sha256(&dir.path().join("a.tar.gz")).unwrap(),
         }];
         crate::release_flow::save_record(dir.path(), &part).unwrap();
-        assert_eq!(crate::release_flow::verified_part(dir.path()).unwrap(), part);
+        assert_eq!(crate::release_flow::verified_part(dir.path(), Gate::Deferred).unwrap(), part);
         assert!(crate::release_flow::verified(dir.path()).unwrap_err().contains("it must have passed"));
 
         std::fs::write(dir.path().join("a.tar.gz"), b"archivo").unwrap();
-        assert!(crate::release_flow::verified_part(dir.path()).unwrap_err().contains("SHA-256"), "checksums first");
+        assert!(
+            crate::release_flow::verified_part(dir.path(), Gate::Deferred).unwrap_err().contains("SHA-256"),
+            "checksums first"
+        );
 
         std::fs::write(dir.path().join("a.tar.gz"), b"archive").unwrap();
         part.gate = "passed".to_owned();
         crate::release_flow::save_record(dir.path(), &part).unwrap();
-        assert!(crate::release_flow::verified_part(dir.path()).unwrap_err().contains("deferred"), "not a part");
+        assert!(
+            crate::release_flow::verified_part(dir.path(), Gate::Deferred).unwrap_err().contains("deferred"),
+            "not a part"
+        );
         assert!(crate::release_flow::verified(dir.path()).is_ok());
     }
 }

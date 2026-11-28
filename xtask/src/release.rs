@@ -392,7 +392,9 @@ impl Gate {
                 Ok(())
             }
             Self::Trial => {
-                println!("==> Trial build: the source check and the quality gate are skipped");
+                println!(
+                    "==> The quality gate is skipped: build.json records it as `skipped`, which nothing publishes"
+                );
                 Ok(())
             }
         }
@@ -606,6 +608,7 @@ pub(crate) fn build_ides_for(
                 platform,
                 &crate::native::folder(out, id, version, platform),
                 Gate::Here,
+                None,
             ) {
                 let _ = std::fs::remove_dir_all(out);
                 return Err(format!("{error}; no IDE was built (the IDEs are released together)"));

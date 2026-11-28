@@ -129,12 +129,13 @@ pub(crate) fn verified(dir: &Path) -> Result<BuildRecord, String> {
     Ok(record)
 }
 
-pub(crate) fn verified_part(dir: &Path) -> Result<BuildRecord, String> {
+pub(crate) fn verified_part(dir: &Path, gate: crate::release::Gate) -> Result<BuildRecord, String> {
     let record = checked_files(dir)?;
-    let deferred = crate::release::Gate::Deferred.recorded();
-    if record.gate != deferred {
+    let expected = gate.recorded();
+    let what = if gate == crate::release::Gate::Deferred { "a release built in CI" } else { "a dry run" };
+    if record.gate != expected {
         return Err(format!(
-            "{}: the build says the gate {}; a part of a release built in CI records it as {deferred}",
+            "{}: the build says the gate {}; a part of {what} records it as {expected}",
             dir.display(),
             record.gate
         ));
@@ -460,7 +461,7 @@ pub(crate) fn build_command(args: &[String]) -> Result<(), String> {
                     crate::native::Platform::Macos => {
                         crate::release::build_toolbox(version, None, &folder, crate::release::Gate::Here)?
                     }
-                    other => crate::native::build(&toolbox, version, other, &folder, crate::release::Gate::Here)?,
+                    other => crate::native::build(&toolbox, version, other, &folder, crate::release::Gate::Here, None)?,
                 }
             }
             Ok(())
@@ -502,7 +503,7 @@ fn trial_build(words: &[String], platforms: &[crate::native::Platform], out: Opt
             crate::native::Platform::Macos => {
                 crate::release::build_ide(product.id, &version, notes, &folder, crate::release::Gate::Trial)?
             }
-            other => crate::native::build(&product, &version, other, &folder, crate::release::Gate::Trial)?,
+            other => crate::native::build(&product, &version, other, &folder, crate::release::Gate::Trial, notes)?,
         }
     }
     Ok(())
