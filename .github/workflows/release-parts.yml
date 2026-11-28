@@ -5,10 +5,11 @@ name: Release parts
 # environment; its token can only read.
 #
 # - plan: what the release is, as the jobs below. A release refuses notes that are not gathered, a
-#   version that is not the calendar's next, a commit not on origin/main and, when the jobs after
-#   `join` will run, an unprotected ref or an environment `release` without reviewers or not
-#   allowing the ref, all before anything is built. A dry run is the release of this commit at the
-#   calendar's next version and only reports what a release would refuse.
+#   version that is not the calendar's next, a commit not on origin/main, a run that is not of the
+#   protected branch `release`, and an environment `release` without reviewers or not allowing that
+#   branch, all before anything is built. It fixes the version for the whole run (its output
+#   `tag`). A dry run is the release of this commit at the calendar's next version and only reports
+#   what a release would refuse.
 # - gate: the full quality gate, once, on macOS. In a dry run, the gate without its tests: the
 #   workflow `Tests` runs every test each night already.
 # - macos, cross, extras: the builds, each recording the gate as `deferred`, or `skipped` in a dry
@@ -30,10 +31,10 @@ on:
         description: Build the release of this commit at the calendar's next version, never published
         type: boolean
         required: true
-      from-github:
-        description: The jobs after `join` will stage and release, so the plan checks what they need
-        type: boolean
-        default: false
+    outputs:
+      tag:
+        description: v<version>, the version the plan fixed for the run
+        value: ${{ jobs.plan.outputs.tag }}
 
 permissions:
   contents: read
@@ -70,7 +71,6 @@ jobs:
         id: matrix
         env:
           GH_TOKEN: ${{ github.token }}
-          ZEN_RELEASE_FROM_GITHUB: ${{ inputs.from-github }}
         run: |
           set -eu
           cargo xtask release-ci matrix ${DRY_RUN:+"$DRY_RUN"}

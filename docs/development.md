@@ -24,7 +24,7 @@ Zen IDE builds with the latest stable Rust only ([ADR-0013](adr/0013-msrv-latest
 | `cargo xtask ci` | **The quality gate.** Run it before every commit you push |
 | `cargo xtask release ides <YY.M.N>` | Build and publish every IDE at one calendar version (ADR-0146); `release toolbox <version>`, `release plugin <id> <version>` ([releasing.md](releasing.md)) |
 | `cargo xtask release-version` | The IDEs' next calendar version, e.g. `26.10.1` |
-| `cargo xtask release-ci plan v<YY.M.N>` | What a release tag would build; `release-ci build`, `stage`, `verify` and `live` are the jobs of a tag's pipeline ([ADR-0171](adr/0171-releases-from-a-protected-tag-through-gitlab.md), [releasing.md](releasing.md)) |
+| `cargo xtask release-ci plan [--dry-run]` | What a release of this commit would build at the calendar's next version, and what would refuse it; `matrix`, `gate`, `part`, `join`, `stage`, `verify`, `notes` and `live` are the jobs of the release workflow ([ADR-0301](adr/0301-releases-start-from-a-release-branch.md), [releasing.md](releasing.md)) |
 | `cargo xtask changelog [--json <file>]` | Check the changelogs and that every decision record has its own number; write them as JSON for the website ([changelog/README.md](../changelog/README.md)) |
 | `cargo xtask changelog preview [--out <file>]` | Print the notes waiting in `changelog/unreleased/` for the next release, by product and section; the workflow "Next release" writes them into a draft release after every merge into `main` |
 | `cargo xtask icon-import <export.svg> <product>` | Import a product icon exported from Figma |

@@ -1,33 +1,36 @@
 name: Release
 
-# The release of a tag v<YY.M.N> (ADR-0300, docs/releasing.md "Releasing from a tag on GitHub").
-# The builds are the workflow `release-parts.yml`, the same jobs the nightly dry run calls; they read
-# no secret, sign nothing and publish nothing, and its plan stops the release before anything is
-# built when the tag is not one a release can come from. The jobs after the builds run only when
-# the repository variable ZEN_RELEASE_FROM_GITHUB is `true`; until the owner sets it, a tag's run
-# ends with the artefact `release`.
+# The release of the commit the branch `release` points at, at the calendar's next version
+# (ADR-0300, ADR-0301, docs/releasing.md). A push to `release` starts it; `release` only ever points
+# at a commit of `main` and moves forward. A pushed tag starts nothing: the tag v<version> is made
+# by the last job, after the release is live.
 #
-# - stage (environment `release`): signs the manifest and the catalog and stages everything on the
-#   release server; nothing is live.
+# - build: the workflow `release-parts.yml`, the same jobs the nightly dry run calls: the plan (which
+#   stops the run before anything is built when the commit, the ref, the notes, the version or the
+#   environment are not what a release needs, and fixes the version), the gate, every build, the
+#   join. It reads no secret, signs nothing and publishes nothing.
+# - stage (environment `release`, its reviewers approve): signs the manifest and the catalog and
+#   stages everything on the release server; nothing is live.
 # - verify: downloads every staged file and checks it against the build.
-# - draft: writes the draft GitHub release of the tag (the only jobs with `contents: write` are
-#   this one and `publish`, and neither has a release secret).
+# - draft: writes the draft GitHub release for the released commit (the only jobs with
+#   `contents: write` are this one and `publish`, and neither has a release secret).
 # - live (environment `release`, its reviewers approve): one request makes the stage live.
-# - publish: publishes the draft.
+# - publish: creates the tag v<version> on the released commit and publishes the draft.
 #
 # The release secrets are given only to the one step of `stage` and of `live` that signs or sends,
 # after everything those jobs compile is compiled; the first step of each checks that they are set,
-# printing only whether they are.
+# printing only whether they are. `stage` and `live` release only the commit of the run, and only
+# while `release` still points at it.
 
 on:
   push:
-    tags: ['v*']
+    branches: [release]
 
 permissions:
   contents: read
 
 concurrency:
-  group: release-${{ github.ref }}
+  group: release
   cancel-in-progress: false
 
 env:
@@ -44,12 +47,13 @@ jobs:
     uses: ./.github/workflows/release-parts.yml
     with:
       dry-run: false
-      from-github: ${{ vars.ZEN_RELEASE_FROM_GITHUB == 'true' }}
 
   stage:
     name: Stage
     needs: build
-    if: "!cancelled() && needs.build.result == 'success' && vars.ZEN_RELEASE_FROM_GITHUB == 'true'"
+    if: "!cancelled() && needs.build.result == 'success'"
+    env:
+      TAG: ${{ needs.build.outputs.tag }}
     runs-on: ubuntu-latest
     timeout-minutes: 120
     environment: release
@@ -92,7 +96,7 @@ jobs:
           ZEN_PUBLISHER_KEY: ${{ secrets.ZEN_PUBLISHER_KEY }}
           ZEN_RELEASES_TOKEN: ${{ secrets.ZEN_RELEASES_TOKEN }}
           ZEN_RELEASES_SERVER: ${{ vars.ZEN_RELEASES_SERVER }}
-        run: cargo xtask release-ci stage
+        run: cargo xtask release-ci stage "$TAG"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: stage
@@ -102,8 +106,10 @@ jobs:
 
   verify:
     name: Verify
-    needs: stage
+    needs: [build, stage]
     if: "!cancelled() && needs.stage.result == 'success'"
+    env:
+      TAG: ${{ needs.build.outputs.tag }}
     runs-on: macos-latest
     timeout-minutes: 120
     steps:
@@ -118,7 +124,7 @@ jobs:
           name: stage
           path: .
       - name: Download every staged file and check it
-        run: cargo xtask release-ci verify
+        run: cargo xtask release-ci verify "$TAG"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: verify
@@ -128,8 +134,10 @@ jobs:
 
   draft:
     name: Draft of the GitHub release
-    needs: [stage, verify]
+    needs: [build, stage, verify]
     if: "!cancelled() && needs.stage.result == 'success' && needs.verify.result == 'success'"
+    env:
+      TAG: ${{ needs.build.outputs.tag }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
@@ -152,25 +160,30 @@ jobs:
       - name: The notes, the files and the checks
         run: |
           set -eu
-          cargo xtask release-ci notes
+          cargo xtask release-ci notes "$TAG"
           cat release-notes.md
       - name: Write the draft
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -eu
-          tag="$GITHUB_REF_NAME"
-          state=$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft 2>/dev/null || echo none)
+          state=$(gh release view "$TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft 2>/dev/null || echo none)
           case "$state" in
-            true) gh release edit "$tag" --repo "$GITHUB_REPOSITORY" --draft --title "Zen IDE ${tag#v}" --notes-file release-notes.md ;;
-            none) gh release create "$tag" --repo "$GITHUB_REPOSITORY" --draft --verify-tag --title "Zen IDE ${tag#v}" --notes-file release-notes.md ;;
-            *) echo "The release of $tag is published already; the draft was not written."; exit 1 ;;
+            true) gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft --target "$GITHUB_SHA" --title "Zen IDE ${TAG#v}" --notes-file release-notes.md ;;
+            none) gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --draft --target "$GITHUB_SHA" --title "Zen IDE ${TAG#v}" --notes-file release-notes.md ;;
+            *) echo "::error::The release of $TAG is published already; the draft was not written."; exit 1 ;;
           esac
+          # A draft makes no tag; publishing does (in `publish`, after the release is live).
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null; then
+            echo "The tag $TAG exists already; publish checks that it is the released commit."
+          fi
 
   live:
     name: Release
-    needs: [stage, verify, draft]
+    needs: [build, stage, verify, draft]
     if: "!cancelled() && needs.stage.result == 'success' && needs.verify.result == 'success' && needs.draft.result == 'success'"
+    env:
+      TAG: ${{ needs.build.outputs.tag }}
     runs-on: ubuntu-latest
     timeout-minutes: 60
     environment: release
@@ -217,18 +230,38 @@ jobs:
           ZEN_PUBLISHER_KEY: ${{ secrets.ZEN_PUBLISHER_KEY }}
           ZEN_RELEASES_TOKEN: ${{ secrets.ZEN_RELEASES_TOKEN }}
           ZEN_RELEASES_SERVER: ${{ vars.ZEN_RELEASES_SERVER }}
-        run: cargo xtask release-ci live
+        run: cargo xtask release-ci live "$TAG"
 
   publish:
     name: Publish the GitHub release
-    needs: live
+    needs: [build, live]
     if: "!cancelled() && needs.live.result == 'success'"
+    env:
+      TAG: ${{ needs.build.outputs.tag }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
       contents: write
     steps:
+      - name: The tag of the release, on the released commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          found=$(gh api "repos/$GITHUB_REPOSITORY/git/matching-refs/tags/$TAG" --jq ".[] | select(.ref == \"refs/tags/$TAG\") | .object.sha")
+          if [ -z "$found" ]; then
+            gh api --method POST "repos/$GITHUB_REPOSITORY/git/refs" -f ref="refs/tags/$TAG" -f sha="$GITHUB_SHA" >/dev/null || {
+              echo "::error::GitHub refused to create the tag $TAG on $GITHUB_SHA. The release is live; the tag ruleset must let this workflow create release tags (docs/releasing.md), or an organisation admin creates the tag on $GITHUB_SHA by hand. Then re-run this job."
+              exit 1
+            }
+            echo "Created the tag $TAG on $GITHUB_SHA."
+          elif [ "$found" = "$GITHUB_SHA" ]; then
+            echo "The tag $TAG is on $GITHUB_SHA already."
+          else
+            echo "::error::The tag $TAG points at $found, not at the released commit $GITHUB_SHA; nothing was published. An organisation admin moves or deletes it, then re-runs this job."
+            exit 1
+          fi
       - name: Publish the draft
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release edit "$GITHUB_REF_NAME" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+        run: gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --draft=false --latest

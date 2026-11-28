@@ -55,7 +55,8 @@ can be agreed before you invest time.
    plug-in's new version adds its section to `changelog/plugins/<id>.md`. A new ADR takes the
    number `cargo xtask adr next` names ([ADR-0188](docs/adr/0188-release-notes-and-decision-records-in-files-of-their-own.md)).
 4. Open a pull request and link the issue; it is merged into `main` after review.
-   Releases are made by the maintainers, from `main` only ([docs/releasing.md](docs/releasing.md)).
+   Releases are made by the maintainers, from commits of `main` only, by moving the branch
+   `release` ([docs/releasing.md](docs/releasing.md)).
 5. Address review comments by pushing new commits; they are squashed or rebased on merge.
 
 ## Commit messages

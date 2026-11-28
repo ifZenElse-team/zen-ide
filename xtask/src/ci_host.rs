@@ -5,10 +5,14 @@ pub(crate) enum Host {
     Unknown,
 }
 
+pub(crate) const RELEASE_BRANCH: &str = "release";
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) struct Ci {
     pub(crate) host: Host,
-    tag: Option<String>,
+    reference: String,
+    branch: Option<String>,
+    commit: Option<String>,
     run: Option<String>,
     protected: bool,
     pull_request: bool,
@@ -28,39 +32,53 @@ impl Ci {
         match (on("GITLAB_CI"), on("GITHUB_ACTIONS")) {
             (false, true) => {
                 let reference = value("GITHUB_REF").unwrap_or_default();
-                let tag = reference.strip_prefix("refs/tags/").map(str::to_owned).filter(|tag| {
-                    value("GITHUB_REF_TYPE").as_deref() == Some("tag")
-                        && value("GITHUB_REF_NAME").as_deref() == Some(tag.as_str())
+                let branch = reference.strip_prefix("refs/heads/").map(str::to_owned).filter(|branch| {
+                    value("GITHUB_REF_TYPE").as_deref() == Some("branch")
+                        && value("GITHUB_REF_NAME").as_deref() == Some(branch.as_str())
                 });
                 let pull_request = reference.starts_with("refs/pull/")
                     || value("GITHUB_EVENT_NAME").is_some_and(|event| event.starts_with("pull_request"));
                 Self {
                     host: Host::Github,
-                    tag,
+                    reference,
+                    branch,
+                    commit: value("GITHUB_SHA"),
                     run: value("GITHUB_RUN_ID"),
                     protected: on("GITHUB_REF_PROTECTED") && !pull_request,
                     pull_request,
                 }
             }
             (false, false) if !marked => Self::none(),
-            _ => Self { host: Host::Unknown, tag: None, run: None, protected: false, pull_request: false },
+            _ => Self { host: Host::Unknown, ..Self::none() },
         }
     }
 
     pub(crate) fn none() -> Self {
-        Self { host: Host::None, tag: None, run: None, protected: false, pull_request: false }
-    }
-
-    pub(crate) fn tag(&self) -> Option<&str> {
-        self.tag.as_deref()
+        Self {
+            host: Host::None,
+            reference: String::new(),
+            branch: None,
+            commit: None,
+            run: None,
+            protected: false,
+            pull_request: false,
+        }
     }
 
     pub(crate) fn run(&self) -> Option<&str> {
         self.run.as_deref()
     }
 
-    pub(crate) fn tag_variable(&self) -> &'static str {
-        "GITHUB_REF_NAME"
+    pub(crate) fn commit(&self) -> Option<&str> {
+        self.commit.as_deref()
+    }
+
+    fn on_release_branch(&self) -> bool {
+        !self.pull_request && self.branch.as_deref() == Some(RELEASE_BRANCH)
+    }
+
+    fn ref_shown(&self) -> &str {
+        if self.reference.is_empty() { "unknown" } else { &self.reference }
     }
 
     pub(crate) fn secrets_problem(&self) -> Option<String> {
@@ -70,10 +88,15 @@ impl Ci {
             Host::Github if self.pull_request => {
                 Some(format!("the release secrets are never used by a pull request's workflow (ADR-0300); {refused}"))
             }
+            Host::Github if !self.on_release_branch() => Some(format!(
+                "the release secrets are used only by a workflow run of the branch `{RELEASE_BRANCH}` (ADR-0301): \
+                 this run's ref is {}; {refused}",
+                self.ref_shown()
+            )),
             Host::Github => (!self.protected).then(|| {
                 format!(
-                    "the release secrets are used only by a workflow run of a protected ref (ADR-0300): this run's \
-                     ref is not protected (GITHUB_REF_PROTECTED is not true); {refused}"
+                    "the release secrets are used only by a workflow run of the protected branch `{RELEASE_BRANCH}` \
+                     (ADR-0301): this run's ref is not protected (GITHUB_REF_PROTECTED is not true); {refused}"
                 )
             }),
             Host::Unknown => Some(format!(
@@ -83,29 +106,50 @@ impl Ci {
         }
     }
 
-    pub(crate) fn tag_problem(&self, tag: &str) -> Option<String> {
+    pub(crate) fn release_problem(&self, built: Option<&str>) -> Option<String> {
         match self.host {
             Host::None => None,
-            Host::Github => (self.tag() != Some(tag)).then(|| {
-                format!(
-                    "a release runs only in the pipeline of its own tag: this pipeline's tag is {}, not {tag}",
-                    self.tag().unwrap_or("none")
-                )
-            }),
-            Host::Unknown => Some(format!(
-                "a release runs on a maintainer's machine or in GitHub Actions: this is a CI of another kind, and \
-                 {tag} is not released from it"
+            Host::Github if !self.on_release_branch() => Some(format!(
+                "a release runs only in a workflow run of the branch `{RELEASE_BRANCH}` (ADR-0301): this run's ref \
+                 is {}",
+                self.ref_shown()
             )),
+            Host::Github => match (built, self.commit()) {
+                (_, None) => Some("this run does not say its commit (GITHUB_SHA is not set)".to_owned()),
+                (Some(built), Some(commit)) if built != commit => Some(format!(
+                    "this run releases commit {commit}, the branch `{RELEASE_BRANCH}` it was started for; the build \
+                     is of commit {built}"
+                )),
+                _ => None,
+            },
+            Host::Unknown => Some(
+                "a release runs on a maintainer's machine or in GitHub Actions: this is a CI of another kind"
+                    .to_owned(),
+            ),
         }
     }
 
     pub(crate) fn secrets_come_from_variables(&self) -> bool {
-        matches!(self.host, Host::Github)
+        self.host == Host::Github
     }
 
     pub(crate) fn where_variables_live(&self) -> &'static str {
         "GitHub gives the release secrets only to the jobs of the `release` environment, after its reviewers \
          approve (docs/releasing.md)"
+    }
+}
+
+pub(crate) fn moved_problem(commit: &str, tip: Option<&str>) -> Option<String> {
+    match tip {
+        Some(tip) if tip == commit => None,
+        Some(tip) => Some(format!(
+            "the branch `{RELEASE_BRANCH}` has moved to {tip} since this run started for {commit}: only the run of \
+             the commit it points at releases (the newer run does), and nothing was signed, sent or made live"
+        )),
+        None => Some(format!(
+            "cannot read where the branch `{RELEASE_BRANCH}` points (git ls-remote origin); nothing was signed, sent \
+             or made live"
+        )),
     }
 }
 
@@ -127,7 +171,12 @@ mod tests {
             ("GITHUB_REF_PROTECTED", protected),
             ("GITHUB_EVENT_NAME", event),
             ("GITHUB_RUN_ID", "9001"),
+            ("GITHUB_SHA", "c0ffee"),
         ])
+    }
+
+    fn release(protected: &str, event: &str) -> Ci {
+        github("refs/heads/release", "branch", "release", protected, event)
     }
 
     #[test]
@@ -136,8 +185,9 @@ mod tests {
             let ci = ci(variables);
             assert_eq!(ci, Ci::none(), "{variables:?}");
             assert_eq!(ci.secrets_problem(), None);
-            assert_eq!(ci.tag_problem("v26.10.4"), None);
-            assert_eq!((ci.tag(), ci.run()), (None, None));
+            assert_eq!(ci.release_problem(None), None);
+            assert_eq!(ci.release_problem(Some("c0ffee")), None);
+            assert_eq!((ci.commit(), ci.run()), (None, None));
             assert!(!ci.secrets_come_from_variables());
         }
     }
@@ -151,10 +201,65 @@ mod tests {
             ("CI_COMMIT_REF_PROTECTED", "true"),
             ("CI_PIPELINE_ID", "2142"),
         ]);
-        assert_eq!((tag.host, tag.tag(), tag.run()), (Host::Unknown, None, None));
+        assert_eq!((tag.host, tag.commit(), tag.run()), (Host::Unknown, None, None));
         assert!(tag.secrets_problem().unwrap().contains("another kind"));
-        assert!(tag.tag_problem("v26.10.4").is_some());
+        assert!(tag.release_problem(None).is_some());
         assert!(!tag.secrets_come_from_variables());
+    }
+
+    #[test]
+    fn only_the_protected_branch_release_reads_the_secrets_and_releases() {
+        for event in ["push", "workflow_dispatch"] {
+            let run = release("true", event);
+            assert_eq!((run.host, run.commit(), run.run()), (Host::Github, Some("c0ffee"), Some("9001")));
+            assert_eq!(run.secrets_problem(), None, "{event}");
+            assert_eq!(run.release_problem(None), None);
+            assert_eq!(run.release_problem(Some("c0ffee")), None);
+            assert!(run.secrets_come_from_variables());
+        }
+        let unprotected = release("false", "push");
+        assert!(unprotected.secrets_problem().unwrap().contains("GITHUB_REF_PROTECTED"));
+        assert_eq!(unprotected.release_problem(None), None, "the builds need no secret; the plan refuses it first");
+        let missing = ci(&[
+            ("GITHUB_ACTIONS", "true"),
+            ("GITHUB_REF", "refs/heads/release"),
+            ("GITHUB_REF_TYPE", "branch"),
+            ("GITHUB_REF_NAME", "release"),
+        ]);
+        assert!(missing.secrets_problem().is_some(), "unknown means not protected");
+        assert!(missing.release_problem(None).unwrap().contains("GITHUB_SHA"));
+    }
+
+    #[test]
+    fn a_run_releases_only_the_commit_it_was_started_for() {
+        let run = release("true", "push");
+        let problem = run.release_problem(Some("deadbeef")).unwrap();
+        assert!(problem.contains("c0ffee") && problem.contains("deadbeef"), "{problem}");
+        assert_eq!(moved_problem("c0ffee", Some("c0ffee")), None);
+        assert!(moved_problem("c0ffee", Some("f00d")).unwrap().contains("has moved to f00d"));
+        assert!(moved_problem("c0ffee", None).unwrap().contains("cannot read"));
+    }
+
+    #[test]
+    fn main_other_branches_and_tags_never_read_the_secrets_nor_release() {
+        for (reference, kind, name) in [
+            ("refs/heads/main", "branch", "main"),
+            ("refs/heads/feature", "branch", "feature"),
+            ("refs/heads/release/notes-26.11.11", "branch", "release/notes-26.11.11"),
+            ("refs/tags/v26.11.11", "tag", "v26.11.11"),
+            ("refs/tags/release", "tag", "release"),
+        ] {
+            for protected in ["true", "false"] {
+                let run = github(reference, kind, name, protected, "push");
+                let refused = run.secrets_problem().unwrap();
+                assert!(refused.contains(reference) && refused.contains("nothing was signed"), "{refused}");
+                assert!(run.release_problem(None).unwrap().contains(reference), "{reference}");
+            }
+        }
+        let mismatched = github("refs/heads/release", "branch", "main", "true", "push");
+        assert!(mismatched.secrets_problem().is_some(), "the three variables must agree");
+        let typed_wrong = github("refs/heads/release", "tag", "release", "true", "push");
+        assert!(typed_wrong.release_problem(None).is_some());
     }
 
     #[test]
@@ -162,56 +267,16 @@ mod tests {
         for (reference, event) in [
             ("refs/pull/7/merge", "pull_request"),
             ("refs/pull/7/merge", "pull_request_target"),
-            ("refs/heads/main", "pull_request_target"),
+            ("refs/heads/release", "pull_request_target"),
+            ("refs/heads/release", "pull_request"),
         ] {
             for protected in ["true", "false"] {
-                let ci = github(reference, "branch", "7/merge", protected, event);
-                let refused = ci.secrets_problem().unwrap();
+                let run = github(reference, "branch", reference.trim_start_matches("refs/heads/"), protected, event);
+                let refused = run.secrets_problem().unwrap();
                 assert!(refused.contains("pull request") && refused.contains("nothing was signed"), "{refused}");
-                assert!(ci.tag_problem("v26.10.4").is_some());
+                assert!(run.release_problem(None).is_some());
             }
         }
-    }
-
-    #[test]
-    fn on_github_a_branch_push_reads_the_secrets_only_when_protected_and_releases_nothing() {
-        let branch = github("refs/heads/feature", "branch", "feature", "false", "push");
-        assert!(branch.secrets_problem().unwrap().contains("GITHUB_REF_PROTECTED"));
-        assert!(branch.tag_problem("v26.10.4").unwrap().contains("none"));
-
-        let main = github("refs/heads/main", "branch", "main", "true", "workflow_dispatch");
-        assert_eq!(main.secrets_problem(), None, "the credentials check runs on protected main");
-        assert!(main.tag_problem("v26.10.4").is_some(), "and releases nothing");
-
-        let named_like_a_tag = github("refs/heads/v26.10.4", "branch", "v26.10.4", "true", "push");
-        assert_eq!(named_like_a_tag.tag(), None);
-        assert!(named_like_a_tag.tag_problem("v26.10.4").is_some(), "a branch named as a tag is not the tag");
-    }
-
-    #[test]
-    fn on_github_only_a_protected_tag_releases_and_only_itself() {
-        let unprotected = github("refs/tags/v26.10.4", "tag", "v26.10.4", "false", "push");
-        assert_eq!(unprotected.tag(), Some("v26.10.4"));
-        assert!(unprotected.secrets_problem().unwrap().contains("not protected"));
-        assert_eq!(unprotected.tag_problem("v26.10.4"), None, "the build job of the tag needs no secret");
-
-        let missing = ci(&[
-            ("GITHUB_ACTIONS", "true"),
-            ("GITHUB_REF", "refs/tags/v26.10.4"),
-            ("GITHUB_REF_TYPE", "tag"),
-            ("GITHUB_REF_NAME", "v26.10.4"),
-        ]);
-        assert!(missing.secrets_problem().is_some(), "unknown means not protected");
-
-        let protected = github("refs/tags/v26.10.4", "tag", "v26.10.4", "true", "push");
-        assert_eq!((protected.host, protected.tag(), protected.run()), (Host::Github, Some("v26.10.4"), Some("9001")));
-        assert_eq!(protected.secrets_problem(), None);
-        assert_eq!(protected.tag_problem("v26.10.4"), None);
-        assert!(protected.tag_problem("v26.10.3").unwrap().contains("v26.10.4"));
-        assert!(protected.secrets_come_from_variables());
-
-        let mismatched = github("refs/tags/v26.10.4", "tag", "v26.10.3", "true", "push");
-        assert_eq!(mismatched.tag(), None, "the three variables must agree");
     }
 
     #[test]
@@ -221,12 +286,12 @@ mod tests {
             &[("CI", "1")],
             &[("CONTINUOUS_INTEGRATION", "true")],
             &[("CI", "true"), ("GITLAB_CI", "false")],
-            &[("GITLAB_CI", "true"), ("GITHUB_ACTIONS", "true"), ("CI_COMMIT_REF_PROTECTED", "true")],
+            &[("GITLAB_CI", "true"), ("GITHUB_ACTIONS", "true"), ("GITHUB_REF", "refs/heads/release")],
         ] {
             let ci = ci(variables);
             assert_eq!(ci.host, Host::Unknown, "{variables:?}");
             assert!(ci.secrets_problem().unwrap().contains("nothing was signed"));
-            assert!(ci.tag_problem("v26.10.4").is_some());
+            assert!(ci.release_problem(None).is_some());
             assert!(!ci.secrets_come_from_variables());
         }
     }

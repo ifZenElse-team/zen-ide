@@ -55,8 +55,8 @@ The maintainers deploy the server; the steps and the host are theirs and are not
 repository. What a deployment does: build the image of this folder's `Dockerfile` from the
 workspace, build the guide with `cargo xtask site-docs`, start `compose.yaml` with the server's
 `.env` (the public key, the upload token and `ZEN_SITE_ADDRESS`), and check
-`/api/v1/health`. Data survives redeployments. A tag release needs no deployment: it stages the
-website through the server's token API and the release button makes it live (`site/current` in the
+`/api/v1/health`. Data survives redeployments. A release from the workflow needs no deployment: it
+stages the website through the server's token API and the approval of its job `live` makes it live (`site/current` in the
 data folder, which Caddy serves read-only at `/srv/site-live`).
 
 ## Domain and HTTPS

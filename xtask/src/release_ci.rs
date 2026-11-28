@@ -73,35 +73,32 @@ pub(crate) fn command(args: &[String]) -> Result<(), String> {
     if args.len() == 1 && args[0] == "credentials" {
         return credentials();
     }
-    let usage = format!(
-        "usage: cargo xtask release-ci (plan | build | stage | verify | live | matrix | gate | join | notes | part \
-         <ide|toolbox|plugins> <macos|linux|windows|all>) [v<YY.M.N>] (the tag is {} in CI); plan, matrix, part and \
-         join take --dry-run, a dry run of the release of this commit at the calendar's next version, never \
-         published; release-ci credentials checks the signing key and the upload token against the server and sends \
-         nothing",
-        ci.tag_variable()
-    );
+    let usage = "usage: cargo xtask release-ci (plan | build | stage | verify | live | matrix | gate | join | notes \
+                 | part <ide|toolbox|plugins> <macos|linux|windows|all>) [v<YY.M.N>] (without a version, the calendar's \
+                 next, as `cargo xtask release-version` prints it; in the workflow, the plan's); plan, matrix, part and \
+                 join take --dry-run, a dry run of the release of this commit, never published; release-ci credentials \
+                 checks the signing key and the upload token against the server and sends nothing"
+        .to_owned();
     let dry_run = args.iter().any(|arg| arg == "--dry-run");
     let args: Vec<String> = args.iter().filter(|arg| *arg != "--dry-run").cloned().collect();
-    let own = || match ci.tag() {
-        Some(tag) => Ok(tag.to_owned()),
-        None if dry_run => dry_run_tag(),
-        None => Err(usage.clone()),
-    };
-    let (step, part, tag) = match args.as_slice() {
-        [step, what, platform] if step == "part" => (step.as_str(), Some((what, platform)), own()?),
-        [step, what, platform, tag] if step == "part" => (step.as_str(), Some((what, platform)), tag.clone()),
-        [step] if step != "part" => (step.as_str(), None, own()?),
-        [step, tag] if step != "part" => (step.as_str(), None, tag.clone()),
+    let (step, part, given) = match args.as_slice() {
+        [step, what, platform] if step == "part" => (step.as_str(), Some((what, platform)), None),
+        [step, what, platform, tag] if step == "part" => (step.as_str(), Some((what, platform)), Some(tag.clone())),
+        [step] if step != "part" => (step.as_str(), None, None),
+        [step, tag] if step != "part" => (step.as_str(), None, Some(tag.clone())),
         _ => return Err(usage),
     };
     if dry_run {
         if let Some(problem) = dry_run_problem(step) {
             return Err(problem);
         }
-    } else if let Some(problem) = ci.tag_problem(&tag) {
+    } else if let Some(problem) = ci.release_problem(None) {
         return Err(problem);
     }
+    let tag = match given {
+        Some(tag) => tag,
+        None => next_tag()?,
+    };
     let version = tag_version(&tag)?;
     match step {
         "plan" => {
@@ -112,8 +109,17 @@ pub(crate) fn command(args: &[String]) -> Result<(), String> {
                     println!("A release of this commit would be refused now: {problem}");
                     Ok(())
                 }
-                Some(problem) => Err(format!("the tag would be refused: {problem}")),
-                None => Ok(()),
+                Some(problem) => Err(format!("a release of this commit would be refused: {problem}")),
+                None if dry_run => Ok(()),
+                None => match crate::release::version_problem(
+                    &version,
+                    &crate::release::published_ide_versions()?,
+                    crate::calendar::this_month()?,
+                    false,
+                ) {
+                    Some(problem) => Err(format!("a release of this commit would be refused: {problem}")),
+                    None => Ok(()),
+                },
             }
         }
         "build" => build(&tag, &version),
@@ -141,7 +147,7 @@ pub(crate) fn dry_run_problem(step: &str) -> Option<String> {
     })
 }
 
-fn dry_run_tag() -> Result<String, String> {
+pub(crate) fn next_tag() -> Result<String, String> {
     let (year, month) = crate::calendar::this_month()?;
     Ok(format!("v{}", crate::calendar::next(year, month, &crate::release::published_ide_versions()?)))
 }
@@ -149,7 +155,7 @@ fn dry_run_tag() -> Result<String, String> {
 pub(crate) fn tag_version(tag: &str) -> Result<String, String> {
     let version = tag.strip_prefix('v').unwrap_or_default();
     if crate::calendar::parse(version).is_none() {
-        return Err(format!("`{tag}` is not a release tag: a release tag is v<YY.M.N>, such as v26.10.4 (ADR-0171)"));
+        return Err(format!("`{tag}` is not a release's version: it is v<YY.M.N>, such as v26.10.4 (ADR-0146)"));
     }
     Ok(version.to_owned())
 }
@@ -299,6 +305,18 @@ fn stage(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String
     if groups.iter().any(|group| group.components().any(|part| part == std::path::Component::ParentDir)) {
         return Err(format!("{PLAN_FILE}: a group outside {BUILD_DIR}"));
     }
+    let records = records(&groups)?;
+    let commit = records.first().map(|record| record.commit.clone()).unwrap_or_default();
+    if let Some(problem) = records.iter().find(|record| record.commit != commit).map(|record| {
+        format!("{} {} is of commit {}, the release of commit {commit}", record.product, record.version, record.commit)
+    }) {
+        return Err(format!("{problem}; nothing was signed or sent"));
+    }
+    released_commit_problem(ci, &commit)?;
+    let published = crate::release::published_ide_versions()?;
+    if let Some(problem) = crate::release::version_problem(version, &published, crate::calendar::this_month()?, true) {
+        return Err(format!("{problem}; nothing was signed or sent"));
+    }
     let stage = stage_name(tag, ci.run());
     let mut entries = Vec::new();
     for group in &groups {
@@ -330,7 +348,6 @@ fn stage(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String
             .env("ZEN_RELEASES_TOKEN", &secrets.token),
         "zen-releases stage-site",
     )?;
-    let records = records(&groups)?;
     let files = records
         .iter()
         .flat_map(|record| record.files.iter().filter_map(|file| served(record, file, &secrets.server)))
@@ -341,7 +358,7 @@ fn stage(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String
         version: version.to_owned(),
         stage: stage.clone(),
         server: secrets.server.trim_end_matches('/').to_owned(),
-        commit: records.first().map(|record| record.commit.clone()).unwrap_or_default(),
+        commit,
         products: products(&records),
         files,
         site: format!("{}/releases/staged-site/{stage}/index.html", secrets.server.trim_end_matches('/')),
@@ -353,9 +370,8 @@ fn stage(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String
 }
 
 fn staged(tag: &str, version: &str) -> Result<StageRecord, String> {
-    let bytes = std::fs::read(STAGE_FILE).map_err(|error| {
-        format!("{STAGE_FILE}: {error}; the stage job leaves it (run the pipeline's stage job first)")
-    })?;
+    let bytes = std::fs::read(STAGE_FILE)
+        .map_err(|error| format!("{STAGE_FILE}: {error}; the stage job leaves it (run the stage job first)"))?;
     let record: StageRecord = serde_json::from_slice(&bytes).map_err(|error| format!("{STAGE_FILE}: {error}"))?;
     if record.schema != SCHEMA || record.tag != tag || record.version != version {
         return Err(format!("{STAGE_FILE} is the stage of {} {}, not of {tag}", record.tag, record.version));
@@ -376,8 +392,26 @@ fn verify(tag: &str, version: &str) -> Result<(), String> {
         println!("  {check}");
     }
     println!("  the website as it will be: {}", record.site);
-    println!("Press \"release\" in the pipeline to make it live.");
+    println!("Approve the job `live` (environment `release`) of the run to make it live.");
     Ok(())
+}
+
+fn released_commit_problem(ci: &crate::ci_host::Ci, commit: &str) -> Result<(), String> {
+    if let Some(problem) = ci.release_problem(Some(commit)) {
+        return Err(format!("{problem}; nothing was signed, sent or made live"));
+    }
+    if ci.host != crate::ci_host::Host::Github {
+        return Ok(());
+    }
+    let reference = format!("refs/heads/{}", crate::ci_host::RELEASE_BRANCH);
+    let output = Command::new("git").args(["ls-remote", "origin", &reference]).output().ok();
+    let tip = output
+        .filter(|output| output.status.success())
+        .and_then(|output| String::from_utf8_lossy(&output.stdout).split_whitespace().next().map(str::to_owned));
+    match crate::ci_host::moved_problem(commit, tip.as_deref()) {
+        Some(problem) => Err(problem),
+        None => Ok(()),
+    }
 }
 
 pub(crate) fn website(out: &Path) -> Result<(), String> {
@@ -703,6 +737,7 @@ fn live(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String>
     if secrets.server.trim_end_matches('/') != record.server {
         return Err(format!("the stage is on {}, the release variables name {}", record.server, secrets.server));
     }
+    released_commit_problem(ci, &record.commit)?;
     println!("==> Releasing {} ({})", record.tag, record.stage);
     run(
         Command::new(crate::release_flow::zen_releases()?)

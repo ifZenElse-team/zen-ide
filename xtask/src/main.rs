@@ -68,11 +68,11 @@ const TASKS: &[(&str, &str)] = &[
     ),
     (
         "release-publish",
-        "Verify, sign and publish a build (run locally by the owner, or on the protected release runner, ADR-0171): release-publish (--from <dir> | --run <GitHub run id> | --pipeline <id> | --job <id>) [--dry-run] [--stage <name>]",
+        "Verify, sign and publish a build on a maintainer's machine (the fallback, ADR-0171): release-publish (--from <dir> | --run <GitHub run id> | --pipeline <id> | --job <id>) [--dry-run] [--stage <name>]",
     ),
     (
         "release-ci",
-        "The release pipeline of a protected tag v<YY.M.N> (ADR-0171): release-ci plan | stage | live [<tag>]; stage builds and stages everything, live (the button) makes it public; on GitHub (ADR-0300) matrix, gate, part and join build it in several jobs, notes writes the GitHub release's text, credentials checks the key and the token",
+        "The release from the branch `release` at the calendar's next version (ADR-0300, ADR-0301): release-ci plan | matrix | gate | part | join | stage | verify | notes | live [v<YY.M.N>]; matrix, gate, part and join build it in several jobs, stage signs and stages it, live makes it public, notes writes the GitHub release's text; plan, matrix, part and join take --dry-run; credentials checks the key and the token",
     ),
     (
         "release-notes-sync",

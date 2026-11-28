@@ -86,9 +86,11 @@ fn source_problem(branch: &str, dirty: bool, pushed: bool, any_branch: bool) -> 
     if any_branch {
         return None;
     }
-    if branch != "main" && branch != "HEAD" {
+    if branch != "main" && branch != "HEAD" && branch != crate::ci_host::RELEASE_BRANCH {
         return Some(format!(
-            "releases are built from main, not `{branch}` (ZEN_RELEASE_ANY_BRANCH=1 in an emergency)"
+            "releases are built from main or the branch `{}`, which points at a commit of main, not `{branch}` \
+             (ZEN_RELEASE_ANY_BRANCH=1 in an emergency)",
+            crate::ci_host::RELEASE_BRANCH
         ));
     }
     if !pushed {
@@ -1143,6 +1145,9 @@ mod tests {
         assert!(source_problem("feat/x", false, true, false).unwrap().contains("from main"));
         assert!(source_problem("main", false, false, false).unwrap().contains("origin/main"));
         assert_eq!(source_problem("HEAD", false, true, false), None);
+        assert_eq!(source_problem("release", false, true, false), None, "the branch release is a commit of main");
+        assert!(source_problem("release", false, false, false).unwrap().contains("origin/main"), "only that");
+        assert!(source_problem("release/x", false, true, false).is_some());
         assert!(source_problem("HEAD", false, false, false).unwrap().contains("origin/main"));
         assert!(source_problem("main", true, true, false).unwrap().contains("uncommitted"));
         assert_eq!(source_problem("hotfix", false, false, true), None);
