@@ -699,7 +699,7 @@ pub(crate) fn github_release_body(record: &StageRecord, checks: &[String]) -> St
 fn live(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String> {
     let secrets = crate::release::secrets()?;
     let record = staged(tag, version)?;
-    let checks = checks()?;
+    checks()?;
     if secrets.server.trim_end_matches('/') != record.server {
         return Err(format!("the stage is on {}, the release variables name {}", record.server, secrets.server));
     }
@@ -711,111 +711,10 @@ fn live(tag: &str, version: &str, ci: &crate::ci_host::Ci) -> Result<(), String>
         "zen-releases release-stage",
     )?;
     println!("==> {tag} is live: {}/releases/manifest.json, {}/", record.server, record.server);
-    match gitlab_context() {
-        Some(gitlab) => gitlab_release(&gitlab, &record, &checks),
-        None if ci.host == crate::ci_host::Host::Github => {
-            println!("The workflow's next job publishes the draft GitHub release of {tag}.");
-            Ok(())
-        }
-        None => {
-            println!("Not in GitLab CI: create the GitLab release of {tag} by hand if wanted.");
-            Ok(())
-        }
+    if ci.host == crate::ci_host::Host::Github {
+        println!("The workflow's next job publishes the draft GitHub release of {tag}.");
     }
-}
-
-struct Gitlab {
-    api: String,
-    project: String,
-    token: String,
-}
-
-fn gitlab_context() -> Option<Gitlab> {
-    let env = |name: &str| std::env::var(name).ok().filter(|value| !value.is_empty());
-    Some(Gitlab { api: env("CI_API_V4_URL")?, project: env("CI_PROJECT_ID")?, token: env("CI_JOB_TOKEN")? })
-}
-
-pub(crate) fn release_description(record: &StageRecord, checks: &[String]) -> String {
-    let mut text = format!(
-        "Every Zen IDE at {}: GoGarden, RustRonin, WebWave and JvmJizo, for macOS, Linux and Windows. Install or \
-         update them with [Zen Toolbox]({}/).\n",
-        record.version,
-        record.server.trim_end_matches('/')
-    );
-    for product in &record.products {
-        let what = if product.kind == "plugin" { " plug-in" } else { "" };
-        text.push_str(&format!("\n## {}{what} {}\n\n{}\n", product.name, product.version, product.notes.trim()));
-    }
-    text.push_str("\n## Checked before release\n\n");
-    for check in checks {
-        text.push_str(&format!("- {check}\n"));
-    }
-    text
-}
-
-pub(crate) fn release_json(record: &StageRecord, checks: &[String]) -> serde_json::Value {
-    let links: Vec<serde_json::Value> = record
-        .files
-        .iter()
-        .map(|file| serde_json::json!({ "name": file.name, "url": file.url, "link_type": file.link_type }))
-        .collect();
-    serde_json::json!({
-        "name": format!("Zen IDE {}", record.version),
-        "tag_name": record.tag,
-        "description": release_description(record, checks),
-        "assets": { "links": links },
-    })
-}
-
-fn gitlab_release(gitlab: &Gitlab, record: &StageRecord, checks: &[String]) -> Result<(), String> {
-    let releases = format!("{}/projects/{}/releases", gitlab.api, gitlab.project);
-    let json = release_json(record, checks);
-    let (status, body) = gitlab_call(gitlab, "POST", &releases, &json)?;
-    if (200..300).contains(&status) {
-        println!("==> The GitLab release {} is created with {} files.", record.tag, record.files.len());
-        return Ok(());
-    }
-    if status != 409 {
-        return Err(format!("GitLab refused the release ({status}): {body}"));
-    }
-    let release = format!("{releases}/{}", record.tag);
-    let update = serde_json::json!({ "name": json["name"], "description": json["description"] });
-    let (status, body) = gitlab_call(gitlab, "PUT", &release, &update)?;
-    if !(200..300).contains(&status) {
-        return Err(format!("GitLab refused to update the release ({status}): {body}"));
-    }
-    for link in json["assets"]["links"].as_array().into_iter().flatten() {
-        let _ = gitlab_call(gitlab, "POST", &format!("{release}/assets/links"), link)?;
-    }
-    println!("==> The GitLab release {} is updated.", record.tag);
     Ok(())
-}
-
-fn curl_call(gitlab: &Gitlab, method: &str, url: &str, body: &str) -> (Vec<String>, String) {
-    let args = ["-sS", "-K", "-", "-w", "\n%{http_code}", "--data-binary", body].map(str::to_owned).to_vec();
-    let config = format!(
-        "header = \"JOB-TOKEN: {}\"\nheader = \"Content-Type: application/json\"\nrequest = \"{method}\"\nurl = \"{url}\"\n",
-        gitlab.token
-    );
-    (args, config)
-}
-
-fn gitlab_call(gitlab: &Gitlab, method: &str, url: &str, json: &serde_json::Value) -> Result<(u16, String), String> {
-    use std::io::Write;
-    let body = serde_json::to_string(json).map_err(|error| error.to_string())?;
-    let (args, config) = curl_call(gitlab, method, url, &body);
-    let mut child = Command::new("curl")
-        .args(&args)
-        .stdin(Stdio::piped())
-        .stdout(Stdio::piped())
-        .spawn()
-        .map_err(|error| format!("cannot run curl: {error}"))?;
-    child.stdin.take().ok_or("no stdin")?.write_all(config.as_bytes()).map_err(|error| error.to_string())?;
-    let output = child.wait_with_output().map_err(|error| error.to_string())?;
-    let text = String::from_utf8_lossy(&output.stdout).into_owned();
-    let (body, status) = text.rsplit_once('\n').unwrap_or(("", text.as_str()));
-    let status = status.trim().parse().map_err(|_| format!("curl {method} {url}: no HTTP status"))?;
-    Ok((status, body.to_owned()))
 }
 
 #[cfg(test)]
@@ -873,14 +772,6 @@ mod tests {
         assert_eq!(stage_name("v26.10.4", Some("2142")), "v26.10.4-p2142");
         assert!(stage_name("v26.10.4", None).starts_with("v26.10.4-local-"));
         assert!(stage_name("v26.10.4", Some("../x")).starts_with("v26.10.4-local-"), "only digits");
-    }
-
-    #[test]
-    fn the_job_token_reaches_curl_on_its_standard_input_and_never_on_its_command_line() {
-        let gitlab = Gitlab { api: "https://x".to_owned(), project: "1".to_owned(), token: "s3cret".to_owned() };
-        let (args, config) = curl_call(&gitlab, "POST", "https://x/releases", "{}");
-        assert!(config.contains("JOB-TOKEN: s3cret"));
-        assert!(args.iter().all(|arg| !arg.contains("s3cret")), "{args:?}");
     }
 
     #[test]
@@ -987,7 +878,7 @@ mod tests {
     }
 
     #[test]
-    fn the_gitlab_release_carries_the_notes_and_a_link_to_every_file() {
+    fn the_github_release_carries_the_notes_and_a_link_to_every_file() {
         let records = vec![
             record("ide", "gogarden", "26.10.4", "macos-aarch64"),
             record("ide", "gogarden", "26.10.4", "linux-x86_64"),
@@ -1015,13 +906,5 @@ mod tests {
         assert!(body.contains(&format!("SHA-256 `{}`", stage.files[0].sha256)));
         assert!(body.contains("https://ide.ifzenelse.space/releases/manifest.json"));
         assert!(body.ends_with("## Checked before release\n\n- 1 staged files downloaded\n"));
-        let json = release_json(&stage, &["1 staged files downloaded".to_owned()]);
-        assert_eq!(json["tag_name"], "v26.10.4");
-        assert_eq!(json["name"], "Zen IDE 26.10.4");
-        assert_eq!(json["assets"]["links"][0]["link_type"], "package");
-        let description = json["description"].as_str().unwrap();
-        assert!(description.contains("## gogarden 26.10.4\n\n- gogarden notes."), "{description}");
-        assert!(description.contains("## json plug-in 0.2.0"));
-        assert!(description.contains("- 1 staged files downloaded"));
     }
 }

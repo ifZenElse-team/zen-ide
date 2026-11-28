@@ -1,7 +1,6 @@
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum Host {
     None,
-    Gitlab,
     Github,
     Unknown,
 }
@@ -27,13 +26,6 @@ impl Ci {
         let on = |name: &str| value(name).as_deref() == Some("true");
         let marked = MARKERS.iter().any(|name| value(name).is_some_and(|value| value != "false" && value != "0"));
         match (on("GITLAB_CI"), on("GITHUB_ACTIONS")) {
-            (true, false) => Self {
-                host: Host::Gitlab,
-                tag: value("CI_COMMIT_TAG"),
-                run: value("CI_PIPELINE_ID"),
-                protected: on("CI_COMMIT_REF_PROTECTED"),
-                pull_request: false,
-            },
             (false, true) => {
                 let reference = value("GITHUB_REF").unwrap_or_default();
                 let tag = reference.strip_prefix("refs/tags/").map(str::to_owned).filter(|tag| {
@@ -68,22 +60,13 @@ impl Ci {
     }
 
     pub(crate) fn tag_variable(&self) -> &'static str {
-        match self.host {
-            Host::Github => "GITHUB_REF_NAME",
-            _ => "CI_COMMIT_TAG",
-        }
+        "GITHUB_REF_NAME"
     }
 
     pub(crate) fn secrets_problem(&self) -> Option<String> {
         let refused = "nothing was signed or sent";
         match self.host {
             Host::None => None,
-            Host::Gitlab => (!self.protected).then(|| {
-                format!(
-                    "the release secrets are used only by a pipeline of a protected tag (ADR-0171): this job's ref \
-                     is not protected (CI_COMMIT_REF_PROTECTED is not true); {refused}"
-                )
-            }),
             Host::Github if self.pull_request => {
                 Some(format!("the release secrets are never used by a pull request's workflow (ADR-0300); {refused}"))
             }
@@ -94,9 +77,8 @@ impl Ci {
                 )
             }),
             Host::Unknown => Some(format!(
-                "the release secrets are used only on a maintainer's machine, in GitLab CI or in GitHub Actions: \
-                 this is a CI of another kind (CI is set, and exactly one of GITLAB_CI and GITHUB_ACTIONS must be \
-                 true); {refused}"
+                "the release secrets are used only on a maintainer's machine or in GitHub Actions: this is a CI of \
+                 another kind (CI is set, and GITHUB_ACTIONS is not true, or GITLAB_CI is set too); {refused}"
             )),
         }
     }
@@ -104,34 +86,26 @@ impl Ci {
     pub(crate) fn tag_problem(&self, tag: &str) -> Option<String> {
         match self.host {
             Host::None => None,
-            Host::Gitlab | Host::Github => (self.tag() != Some(tag)).then(|| {
+            Host::Github => (self.tag() != Some(tag)).then(|| {
                 format!(
                     "a release runs only in the pipeline of its own tag: this pipeline's tag is {}, not {tag}",
                     self.tag().unwrap_or("none")
                 )
             }),
             Host::Unknown => Some(format!(
-                "a release runs on a maintainer's machine, in GitLab CI or in GitHub Actions: this is a CI of \
-                 another kind, and {tag} is not released from it"
+                "a release runs on a maintainer's machine or in GitHub Actions: this is a CI of another kind, and \
+                 {tag} is not released from it"
             )),
         }
     }
 
     pub(crate) fn secrets_come_from_variables(&self) -> bool {
-        matches!(self.host, Host::Gitlab | Host::Github)
+        matches!(self.host, Host::Github)
     }
 
     pub(crate) fn where_variables_live(&self) -> &'static str {
-        match self.host {
-            Host::Github => {
-                "GitHub gives the release secrets only to the jobs of the `release` environment, after its \
-                 reviewers approve (docs/releasing.md)"
-            }
-            _ => {
-                "GitLab gives the release variables only to the jobs of the `release` environment in a pipeline of \
-                 a protected tag (docs/releasing.md)"
-            }
-        }
+        "GitHub gives the release secrets only to the jobs of the `release` environment, after its reviewers \
+         approve (docs/releasing.md)"
     }
 }
 
@@ -169,7 +143,7 @@ mod tests {
     }
 
     #[test]
-    fn gitlab_is_read_as_before() {
+    fn gitlab_is_a_ci_of_another_kind_now() {
         let tag = ci(&[
             ("CI", "true"),
             ("GITLAB_CI", "true"),
@@ -177,21 +151,10 @@ mod tests {
             ("CI_COMMIT_REF_PROTECTED", "true"),
             ("CI_PIPELINE_ID", "2142"),
         ]);
-        assert_eq!((tag.host, tag.tag(), tag.run()), (Host::Gitlab, Some("v26.10.4"), Some("2142")));
-        assert_eq!(tag.secrets_problem(), None);
-        assert_eq!(tag.tag_problem("v26.10.4"), None);
-        assert!(tag.tag_problem("v26.10.3").is_some());
-        assert!(tag.secrets_come_from_variables());
-
-        let branch = ci(&[("GITLAB_CI", "true"), ("CI_COMMIT_REF_PROTECTED", "false")]);
-        let refused = branch.secrets_problem().unwrap();
-        assert!(refused.contains("CI_COMMIT_REF_PROTECTED") && refused.contains("nothing was signed"), "{refused}");
-        assert!(branch.tag_problem("v26.10.4").unwrap().contains("none"), "a branch pipeline");
-        assert!(ci(&[("GITLAB_CI", "true")]).secrets_problem().is_some(), "unknown means not protected");
-
-        let main = ci(&[("GITLAB_CI", "true"), ("CI_COMMIT_REF_PROTECTED", "true")]);
-        assert_eq!(main.secrets_problem(), None, "the credentials check runs on protected main");
-        assert!(main.tag_problem("v26.10.4").is_some(), "and releases nothing");
+        assert_eq!((tag.host, tag.tag(), tag.run()), (Host::Unknown, None, None));
+        assert!(tag.secrets_problem().unwrap().contains("another kind"));
+        assert!(tag.tag_problem("v26.10.4").is_some());
+        assert!(!tag.secrets_come_from_variables());
     }
 
     #[test]
